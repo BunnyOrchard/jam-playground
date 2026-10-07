@@ -75,7 +75,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 <div class="bar">
   <span id="status">Off. Sound starts when you switch it on.</span>
   <span class="cpu" id="cpu"></span>
-  <button id="reset" type="button" title="Forget your chords and sound, and start again from the factory settings">Factory reset</button>
+  <button id="reset" type="button" title="Forget your scale and sound, and start again from the factory settings">Factory reset</button>
 </div>
 
 <section class="help">
@@ -210,10 +210,9 @@ function hit(c, cls) {
   c.hit = d;
 }
 // what each control does, on hover (the Buttons list below says the same)
-const TIP = { FX: "Sound page", SEL: "Chords page: press a black key, then KNOB 1 / 2 change its chord", ENV: "Hold for a minor chord",
-  LFO: "Hold for a 7th chord (with ENV: m7)", EDIT: "Next page", GLO: "Setup page", HOME: "Play page", SAVE: "Save",
-  ARP: "Chord hold", SEQ: "Rhythm page", PLAY: "Rhythm on / off", REC: "Sync start: the rhythm waits for a chord",
-  "OCT-": "Strings an octave down", "OCT+": "Strings an octave up", SELECT: "Tempo", ALGORITHM: "Rhythm", PRESETS: "Transpose",
+const TIP = { FX: "Space page", SEL: "Tone page", EDIT: "Next page", GLO: "Setup page", HOME: "Garden page", SAVE: "Save",
+  ARP: "The next chord", SEQ: "Motion page", PLAY: "Grow / rest", REC: "Freeze: the chord holds, the reverb rings on",
+  "OCT-": "Bells an octave down", "OCT+": "Bells an octave up", SELECT: "Tempo", ALGORITHM: "Mode", PRESETS: "Root",
   MASTER: "Volume" };
 for (const [n, c] of [...Object.entries(buttons), ...Object.entries(knobs)]) if (TIP[n]) c.g.setAttribute("aria-description", TIP[n]);
 for (const k of Object.values(knobs)) hit(k, "knob");
@@ -259,18 +258,6 @@ keys.forEach((k, i) => {
     k.hit.setPointerCapture(e.pointerId);
     keyHeldBy.set("p" + e.pointerId, i);
     syncKeys();
-  });
-  // the strum plate: a finger that went down on a white key moves the held key as it slides
-  if (WHITE_K.includes(i)) k.hit.addEventListener("pointermove", (e) => {
-    const id = "p" + e.pointerId;
-    if (!keyHeldBy.has(id)) return;
-    for (const w of WHITE_K) {
-      const r = keys[w].hit.getBoundingClientRect();
-      if (e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top - 40 && e.clientY < r.bottom + 40) {
-        if (keyHeldBy.get(id) !== w) { keyHeldBy.set(id, w); syncKeys(); }
-        return;
-      }
-    }
   });
 });
 function pointerUp(e) {
@@ -335,7 +322,7 @@ const KEYMAP = {};
 "asdfghjk".split("").forEach((c, i) => KEYMAP["Key" + c.toUpperCase()] = { key: WHITE_K[8 + i] });
 "1234567890".split("").forEach((c, i) => KEYMAP["Digit" + c] = { key: BLACK_K[i] });
 KEYMAP.Minus = { key: BLACK_K[10] };
-Object.assign(KEYMAP, { Space: { btn: BTN.PLAY }, Enter: { btn: BTN.REC }, ShiftLeft: { btn: BTN.ENV }, ShiftRight: { btn: BTN.ENV }, Slash: { btn: BTN.LFO },
+Object.assign(KEYMAP, { Space: { btn: BTN.PLAY }, Enter: { btn: BTN.REC },
                         Escape: { btn: BTN.HOME }, KeyZ: { btn: BTN["OCT-"] }, KeyX: { btn: BTN["OCT+"] } });
 addEventListener("keydown", (e) => {
   if (!node || e.metaKey || e.ctrlKey || e.altKey) return;
