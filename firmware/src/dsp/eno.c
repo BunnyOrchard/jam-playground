@@ -27,7 +27,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Echo", 0, 100, 45},     {"Echo time", 0, 5, 3},   {"Reverb", 0, 100, 65},   {"Size", 0, 100, 80},
     {"Bright", 0, 100, 40},   {"Swell", 0, 100, 60},    {"Bell tone", 0, 100, 50}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 30, 120, 72},   {"Root", 0, 11, 2},
-    {"Mode", 0, EN_NMODES - 1, 1}, {"Bell oct", -2, 2, 0},
+    {"Mode", 0, EN_NMODES - 1, 1}, {"Bell oct", -2, 2, 0}, {"Pad tone", 0, 1, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -62,6 +62,8 @@ void en_param_text(int i, int v, char *b)
         s = ETIME_NAME[(unsigned)v < 6u ? v : 0];
     else if (i == P_MIDI)
         s = ONOFF[v ? 1 : 0];
+    else if (i == P_PADTONE)
+        s = v ? "Voices" : "Rhodes";
     else if (i == P_MODE)
         s = EN_MODE_NAME[(unsigned)v < EN_NMODES ? v : 0];
     else if (i == P_ROOT)
@@ -353,7 +355,7 @@ typedef struct {
 static pad_t pad[EN_NPAD];
 static float pad_gate, pad_gain, pad_vol, bright, swell;
 static const float PAD_PAN[EN_NPAD] = {-0.55f, -0.18f, 0.18f, 0.55f};
-static const float BREATH[EN_NPAD] = {1.0f, 1.27f, 1.61f, 1.93f};    /* unequal cycles */
+static const float BREATH[EN_NPAD] = {1.0f, 1.21f, 1.43f, 1.67f};    /* unequal cycles, as 2/1's 12..20 s loops */
 static const float START_T[EN_NPAD] = {0.0f, 0.9f, 0.82f, 0.95f};    /* the first breaths overlap */
 static const float VOWEL[4][2] = {{320.0f, 800.0f}, {480.0f, 900.0f}, {730.0f, 1090.0f}, {530.0f, 1840.0f}};
 static float arcm;                              /* the slow arc, -1 sparse .. +1 full, times Motion */
@@ -381,7 +383,7 @@ static void svf_coefs(float *c, float f, float k)
 static void midi(uint32_t st, uint32_t d1, uint32_t d2);
 static void pad_breathe(pad_t *v, int i)        /* a new breath: its length, its strength, its note */
 {
-    float secs = (4.0f + 0.32f * swell) * BREATH[i] * (0.85f + 0.3f * frand());
+    float secs = (4.0f + 0.12f * swell) * BREATH[i] * (0.85f + 0.3f * frand());
     v->rate = 32.0f / (secs * EN_SR);
     v->peak = 0.6f + 0.4f * frand();
     if (en_playing && v->midi_note)
@@ -1234,16 +1236,86 @@ static void drain(void)
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK];
 
+/* the pad's bus: a gentle 12 dB low-pass (Bright opens it) to take the saws' edge off, then an
+ * ensemble, as the string machines' (Solina, Juno): three taps of a short delay, each swept by a slow
+ * and a faster sine a third of a turn apart, two to a side. That chorus is most of the lushness. */
+#define ENS_N 1024
+static float padl[BLK], padr[BLK];
+static float ens_buf[ENS_N], ens_slow, ens_fast, ens_trem, plp[4];
+static int ens_w;
+
+static inline float ens_tap(float d)
+{
+    float r = (float)ens_w - d;
+    int i;
+    float f;
+    if (r < 0.0f)
+        r += (float)ENS_N;
+    i = (int)r;
+    f = r - (float)i;
+    return ens_buf[i] + (ens_buf[(i + 1) & (ENS_N - 1)] - ens_buf[i]) * f;
+}
+
+static void pad_bus(uint32_t n)
+{
+    const float fc = fm_clampf(1400.0f * fm_exp2f(bright * 0.024f + 0.6f * arcm), 600.0f, 12000.0f);
+    const float c = 1.0f - fm_expf(-FM_TWO_PI * fc * (1.0f / EN_SR));
+    const float s_inc = 0.53f / EN_SR, f_inc = 5.9f / EN_SR,
+                trem = par[P_PADTONE] == 0 ? 0.08f + 0.17f * motion : 0.0f;
+    uint32_t j;
+    for (j = 0; j < n; j++) {
+        float l = padl[j], r = padr[j], t0, t1, t2, ol, or_;
+        plp[0] += c * (l - plp[0]);
+        plp[1] += c * (plp[0] - plp[1]);
+        plp[2] += c * (r - plp[2]);
+        plp[3] += c * (plp[2] - plp[3]);
+        l = plp[1];
+        r = plp[3];
+        ens_buf[ens_w] = 0.5f * (l + r);
+        ens_slow += s_inc;
+        if (ens_slow >= 1.0f)
+            ens_slow -= 1.0f;
+        ens_fast += f_inc;
+        if (ens_fast >= 1.0f)
+            ens_fast -= 1.0f;
+        t0 = ens_tap(330.0f + 150.0f * sine(ens_slow) + 9.0f * sine(ens_fast));
+        t1 = ens_tap(330.0f + 150.0f * sine(ens_slow + 0.3333f) + 9.0f * sine(ens_fast + 0.3333f));
+        t2 = ens_tap(330.0f + 150.0f * sine(ens_slow + 0.6667f) + 9.0f * sine(ens_fast + 0.6667f));
+        if (++ens_w >= ENS_N)
+            ens_w = 0;
+        ol = 0.45f * l + 0.55f * (t0 + 0.6f * t1);
+        or_ = 0.45f * r + 0.55f * (t2 + 0.6f * t1);
+        if (trem > 0.0f) {                       /* the Suitcase's stereo tremolo, slow and shallow */
+            float tr = trem * sine(ens_trem);
+            ol *= 1.0f + tr;
+            or_ *= 1.0f - tr;
+        }
+        ens_trem += 3.1f / EN_SR;
+        if (ens_trem >= 1.0f)
+            ens_trem -= 1.0f;
+        mixl[j] += ol;
+        mixr[j] += or_;
+        rsend[j] += (ol + or_) * 0.45f;
+        esend[j] += (ol + or_) * 0.12f;
+    }
+    for (j = 0; j < 4; j++)
+        plp[j] = fm_flush(plp[j]);
+}
+
 static void render_pad(uint32_t n)
 {
     int i;
     float lvl = 0.0f;
+    uint32_t j0;
+    const int rhodes = par[P_PADTONE] == 0;
+    for (j0 = 0; j0 < n; j0++)
+        padl[j0] = padr[j0] = 0.0f;
     const float g = pad_vol * 0.5f;
     pad_gain += (pad_gate - pad_gain) * fm_minf((float)n / ((pad_gate > 0.0f ? 2.0f : 5.0f) * EN_SR), 1.0f);
     for (i = 0; i < EN_NPAD; i++) {
         pad_t *v = &pad[i];
         float p0 = v->ph[0], p1 = v->ph[1], amp = v->amp, s0 = v->ic[0], s1 = v->ic[1], s2 = v->ic[2], s3 = v->ic[3],
-              gl, gr, pn, tgt = 0.0f;
+              gl, gr, pn, tgt = 0.0f, idx = 0.0f;
         uint32_t j;
         if (amp < 1e-5f && pad_gain < 1e-4f) {
             v->amp = 0.0f;
@@ -1255,10 +1327,29 @@ static void render_pad(uint32_t n)
         for (j = 0; j < n; j++) {
             float x, v1, v2, v3, b1, l1, b2;
             if (!(j & 31u)) {
+                float br;
                 pad_coefs(v, i);
-                tgt = breath(v->t) * v->peak * pad_gain * v->hf;
+                br = breath(v->t);
+                tgt = br * v->peak * pad_gain * v->hf;
+                /* the Rhodes blooms: more overtones as the breath swells (index in turns) */
+                idx = (0.04f + 0.1f * bright * 0.01f + 0.1f * br) * (1.0f + 0.4f * arcm);
             }
-            x = blep_saw(p0, v->inc[0]) + blep_saw(p1, v->inc[1]);
+            if (rhodes) {                        /* FM, the modulator at the carrier's pitch: a Rhodes */
+                float m = sine(p0) * idx;
+                x = (sine(p0 + m + 1.0f) + sine(p1 + 0.8f * m + 1.0f) + 0.12f * sine(2.0f * p0)) * 0.6f;
+                p0 += v->inc[0];
+                p1 += v->inc[1];
+                if (p0 >= 1.0f)
+                    p0 -= 1.0f;
+                if (p1 >= 1.0f)
+                    p1 -= 1.0f;
+                amp += (tgt - amp) * 0.01f;
+                x *= amp;
+                padl[j] += x * gl;
+                padr[j] += x * gr;
+                continue;
+            }
+            x = blep_saw(p0, v->inc[0]) + blep_saw(p1, v->inc[1]) + 0.9f * sine(p0);   /* the sine: body */
             p0 += v->inc[0];
             p1 += v->inc[1];
             if (p0 >= 1.0f)
@@ -1279,11 +1370,9 @@ static void render_pad(uint32_t n)
             s3 = 2.0f * v2 - s3;
             b2 = v1 * v->c2[3];
             amp += (tgt - amp) * 0.01f;
-            x = (b1 + 0.6f * b2 + 0.25f * l1) * amp;
-            mixl[j] += x * gl;
-            mixr[j] += x * gr;
-            rsend[j] += x * 0.9f * g;
-            esend[j] += x * 0.25f * g;
+            x = (b1 + 0.5f * b2 + 0.45f * l1) * amp;
+            padl[j] += x * gl;                   /* to the pad's bus: smoothed and chorused below */
+            padr[j] += x * gr;
         }
         v->ic[0] = fm_flush(s0);
         v->ic[1] = fm_flush(s1);
@@ -1297,6 +1386,7 @@ static void render_pad(uint32_t n)
         lvl = fm_maxf(lvl, amp);
     }
     en_pad_level = lvl;
+    pad_bus(n);
 }
 
 static void render_bass(uint32_t n)
@@ -1331,7 +1421,7 @@ static void render_bass(uint32_t n)
 static void render_bells(uint32_t n)
 {
     int i;
-    const float g = bell_vol * 0.62f;
+    const float g = bell_vol * 0.62f, arate = 0.0004f + 0.0056f * fm_minf(btone * 2.0f, 1.0f);
     for (i = 0; i < NBELL; i++) {
         bell_t *v = &bell[i];
         float cph = v->cph, mph = v->mph, amp = v->amp, idx = v->idx, att = v->att;
@@ -1362,7 +1452,7 @@ static void render_bells(uint32_t n)
                 mph -= 1.0f;
             amp *= v->adec;
             idx *= v->idec;
-            att += (1.0f - att) * 0.006f;        /* a soft strike: ~4 ms */
+            att += (1.0f - att) * arate;         /* the strike: ~4 ms, or soft as a slowed piano (~50 ms) */
         }
         v->cph = cph;
         v->mph = mph;

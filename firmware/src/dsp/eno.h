@@ -3,9 +3,10 @@
  * the root plus up to eleven more pitch classes) and one chord that drifts slowly through it:
  *
  *   PAD     four breathing voices: each swells in, hangs and fades on its own cycle (unequal lengths,
- *           as the sung loops of Music for Airports' "2/1"), taking its note of the chord as it starts,
- *           so the chord forms and dissolves. A vowel-like tone (saws through two formants). The chord
- *           moves every DRIFT (20 s .. 5 min), each voice the shortest way.
+ *           as the loops of Music for Airports), taking its note of the chord as it starts, so the
+ *           chord forms and dissolves. Two colours, by piece: a filtered Rhodes (FM, blooming brighter
+ *           as it swells) or Voices (saws through two formants, as "2/1"); then a soft low-pass and an
+ *           ensemble chorus. The chord moves every DRIFT (20 s .. 5 min), each voice the shortest way.
  *   BELLS   soft two-operator FM bells played by four tape loops of unequal length (13, 17, 23, 29
  *           quarter notes), each holding a short phrase that shifts against the others, each its own
  *           shade of bell. EVOLVE changes a note now and then; DENSITY sets how many notes a loop holds.
@@ -47,6 +48,7 @@ enum {
     P_ECHO, P_ETIME, P_REVERB, P_SIZE,                /* space */
     P_BRIGHT, P_SWELL, P_BTONE, P_MOTION,             /* tone */
     P_TUNE, P_MIDI, P_TEMPO, P_ROOT, P_MODE, P_BOCT,  /* setup, panel encoders, bell octave */
+    P_PADTONE,                                        /* the pad's colour, set by the piece: Rhodes, Voices */
     P_NPARAMS
 };
 typedef struct {

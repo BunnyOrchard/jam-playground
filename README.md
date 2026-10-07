@@ -13,11 +13,13 @@ Private for now. Install it with `python3 tools/fm1_install.py build/eno.fwsc` (
 ## The garden
 
 - **Pad**: four breathing voices. Each swells in, hangs and fades on its own cycle (unequal lengths,
-  as the sung loops of "2/1"), taking its note of the chord as it starts, so the chord forms and
-  dissolves rather than sitting there. A vowel-like tone: **Bright** moves it from "oo" to "eh",
-  **Swell** sets how long the breaths are. Every so often (**Drift**, 20 s to 5 min) the chord moves
+  about 12 to 20 s, as the tape loops of "2/1"), taking its note of the chord as it starts, so the
+  chord forms and dissolves rather than sitting there. Two colours, chosen by the piece: a filtered
+  Rhodes that blooms brighter as it swells, or sung voices (**Bright** moves the vowel from "oo" to
+  "eh"). Both go through a soft low-pass and an ensemble chorus. **Swell** sets how long the breaths
+  are. Every so often (**Drift**, 20 s to 5 min) the chord moves
   to another one in the scale, each voice the shortest way.
-- **Bells**: soft FM bells played by four tape loops 13, 17, 23 and 29 beats long. Each holds a few
+- **Bells**: FM bells (at a low **Bell tone**, soft-struck like a piano slowed to half speed) played by four tape loops 13, 17, 23 and 29 beats long. Each holds a few
   notes, so the loops slide against each other and the melody never quite repeats. **Density** sets
   how many notes a loop holds; **Evolve** how often a note changes or moves. Each loop is its own
   shade of bell, and now and then a note rings with its octave.
@@ -45,11 +47,11 @@ put the piece back to its recipe. Tune and MIDI out are the same for all.
 | Piece | |
 |---|---|
 | Garden | D Dorian, 72: everything, gently |
-| Departures | C# Ionian, 60: round, piano-like bells over voices, no bass or pulse |
-| Voices | F Aeolian, 56: only the breathing voices and a low bass, long breaths |
+| Departures | C# Ionian, 60: soft, slowed-piano bells an octave down over a quiet Rhodes, as "1/1" |
+| Voices | F Aeolian, 56: only the sung "ah" voices on unequal loops and a low bass, as "2/1" |
 | Afternoon | G Lydian, 84: bright vowels, busier bells, a light pulse |
 | Night Bus | A Aeolian, 96: the pulse forward, metallic bells, short echoes |
-| Shoreline | E pentatonic major, 64: sparse, huge reverb, wide arcs |
+| Shoreline | E pentatonic major, 64: dark, round bells lost in long echoes, as "2/2" |
 | Glass | Eb pentatonic minor, 76: clangy bells an octave up, dense |
 | Tides | Bb Mixolydian, 70: the most changeable (Evolve and Motion high) |
 

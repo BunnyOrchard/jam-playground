@@ -10,7 +10,7 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x314F4E45u           /* "ENO1" */
-#define PROJ_FORMAT 2u                   /* 2: pieces (format 1, one set of settings, loads as Garden's) */
+#define PROJ_FORMAT 3u                   /* 3: the pad's colour per piece; older formats give the recipes */
 #define NPIECES 8
 
 typedef struct {
