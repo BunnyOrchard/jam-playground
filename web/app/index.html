@@ -5,167 +5,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#faf4e8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17140f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6eeb5">
 <title>Eno</title>
-<meta name="description" content="Eno: a generative ambient garden in your browser.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+<meta name="description" content="Eno: a generative ambient garden.">
 <style>
+/* the colours of Ambient 1: Music for Airports (1978): the map's paper, its greens, its rivers, the ink */
 :root {
-  --ground: #faf4e8; --card: #fffaf1; --sunk: #f1e8d8; --rule: #e4d9c6; --muted: #8a7764; --ink: #48392f;
-  --pad: #26a69a; --pad-t: #c4e6de; --bell: #e0683a; --bell-t: #f8d0b8; --bass: #d69e36; --pulse: #e05880;
-  --pulse-t: #f6cedb; --frost: #5d9fd6; --frost-t: #d4e6f6; --on-accent: #2a140a;
-  --display: "Barlow Semi Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --paper: #f6eeb5; --green-1: #d0dc92; --green-2: #c2ce7f; --green-3: #9cb16f;
+  --river: #85c3c1; --river-2: #549995; --ink: #1d1b02;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: #17140f; --card: #211c17; --sunk: #1c1813; --rule: #342c24; --muted: #a8977f; --ink: #f2e8d8;
-    --pad: #4cc3b6; --pad-t: #1f3d39; --bell: #f28a5a; --bell-t: #4a2e22; --bass: #e2b45a; --pulse: #f07a9c;
-    --pulse-t: #47262f; --frost: #8cc0ee; --frost-t: #22364a; --on-accent: #1a0d06;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ground: #17140f; --card: #211c17; --sunk: #1c1813; --rule: #342c24; --muted: #a8977f; --ink: #f2e8d8;
-  --pad: #4cc3b6; --pad-t: #1f3d39; --bell: #f28a5a; --bell-t: #4a2e22; --bass: #e2b45a; --pulse: #f07a9c;
-  --pulse-t: #47262f; --frost: #8cc0ee; --frost-t: #22364a; --on-accent: #1a0d06;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body { margin: 0; background: var(--ground); color: var(--ink); font: 400 16px/1.45 var(--body);
-       padding-inline: 16px; padding-block: 12px 28px; -webkit-tap-highlight-color: transparent; }
-button, select, input { font: inherit; color: inherit; }
-button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--bell); outline-offset: 2px; }
-
-.app { max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; }
-@media (min-width: 900px) {
-  .app { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: start; column-gap: 40px; padding-top: 8px; }
-  .top { grid-column: 1 / -1; }
-}
-
-/* the bar: the piece, its key, play */
-.top { display: flex; align-items: center; gap: 12px; }
-.piece { border: 0; background: none; padding: 2px 0; text-align: left; min-width: 0; }
-.piece b { display: block; font: 700 1.7rem/1.05 var(--display); }
-.piece span { color: var(--muted); }
-.piece b::after { content: " \25BE"; font-size: .6em; color: var(--muted); vertical-align: .25em; }
-.top .grow { flex: 1; }
-.play { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--ink); background: none; color: var(--ink);
-        display: grid; place-items: center; flex: none; }
-.play svg { width: 16px; height: 16px; fill: currentColor; }
-
-/* the garden */
-.stage { display: grid; gap: 10px; justify-items: center; }
-.ringbox { position: relative; width: min(100%, 540px, 64vh); }
-canvas#ring { display: block; width: 100%; aspect-ratio: 1 / 1.1; touch-action: manipulation; cursor: pointer; }
-.begin { position: absolute; inset: 0; display: grid; place-items: center; }
-.begin button { font: 600 1.05rem var(--body); padding: .6em 1.6em; border-radius: 999px; border: 1px solid var(--ink);
-                background: var(--ground); }
-.begin[hidden] { display: none; }
-.hint { color: var(--muted); font-size: .9rem; text-align: center; margin: 0; min-height: 1.3em; }
-
-.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; width: 100%; }
-.act { border: 0; background: none; padding: .4em .2em; font-weight: 500; color: var(--ink); border-bottom: 1px solid transparent; }
-.act[aria-pressed="true"] { border-bottom-color: var(--ink); }
-.stepper { display: inline-flex; align-items: center; gap: 2px; }
-.stepper button { border: 0; background: none; width: 1.8em; height: 1.8em; font-size: 1.05rem; }
-.stepper span { min-width: 4.4em; text-align: center; font-variant-numeric: tabular-nums; }
-
-/* the controls */
-.panel { border-top: 1px solid var(--rule); padding-top: 4px; }
-@media (min-width: 900px) { .panel { border-top: 0; } }
-.tabs { display: flex; gap: 18px; overflow-x: auto; margin-bottom: 8px; scrollbar-width: none; }
-.tabs button { border: 0; background: none; padding: .5em 0; color: var(--muted); font-weight: 600; white-space: nowrap;
-               border-bottom: 2px solid transparent; }
-.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
-.rows { display: grid; gap: 6px; }
-.row { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: baseline; }
-.row label { font-weight: 500; }
-.row output { font-variant-numeric: tabular-nums; color: var(--muted); }
-.row input[type="range"], .row select { grid-column: 1 / -1; }
-input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; background: none; margin: 0; }
-input[type="range"]::-webkit-slider-runnable-track { height: 3px; background: linear-gradient(to right, var(--ink) var(--f, 50%), var(--rule) var(--f, 50%)); }
-input[type="range"]::-moz-range-track { height: 3px; background: var(--rule); }
-input[type="range"]::-moz-range-progress { height: 3px; background: var(--ink); }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; margin-top: -7.5px; background: var(--ink); border: 0; }
-input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 0; }
-select { width: 100%; padding: .45em .6em; border-radius: 8px; border: 1px solid var(--rule); background: var(--ground); margin: 2px 0 8px; }
-.chips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 4px 0 10px; }
-.chips button { border: 1px solid var(--rule); background: none; border-radius: 8px; padding: .4em 0; }
-.chips button[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
-.chips button.root { box-shadow: inset 0 -2px 0 var(--bell); }
-.switch { grid-column: 1 / -1; display: flex; align-items: center; gap: .5em; margin-top: 6px; }
-.switch input { width: 1.1em; height: 1.1em; accent-color: var(--ink); }
-
-/* the pieces */
-.sheet { position: fixed; inset: 0; z-index: 10; background: rgba(20, 14, 8, .35); display: grid; align-items: end; justify-items: center;
-         padding-top: env(safe-area-inset-top, 0px); }
-.sheet[hidden] { display: none; }
-.sheet > div { background: var(--ground); width: min(100%, 520px); max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0;
-               padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
-@media (min-width: 900px) { .sheet { align-items: center; } .sheet > div { border-radius: 16px; } }
-.sheet header { display: flex; align-items: baseline; margin-bottom: 4px; }
-.sheet h2 { font: 600 1rem var(--body); color: var(--muted); margin: 0; flex: 1; }
-.sheet .close { border: 0; background: none; padding: .3em 0; font-weight: 600; }
-.cards { display: grid; }
-.card { text-align: left; border: 0; border-bottom: 1px solid var(--rule); background: none; padding: 11px 0;
-        display: flex; align-items: baseline; gap: 10px; }
-.card b { font: 600 1.2rem var(--display); flex: 1; }
-.card small { color: var(--muted); font-size: .9rem; }
-.card[aria-current="true"] b::after { content: " \2022"; color: var(--bell); }
-.sheet footer { margin-top: 12px; }
-.sheet footer button { border: 0; background: none; padding: .3em 0; color: var(--muted); }
-.sheet footer button[data-armed] { color: var(--bell); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+body { background: var(--paper); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 12px 40px;
+       font: 15px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+#page { max-width: 980px; margin: 0 auto; }
+h1 { font-weight: 300; font-size: 26px; letter-spacing: .02em; margin: 6px 0 2px; text-transform: uppercase; }
+h1 small { font-size: 15px; }
+#sub { text-transform: uppercase; margin: 0 0 10px; }
+hr { border: 0; border-top: 1px solid var(--ink); margin: 10px 0; }
+a { color: var(--ink); }
+button, select, input { font: inherit; color: var(--ink); }
+button { background: var(--green-1); border: 1px solid var(--ink); padding: 2px 10px; cursor: pointer; }
+button[aria-pressed="true"] { background: var(--river); }
+select { background: #fffbe0; border: 1px solid var(--ink); padding: 1px 2px; }
+input[type="range"] { accent-color: var(--river-2); width: 100%; margin: 0; }
+input[type="checkbox"] { accent-color: var(--river-2); }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0; }
+#wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+#left { flex: 1 1 340px; max-width: 520px; }
+#right { flex: 1 1 340px; }
+canvas { display: block; width: 100%; aspect-ratio: 1 / 1.1; cursor: pointer; touch-action: manipulation; }
+#msg { min-height: 1.4em; margin: 2px 0; }
+fieldset { border: 1px solid var(--ink); margin: 0 0 10px; padding: 4px 10px 8px; }
+legend { text-transform: uppercase; padding: 0 4px; }
+table { width: 100%; border-collapse: collapse; }
+td { padding: 3px 0; vertical-align: middle; }
+td.n { width: 6.5em; }
+td.v { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
+#scale button { width: 2.6em; padding: 2px 0; margin: 1px; background: #fffbe0; }
+#scale button[aria-pressed="true"] { background: var(--green-3); }
+#scale button.root { outline: 2px solid var(--river-2); outline-offset: -3px; }
+#go { font-size: 17px; padding: 4px 18px; background: var(--river); }
+#foot { margin-top: 16px; font-size: 13px; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="top">
-    <button class="piece" id="pieceBtn" aria-haspopup="dialog"><b id="pieceName">Garden</b><span id="keyLine">D Dorian</span></button>
-    <div class="grow"></div>
-    <button class="play" id="play" aria-pressed="false" aria-label="Grow">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path id="playIcon" d="M5 3 L17 10 L5 17 Z"/></svg>
-    </button>
-  </div>
+<div id="page">
+<h1>Eno <small>1</small></h1>
+<p id="sub">A generative ambient garden</p>
+<hr>
 
-  <section class="stage" aria-label="The garden">
-    <div class="ringbox">
-      <canvas id="ring" aria-label="The garden: the scale as a ring of twelve notes, the bell loops around it, the pulse below. Tap a note to add it to the scale or take it out."></canvas>
-      <div class="begin" id="begin"><button id="go">Begin</button></div>
-    </div>
-    <p class="hint" id="hint"></p>
-    <div class="actions">
-      <button class="act" id="freeze" aria-pressed="false" title="Hold the chord, let the reverb ring">Freeze</button>
-      <button class="act" id="next" title="Next chord, on the bar">Next</button>
-      <button class="act" id="colour" title="Pad"><span id="colourName">Rhodes</span></button>
-      <div class="stepper" title="Bell octave"><button id="octDn" aria-label="Bells down">−</button><span id="octVal">Bells 0</span><button id="octUp" aria-label="Bells up">+</button></div>
-    </div>
-  </section>
-
-  <section class="panel" aria-label="Controls">
-    <div class="tabs" role="tablist" id="tabs"></div>
-    <div class="rows" id="rows" role="tabpanel"></div>
-  </section>
+<div class="bar">
+  <label for="piece">Piece</label> <select id="piece"></select>
+  <span id="keyLine"></span>
+</div>
+<div class="bar">
+  <button id="go">Begin</button>
+  <button id="play" hidden>Rest</button>
+  <button id="freeze" aria-pressed="false">Freeze</button>
+  <button id="next">Next chord</button>
+  <label for="colour">Pad</label> <select id="colour"><option value="0">Rhodes</option><option value="1">Voices</option></select>
+  <span>Bells <button id="octDn" aria-label="Bells down">&minus;</button> <span id="octVal">0</span> <button id="octUp" aria-label="Bells up">+</button></span>
 </div>
 
-<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div>
-    <header><h2 id="sheetTitle">Pieces</h2><button class="close" id="sheetClose">Close</button></header>
-    <div class="cards" id="cards"></div>
-    <footer>
-      <button id="reset">Reset this piece</button>
-    </footer>
-    <p class="about">Eno is a generative ambient garden after Brian Eno's <i>Music for Airports</i>: breathing voices, bells on tape loops of
-      unequal length, a gliding bass and a soft Euclidean pulse, through a tape echo and a plate reverb. The same engine runs on the
-      M-VAVE FM-1.</p>
+<div id="wrap">
+  <div id="left">
+    <canvas id="ring" aria-label="The scale as a ring of twelve notes, the bell loops around it, the pulse below. Click a note to add it to the scale or take it out."></canvas>
+    <p id="msg"></p>
   </div>
+  <div id="right"></div>
+</div>
+
+<hr>
+<p id="foot">Click a note on the ring to add it to the scale or take it out. Each piece keeps its settings in this browser.
+  <button id="reset">Reset this piece</button> <label><input type="checkbox" id="awake"> Keep screen on</label><br>
+  After Brian Eno, <i>Ambient 1: Music for Airports</i> (1978). The same engine runs on the M-VAVE FM-1.</p>
 </div>
 
 <script>
@@ -173,20 +86,19 @@ select { width: 100%; padding: .45em .6em; border-radius: 8px; border: 1px solid
 // ------------------------------------------------------------------ the engine's names (eno.h)
 const P = { PAD: 0, BELLS: 1, BASS: 2, PULSE: 3, DENSITY: 4, EVOLVE: 5, DRIFT: 6, HITS: 7, ECHO: 8, ETIME: 9, REVERB: 10, SIZE: 11,
             BRIGHT: 12, SWELL: 13, BTONE: 14, MOTION: 15, TUNE: 16, MIDI: 17, TEMPO: 18, ROOT: 19, MODE: 20, BOCT: 21, PADTONE: 22 };
-const GLOBAL = [P.TUNE, P.MIDI];
 const NLOOP = 4, LOOP_MAX = 29;
 const STORE = "eno-app-1";
-
-
-// the knobs, the FM-1's pages; a few words each, on hover
-const TABS = [
-  { name: "Layers", rows: [[P.PAD], [P.BELLS], [P.BASS], [P.PULSE]] },
-  { name: "Motion", rows: [[P.DENSITY, "Notes per bell loop"], [P.EVOLVE, "How often things change and rest"],
-                           [P.DRIFT, "How long a chord lasts"], [P.HITS, "Pulse hits"]] },
-  { name: "Space", rows: [[P.ECHO, "Tape echo send"], [P.ETIME, "Tape loop length"], [P.REVERB, "Plate send"], [P.SIZE, "Plate decay, echo feedback"]] },
-  { name: "Tone", rows: [[P.BRIGHT, "Pad filter"], [P.SWELL, "Breath length"], [P.BTONE, "Round to metallic"], [P.MOTION, "How far it drifts and swells"]] },
-  { name: "Key", rows: "key" },
+const GROUPS = [
+  ["Layers", [P.PAD, P.BELLS, P.BASS, P.PULSE]],
+  ["Motion", [P.DENSITY, P.EVOLVE, P.DRIFT, P.HITS]],
+  ["Space", [P.ECHO, P.ETIME, P.REVERB, P.SIZE]],
+  ["Tone", [P.BRIGHT, P.SWELL, P.BTONE, P.MOTION]],
 ];
+const TIP = { [P.DENSITY]: "notes per bell loop", [P.EVOLVE]: "how often things change and rest", [P.DRIFT]: "how long a chord lasts",
+              [P.HITS]: "pulse hits", [P.ECHO]: "tape echo send", [P.ETIME]: "tape loop length", [P.REVERB]: "plate send",
+              [P.SIZE]: "plate decay, echo feedback", [P.BRIGHT]: "pad filter", [P.SWELL]: "breath length",
+              [P.BTONE]: "round to metallic", [P.MOTION]: "how far it drifts and swells" };
+const $ = (id) => document.getElementById(id);
 
 // ------------------------------------------------------------------ the page's engine (pure questions)
 let W = null, wasmBytes = null;
@@ -208,7 +120,7 @@ const pname = (p) => cstr(W.app_param_name(p));
 const ptext = (p, v) => cstr(W.app_param_text(p, v));
 const plo = (p) => W.app_param_lo(p), phi = (p) => W.app_param_hi(p);
 const note = (n) => cstr(W.app_note_name(n));
-const MODE_NAMES = () => Array.from({ length: W.app_nmodes() }, (_, m) => ptext(P.MODE, m));
+const pieceName = (i) => cstr(W.app_piece_name(i));
 
 // ------------------------------------------------------------------ what is kept (per piece)
 let S = null;            // { piece, slots: [{par, pool}], tune, gain, awake }
@@ -239,11 +151,10 @@ function sendAll() {
   send({ t: "pool", v: cur().pool });
 }
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-let mediaEl = null;
 async function begin() {
-  const go = document.getElementById("go");
+  const go = $("go");
   go.disabled = true;
-  go.textContent = "Starting…";
+  go.textContent = "Starting...";
   try {
     ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100, latencyHint: "playback" });
     await ac.audioWorklet.addModule("worklet.js");
@@ -252,12 +163,11 @@ async function begin() {
     let routed = false;
     if (isIOS && ac.createMediaStreamDestination) {
       try {
-        const dest = ac.createMediaStreamDestination();
+        const dest = ac.createMediaStreamDestination(), el = new Audio();
         node.connect(dest);
-        mediaEl = new Audio();
-        mediaEl.srcObject = dest.stream;
-        mediaEl.setAttribute("playsinline", "");
-        await mediaEl.play();
+        el.srcObject = dest.stream;
+        el.setAttribute("playsinline", "");
+        await el.play();
         routed = true;
       } catch { routed = false; }
     }
@@ -277,30 +187,27 @@ async function begin() {
     await readyP;
     ready = true;
     await ac.resume();
-    document.getElementById("begin").hidden = true;
+    go.hidden = true;
+    $("play").hidden = false;
     setPlaying(true);
     mediaSession();
     if (S.awake) wake(true);
-    if (Math.abs(ac.sampleRate - 44100) > 1)
-      hint(`Audio at ${ac.sampleRate} Hz: pitch will be off`);
+    if (Math.abs(ac.sampleRate - 44100) > 1) msg(`Audio at ${ac.sampleRate} Hz: the pitch will be off.`);
   } catch (err) {
     go.disabled = false;
     go.textContent = "Begin";
-    hint("No sound: " + (err && err.message || err));
+    msg("No sound: " + (err && err.message || err));
   }
 }
 function setPlaying(on) {
   playing = on;
   send({ t: "play", v: on ? 1 : 0 });
-  const b = document.getElementById("play");
-  b.setAttribute("aria-pressed", on ? "true" : "false");
-  b.setAttribute("aria-label", on ? "Rest" : "Grow");
-  document.getElementById("playIcon").setAttribute("d", on ? "M5 3 H8.5 V17 H5 Z M11.5 3 H15 V17 H11.5 Z" : "M5 3 L17 10 L5 17 Z");
+  $("play").textContent = on ? "Rest" : "Play";
   if (navigator.mediaSession) navigator.mediaSession.playbackState = on ? "playing" : "paused";
 }
 function mediaSession() {
   if (!navigator.mediaSession || !window.MediaMetadata) return;
-  navigator.mediaSession.metadata = new MediaMetadata({ title: W ? cstr(W.app_piece_name(S.piece)) : "Eno", artist: "Eno", album: "A generative garden" });
+  navigator.mediaSession.metadata = new MediaMetadata({ title: pieceName(S.piece), artist: "Eno" });
   try {
     navigator.mediaSession.setActionHandler("play", () => setPlaying(true));
     navigator.mediaSession.setActionHandler("pause", () => setPlaying(false));
@@ -333,19 +240,18 @@ function modeName() {
   const m = par(P.MODE);
   return cur().pool === W.app_mode_pool(m) ? ptext(P.MODE, m) : "Custom";
 }
-let hintT = 0;
-function hint(s) {
-  const h = document.getElementById("hint");
-  h.textContent = s;
-  clearTimeout(hintT);
-  hintT = setTimeout(() => { h.textContent = ""; }, 2500);
+let msgT = 0;
+function msg(s) {
+  $("msg").textContent = s;
+  clearTimeout(msgT);
+  msgT = setTimeout(() => { $("msg").textContent = ""; }, 3000);
 }
 function toggleNote(pc) {
   const rel = (pc - par(P.ROOT) + 12) % 12, p = cur().pool ^ (1 << rel);
-  if (rel === 0) return hint(`${note(pc)} is the root`);
+  if (rel === 0) return msg(`${note(pc)} is the root.`);
   let n = 0;
   for (let i = 0; i < 12; i++) n += (p >> i) & 1;
-  if (n < 3) return hint("Three notes at least");
+  if (n < 3) return msg("Three notes at least.");
   setPool(p);
   refresh();
 }
@@ -362,7 +268,6 @@ function choosePiece(i) {
 }
 function resetPiece() {
   const r = recipe(S.piece);
-  r.par[P.TUNE] = S.tune;
   S.slots[S.piece] = r;
   sendAll();
   send({ t: "regrow" });
@@ -370,213 +275,157 @@ function resetPiece() {
   refresh();
 }
 
-// ------------------------------------------------------------------ the controls
-let tab = 0;
-function buildTabs() {
-  const t = document.getElementById("tabs");
-  t.innerHTML = "";
-  TABS.forEach((x, i) => {
-    const b = document.createElement("button");
-    b.setAttribute("role", "tab");
-    b.id = "tab-" + x.name.toLowerCase();
-    b.textContent = x.name;
-    b.setAttribute("aria-selected", i === tab ? "true" : "false");
-    b.onclick = () => { tab = i; buildTabs(); buildRows(); };
-    t.appendChild(b);
-  });
-}
-function slider(p, tip) {
-  const row = document.createElement("div");
-  row.className = "row";
-  const id = "p" + p;
-  row.innerHTML = `<label for="${id}">${pname(p)}</label><output id="${id}-v"></output>` +
-                  `<input type="range" id="${id}" min="${plo(p)}" max="${phi(p)}" step="1">`;
-  const input = row.querySelector("input"), out = row.querySelector("output");
-  if (tip) row.title = tip;
-  const show = () => {
-    const v = par(p);
-    input.value = v;
-    out.textContent = ptext(p, v);
-    input.style.setProperty("--f", `${100 * (v - plo(p)) / (phi(p) - plo(p))}%`);
+// ------------------------------------------------------------------ the controls: plain tables in fieldsets
+function rangeRow(p) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td class="n"><label for="p${p}">${pname(p)}</label></td><td><input type="range" id="p${p}" min="${plo(p)}" max="${phi(p)}" step="1"></td><td class="v" id="p${p}-v"></td>`;
+  if (TIP[p]) tr.title = TIP[p];
+  const input = tr.querySelector("input"), out = tr.querySelector(".v");
+  input.value = par(p);
+  out.textContent = ptext(p, par(p));
+  input.oninput = () => {
+    setPar(p, +input.value);
+    out.textContent = ptext(p, par(p));
+    if (p === P.TEMPO) $("keyLine").textContent = keyLine();
   };
-  input.oninput = () => { setPar(p, +input.value); show(); };
-  show();
-  return row;
+  return tr;
 }
-function buildRows() {
-  const rows = document.getElementById("rows");
-  rows.innerHTML = "";
-  rows.setAttribute("aria-labelledby", "tab-" + TABS[tab].name.toLowerCase());
-  if (TABS[tab].rows !== "key") {
-    for (const [p, tip] of TABS[tab].rows) rows.appendChild(slider(p, tip));
-    return;
+function build() {
+  const right = $("right");
+  right.innerHTML = "";
+  for (const [name, ps] of GROUPS) {
+    const fs = document.createElement("fieldset"), t = document.createElement("table");
+    fs.innerHTML = `<legend>${name}</legend>`;
+    ps.forEach((p) => t.appendChild(rangeRow(p)));
+    fs.appendChild(t);
+    right.appendChild(fs);
   }
-  // Key: the root, the mode, the scale's notes, tempo, tune, volume, the screen
+  // the key: root, mode, the scale's notes, tempo, tune, volume
+  const fs = document.createElement("fieldset"), t = document.createElement("table");
+  fs.innerHTML = `<legend>Key</legend>`;
   const sel = (label, id, opts, value, on) => {
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `<label for="${id}">${label}</label><output></output><select id="${id}"></select>`;
-    const s = row.querySelector("select");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="n"><label for="${id}">${label}</label></td><td colspan="2"><select id="${id}"></select></td>`;
+    const s = tr.querySelector("select");
     opts.forEach((o, i) => { const e = document.createElement("option"); e.value = i; e.textContent = o; s.appendChild(e); });
     s.value = value;
     s.onchange = () => on(+s.value);
-    return row;
+    t.appendChild(tr);
   };
-  rows.appendChild(sel("Root", "root", Array.from({ length: 12 }, (_, i) => note(i)), par(P.ROOT), (v) => { setPar(P.ROOT, v); refresh(); }));
-  const mrow = sel("Mode", "mode", MODE_NAMES(), par(P.MODE), (m) => { setPar(P.MODE, m); setPool(W.app_mode_pool(m)); refresh(); });
-  mrow.querySelector("output").textContent = modeName() === "Custom" ? "Custom" : "";
-  rows.appendChild(mrow);
-  const crow = document.createElement("div");
-  crow.className = "row";
-  crow.innerHTML = `<label>Scale</label><output></output><div class="chips" role="group" aria-label="The scale's notes"></div>`;
-  const chips = crow.querySelector(".chips"), ap = poolAbs();
+  sel("Root", "root", Array.from({ length: 12 }, (_, i) => note(i)), par(P.ROOT), (v) => { setPar(P.ROOT, v); refresh(); });
+  const modes = Array.from({ length: W.app_nmodes() }, (_, m) => ptext(P.MODE, m));
+  sel("Mode", "mode", modeName() === "Custom" ? modes.map((m, i) => (i === par(P.MODE) ? m + " (changed)" : m)) : modes, par(P.MODE),
+      (m) => { setPar(P.MODE, m); setPool(W.app_mode_pool(m)); refresh(); });
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td class="n">Scale</td><td colspan="2" id="scale"></td>`;
+  const ap = poolAbs();
   for (let i = 0; i < 12; i++) {
     const b = document.createElement("button");
     b.textContent = note(i);
     b.setAttribute("aria-pressed", (ap >> i) & 1 ? "true" : "false");
     if (i === par(P.ROOT)) b.className = "root";
     b.onclick = () => toggleNote(i);
-    chips.appendChild(b);
+    tr.lastChild.appendChild(b);
   }
-  rows.appendChild(crow);
-  rows.appendChild(slider(P.TEMPO));
-  rows.appendChild(slider(P.TUNE));
-  const vrow = document.createElement("div");
-  vrow.className = "row";
-  vrow.innerHTML = `<label for="vol">Volume</label><output></output><input type="range" id="vol" min="0" max="4096" step="16">`;
-  const vol = vrow.querySelector("input");
-  const showVol = () => { vol.value = S.gain; vrow.querySelector("output").textContent = Math.round(100 * S.gain / 4096) + "%";
-                          vol.style.setProperty("--f", `${100 * S.gain / 4096}%`); };
-  vol.oninput = () => { S.gain = +vol.value; send({ t: "gain", v: S.gain }); showVol(); save(); };
-  showVol();
-  rows.appendChild(vrow);
-  const wrow = document.createElement("label");
-  wrow.className = "switch";
-  wrow.innerHTML = `<input type="checkbox" id="awake"> Keep screen on`;
-  const aw = wrow.querySelector("input");
-  aw.checked = !!S.awake;
-  aw.onchange = () => { S.awake = aw.checked; wake(S.awake); save(); };
-  rows.appendChild(wrow);
+  t.appendChild(tr);
+  t.appendChild(rangeRow(P.TEMPO));
+  t.appendChild(rangeRow(P.TUNE));
+  const vr = document.createElement("tr");
+  vr.innerHTML = `<td class="n"><label for="vol">Volume</label></td><td><input type="range" id="vol" min="0" max="4096" step="16"></td><td class="v"></td>`;
+  const vol = vr.querySelector("input"), vout = vr.querySelector(".v");
+  vol.value = S.gain;
+  vout.textContent = Math.round(100 * S.gain / 4096) + "%";
+  vol.oninput = () => { S.gain = +vol.value; send({ t: "gain", v: S.gain }); vout.textContent = Math.round(100 * S.gain / 4096) + "%"; save(); };
+  t.appendChild(vr);
+  fs.appendChild(t);
+  right.appendChild(fs);
 }
+const keyLine = () => `${note(par(P.ROOT))} ${modeName()}, ${par(P.TEMPO)} bpm`;
 function refresh() {
-  document.getElementById("pieceName").textContent = cstr(W.app_piece_name(S.piece));
-  document.getElementById("keyLine").textContent = `${note(par(P.ROOT))} ${modeName()} \u00b7 ${par(P.TEMPO)}`;
-  document.getElementById("colourName").textContent = ptext(P.PADTONE, par(P.PADTONE));
-  document.getElementById("octVal").textContent = "Bells " + ptext(P.BOCT, par(P.BOCT));
-  buildRows();
-  draw();
-}
-
-// ------------------------------------------------------------------ the pieces
-function openSheet() {
-  const cards = document.getElementById("cards");
-  cards.innerHTML = "";
-  for (let i = 0; i < W.app_npieces(); i++) {
-    const b = document.createElement("button");
-    b.className = "card";
-    if (i === S.piece) b.setAttribute("aria-current", "true");
-    const s = S.slots[i], mode = s.pool === W.app_mode_pool(s.par[P.MODE]) ? ptext(P.MODE, s.par[P.MODE]) : "Custom";
-    b.innerHTML = `<b>${cstr(W.app_piece_name(i))}</b><small>${note(s.par[P.ROOT])} ${mode}</small>`;
-    b.onclick = () => { choosePiece(i); closeSheet(); };
-    cards.appendChild(b);
-  }
-  const r = document.getElementById("reset");
-  delete r.dataset.armed;
-  r.textContent = `Reset ${cstr(W.app_piece_name(S.piece))}`;
-  document.getElementById("sheet").hidden = false;
-  document.getElementById("sheetClose").focus();
-}
-function closeSheet() { document.getElementById("sheet").hidden = true; document.getElementById("pieceBtn").focus(); }
-
-// ------------------------------------------------------------------ the ring
-let state = null, drumPat = [0, 0, 0], dirty = true;
-const cv = document.getElementById("ring"), g = cv.getContext("2d");
-let colours = {}, geom = null;
-function readColours() {
-  const cs = getComputedStyle(document.documentElement);
-  for (const k of ["ground", "card", "sunk", "rule", "muted", "ink", "pad", "pad-t", "bell", "bell-t", "bass", "pulse", "pulse-t", "frost", "frost-t"])
-    colours[k] = cs.getPropertyValue("--" + k).trim();
-  colours.body = cs.getPropertyValue("--body").trim() || "sans-serif";
+  const ps = $("piece");
+  if (!ps.options.length)
+    for (let i = 0; i < W.app_npieces(); i++) { const o = document.createElement("option"); o.value = i; o.textContent = pieceName(i); ps.appendChild(o); }
+  ps.value = S.piece;
+  $("keyLine").textContent = keyLine();
+  $("colour").value = par(P.PADTONE);
+  $("octVal").textContent = ptext(P.BOCT, par(P.BOCT));
+  $("reset").textContent = `Reset ${pieceName(S.piece)}`;
+  delete $("reset").dataset.armed;
+  build();
   dirty = true;
 }
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); draw(); });
-new MutationObserver(() => { readColours(); draw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// ------------------------------------------------------------------ the ring, in the cover's colours
+let state = null, drumPat = [0, 0, 0], dirty = true;
+const cv = $("ring"), g = cv.getContext("2d");
+const C = { paper: "#f6eeb5", g1: "#d0dc92", g2: "#c2ce7f", g3: "#9cb16f", river: "#85c3c1", river2: "#549995", ink: "#1d1b02" };
+const FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+let geom = null;
 function size() {
   const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
   cv.width = Math.round(r.width * d);
   cv.height = Math.round(r.height * d);
-  const w = cv.width, R = w * 0.47;
-  geom = { d, w, h: cv.height, cx: w / 2, cy: w / 2, R };
-  draw();
+  geom = { d, w: cv.width, h: cv.height, cx: cv.width / 2, cy: cv.width / 2, R: cv.width * 0.47 };
+  dirty = true;
 }
 const at = (r, i, n) => { const a = (i / n) * Math.PI * 2; return [geom.cx + Math.sin(a) * r, geom.cy - Math.cos(a) * r]; };
 function disc(x, y, r, c) { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
-function mixc(a, b, t) {   // two #rrggbb colours, t 0..1
-  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16), m = (s) => Math.round(((pa >> s) & 255) * (1 - t) + ((pb >> s) & 255) * t);
-  return `rgb(${m(16)},${m(8)},${m(0)})`;
-}
+function ring(x, y, r, c, lw) { g.strokeStyle = c; g.lineWidth = lw; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); }
 function draw() {
   if (!geom || !W) return;
-  const { cx, cy, R, w, h, d } = geom, st = state, C = colours;
+  const { cx, cy, R, w, h, d } = geom, st = state;
   g.clearRect(0, 0, w, h);
   const on = st ? st[0] > 0 : false, fr = st ? st[1] > 0 : false;
-  // the drift: a thin arc round the outside to the next chord (frost when frozen)
-  g.lineWidth = 2.5 * d;
-  g.strokeStyle = fr ? C["frost-t"] : C.rule;
-  g.beginPath(); g.arc(cx, cy, R * 0.985, 0, Math.PI * 2); g.stroke();
+  // the way to the next chord: a river round the outside
+  ring(cx, cy, R * 0.985, C.g1, 2 * d);
   if (st && !fr && st[12] > 0) {
-    g.strokeStyle = C.pad;
+    g.strokeStyle = C.river2; g.lineWidth = 2 * d;
     g.beginPath(); g.arc(cx, cy, R * 0.985, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * st[12]); g.stroke();
   }
-  if (fr) { g.strokeStyle = C.frost; g.lineWidth = 2 * d; g.beginPath(); g.arc(cx, cy, R * 0.94, 0, Math.PI * 2); g.stroke(); }
-  // the four bell loops: their steps, their notes, their playheads
+  if (fr) ring(cx, cy, R * 0.94, C.river, 3 * d);
+  // the four bell loops: steps, notes, playheads
   const LR = [0.56, 0.665, 0.77, 0.875];
   for (let l = 0; l < NLOOP; l++) {
     const len = W.app_loop_len(l), r = R * LR[l], pos = st ? st[17 + l] : -1, glow = st ? st[21 + l] : 0;
     for (let s = 0; s < len; s++) {
       const [x, y] = at(r, s, len), has = st ? st[32 + l * LOOP_MAX + s] >= 0 : false;
-      if (has) disc(x, y, R * 0.022, s === pos && on ? mixc(C["bell-t"], C.bell, 0.5 + glow / 2) : mixc(C["bell-t"], C.bell, 0.35));
-      else disc(x, y, R * 0.007, C.rule);
+      if (has) disc(x, y, R * 0.02, s === pos && on && glow > 0.2 ? C.river2 : C.river);
+      else disc(x, y, R * 0.006, C.g3);
     }
-    if (on && pos >= 0) { const [x, y] = at(r, pos, len); disc(x, y, R * (0.012 + 0.018 * glow), mixc(C.muted, C.bell, glow)); }
+    if (on && pos >= 0) { const [x, y] = at(r, pos, len); ring(x, y, R * 0.03, C.ink, 1 * d); }
   }
-  // the scale: twelve notes, C at the top; the chord bright, the root ringed
+  // the scale: twelve notes, C at the top; in the scale green, the chord deep green, the root circled
   const ap = poolAbs(), root = par(P.ROOT);
   let chord = 0;
   if (st) for (let i = 0; i < 4; i++) chord |= 1 << (st[4 + i] % 12);
-  const padLvl = st ? Math.min(1, st[13]) : 0;
   g.textAlign = "center"; g.textBaseline = "middle";
+  g.font = `${Math.round(R * 0.05)}px ${FONT}`;
   for (let i = 0; i < 12; i++) {
     const [x, y] = at(R * 0.38, i, 12), inS = (ap >> i) & 1, ch = (chord >> i) & 1, rr = R * 0.062;
-    if (i === root) { g.strokeStyle = C.bell; g.lineWidth = 2.5 * d; g.beginPath(); g.arc(x, y, rr + 4 * d, 0, Math.PI * 2); g.stroke(); }
-    if (ch && inS) disc(x, y, rr, mixc(C["pad-t"], C.pad, 0.45 + 0.55 * padLvl));
-    else if (inS) disc(x, y, rr, C["pad-t"]);
-    else { g.strokeStyle = C.rule; g.lineWidth = 1.5 * d; g.beginPath(); g.arc(x, y, rr * 0.8, 0, Math.PI * 2); g.stroke(); }
-    g.fillStyle = ch && inS ? C.card : inS ? C.ink : C.muted;
-    g.font = `600 ${Math.round(R * 0.05)}px ${C.body}`;
+    if (inS) disc(x, y, rr, ch ? C.g3 : C.g2);
+    if (i === root) ring(x, y, rr + 3 * d, C.ink, 1 * d);
+    else if (!inS) ring(x, y, rr * 0.8, C.g3, 1 * d);
+    g.fillStyle = C.ink;
     g.fillText(note(i), x, y + 0.5 * d);
   }
   // the chord's name in the middle
   if (st) {
-    const name = cstr(W.app_chord_name(st[2], st[4], st[5], st[6], st[7]));
-    g.fillStyle = fr ? C.frost : C.ink;
-    g.font = `700 ${Math.round(R * 0.15)}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
-    g.fillText(name, cx, cy - R * 0.02);
-
+    g.fillStyle = C.ink;
+    g.font = `300 ${Math.round(R * 0.13)}px ${FONT}`;
+    g.fillText(cstr(W.app_chord_name(st[2], st[4], st[5], st[6], st[7])), cx, cy);
   }
   // below: the three pulse rings
-  const by = w + (h - w) * 0.5 - (h - w) * 0.05, pr = Math.min(R * 0.11, (h - w) * 0.38);
-  for (let dd = 0; dd < 3; dd++) {
-    const n = W.app_drum_n(dd), x0 = w / 2 + (dd - 1) * pr * 2.8, pos = st ? st[25 + dd] : -1, glow = st ? st[28 + dd] : 0;
+  const by = w + (h - w) * 0.45, pr = Math.min(R * 0.1, (h - w) * 0.36);
+  for (let k = 0; k < 3; k++) {
+    const n = W.app_drum_n(k), x0 = w / 2 + (k - 1) * pr * 2.8, pos = st ? st[25 + k] : -1;
     for (let s = 0; s < n; s++) {
-      const a = (s / n) * Math.PI * 2, x = x0 + Math.sin(a) * pr, y = by - Math.cos(a) * pr, hit = (drumPat[dd] >> s) & 1;
-      if (hit) disc(x, y, R * (on && s === pos ? 0.024 : 0.017), on && s === pos ? mixc(C["pulse-t"], C.pulse, 0.5 + glow / 2) : mixc(C["pulse-t"], C.pulse, 0.35));
-      else disc(x, y, R * (on && s === pos ? 0.012 : 0.006), on && s === pos ? C.muted : C.rule);
+      const a = (s / n) * Math.PI * 2, x = x0 + Math.sin(a) * pr, y = by - Math.cos(a) * pr, hit = (drumPat[k] >> s) & 1, now = on && s === pos;
+      if (hit) disc(x, y, R * (now ? 0.022 : 0.015), now ? C.ink : C.g3);
+      else disc(x, y, R * (now ? 0.01 : 0.005), now ? C.ink : C.g3);
     }
-    if (glow > 0.02) disc(x0, by, R * 0.03 * glow + 1, mixc(C.ground, C.pulse, glow));
   }
 }
-function tick() {               /* drawn when something changed: the engine's state comes ~30 times a second */
+function tick() {
   if (dirty) { dirty = false; draw(); }
   requestAnimationFrame(tick);
 }
@@ -593,36 +442,33 @@ cv.addEventListener("click", (e) => {
 
 // ------------------------------------------------------------------ start
 (async function main() {
-  readColours();
   await loadWasm();
   S = loadStore();
   if (typeof S.gain !== "number") S.gain = 2400;
-  buildTabs();
   refresh();
   size();
   new ResizeObserver(size).observe(cv);
   requestAnimationFrame(tick);
-  document.getElementById("go").onclick = begin;
-  document.getElementById("play").onclick = () => { if (!ready) return begin(); setPlaying(!playing); };
-  document.getElementById("freeze").onclick = (e) => {
+  $("go").onclick = begin;
+  $("play").onclick = () => setPlaying(!playing);
+  $("freeze").onclick = (e) => {
     if (!ready) return;
     frozen = !frozen;
     send({ t: "freeze", v: frozen ? 1 : 0 });
     e.currentTarget.setAttribute("aria-pressed", frozen ? "true" : "false");
   };
-  document.getElementById("next").onclick = () => send({ t: "next" });
-  document.getElementById("colour").onclick = () => { setPar(P.PADTONE, par(P.PADTONE) ? 0 : 1); refresh(); };
-  document.getElementById("octDn").onclick = () => { setPar(P.BOCT, par(P.BOCT) - 1); refresh(); };
-  document.getElementById("octUp").onclick = () => { setPar(P.BOCT, par(P.BOCT) + 1); refresh(); };
-  document.getElementById("pieceBtn").onclick = openSheet;
-  document.getElementById("sheetClose").onclick = closeSheet;
-  document.getElementById("sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") closeSheet(); });
-  addEventListener("keydown", (e) => { if (e.key === "Escape" && !document.getElementById("sheet").hidden) closeSheet(); });
-  document.getElementById("reset").onclick = (e) => {
+  $("next").onclick = () => send({ t: "next" });
+  $("piece").onchange = (e) => choosePiece(+e.target.value);
+  $("colour").onchange = (e) => { setPar(P.PADTONE, +e.target.value); refresh(); };
+  $("octDn").onclick = () => { setPar(P.BOCT, par(P.BOCT) - 1); refresh(); };
+  $("octUp").onclick = () => { setPar(P.BOCT, par(P.BOCT) + 1); refresh(); };
+  $("awake").checked = !!S.awake;
+  $("awake").onchange = (e) => { S.awake = e.target.checked; wake(S.awake); save(); };
+  $("reset").onclick = (e) => {
     const b = e.currentTarget;
-    if (b.dataset.armed) { resetPiece(); closeSheet(); return; }
+    if (b.dataset.armed) { resetPiece(); return; }
     b.dataset.armed = "1";
-    b.textContent = "Tap again to reset";
+    b.textContent = "Click again to reset";
   };
 })();
 </script>
