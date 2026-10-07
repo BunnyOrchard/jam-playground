@@ -5,6 +5,7 @@
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
  *   PLAY           the garden grows / rests        ARP   the next chord, now
  *   REC            FREEZE: the chord holds, the reverb rings on    OCT- / OCT+   the bells' octave
+ *   ENV            the pad's colour: Rhodes / Voices (lit: Voices), kept with the piece
  *   SELECT tempo   ALGORITHM mode (loads a pool)   PRESETS the piece (Root is on the Setup page)
  *   HOME SEQ FX SEL GLO   the pages: LAYERS, MOTION, SPACE, TONE, SETUP (EDIT steps through them)
  *   KNOB 1-4       the page's four values
@@ -258,6 +259,10 @@ static void button(int b)
     case B_REC:
         say("FREEZE", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
+        break;
+    case B_ENV:
+        knob_set(P_PADTONE, !proj.par[P_PADTONE]);
+        say("PAD", proj.par[P_PADTONE] ? "VOICES" : "RHODES");
         break;
     case B_ARP:
         en_next();
@@ -686,6 +691,8 @@ static void leds(void)
         b |= 1u << B_PLAY;
     if (en_frozen)
         b |= 1u << B_REC;
+    if (proj.par[P_PADTONE])
+        b |= 1u << B_ENV;
     if (proj.leds)
         for (i = 0; i < NKEYS; i++)
             if (ap >> ((5u + i) % 12u) & 1u)

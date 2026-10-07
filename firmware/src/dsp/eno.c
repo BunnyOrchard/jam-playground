@@ -351,6 +351,7 @@ typedef struct {
     float vib, pan;
     float hf;                                   /* a handoff's fade: 1 normal */
     uint8_t midi_note, hand;                    /* hand: 1 fading out of the old key, 2 into the new */
+    uint8_t voices;                             /* this breath's colour: 0 Rhodes, 1 Voices */
 } pad_t;
 static pad_t pad[EN_NPAD];
 static float pad_gate, pad_gain, pad_vol, bright, swell;
@@ -389,6 +390,7 @@ static void pad_breathe(pad_t *v, int i)        /* a new breath: its length, its
     if (en_playing && v->midi_note)
         midi(0x80, v->midi_note, 0);
     v->note = v->target;
+    v->voices = (uint8_t)(par[P_PADTONE] != 0);
     v->midi_note = (uint8_t)v->target;
     if (en_playing)
         midi(0x90, v->midi_note, (uint32_t)(50.0f + 40.0f * v->peak));
@@ -403,7 +405,7 @@ static void pad_handoff(void)
     int i;
     for (i = 0; i < EN_NPAD; i++) {
         pad_t *v = &pad[i];
-        if (v->amp > 0.002f && (float)v->midi_note != v->target)
+        if (v->amp > 0.002f && ((float)v->midi_note != v->target || v->voices != (par[P_PADTONE] != 0)))
             v->hand = 1;
         else if (!v->hand)
             v->note = v->target;
@@ -1055,6 +1057,7 @@ static void apply(int p, int v)
     case P_SWELL: swell = (float)v; break;
     case P_EVOLVE: evolve = (float)v * 0.01f; break;
     case P_BTONE: btone = (float)v * 0.01f; break;
+    case P_PADTONE: pad_handoff(); break;        /* the voices cross over as they did for a new key */
     case P_MOTION: motion = (float)v * 0.01f; break;
     case P_BOCT:                                 /* let it be heard now: a bell from the first loop */
         if (en_playing && nsteps) {
@@ -1319,7 +1322,6 @@ static void render_pad(uint32_t n)
     int i;
     float lvl = 0.0f;
     uint32_t j0;
-    const int rhodes = par[P_PADTONE] == 0;
     for (j0 = 0; j0 < n; j0++)
         padl[j0] = padr[j0] = 0.0f;
     const float g = pad_vol * 0.5f;
@@ -1346,7 +1348,7 @@ static void render_pad(uint32_t n)
                 /* the Rhodes blooms: more overtones as the breath swells (index in turns) */
                 idx = (0.04f + 0.1f * bright * 0.01f + 0.1f * br) * (1.0f + 0.4f * arcm);
             }
-            if (rhodes) {                        /* FM, the modulator at the carrier's pitch: a Rhodes */
+            if (!v->voices) {                    /* FM, the modulator at the carrier's pitch: a Rhodes */
                 float m = sine(p0) * idx;
                 x = (sine(p0 + m + 1.0f) + 0.12f * sine(2.0f * p0)) * 1.2f;   /* one carrier: no beating */
                 p0 += v->inc[0];

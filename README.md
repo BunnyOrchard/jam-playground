@@ -15,7 +15,7 @@ Private for now. Install it with `python3 tools/fm1_install.py build/eno.fwsc` (
 - **Pad**: four breathing voices. Each swells in, hangs and fades on its own cycle (unequal lengths,
   about 12 to 20 s, as the tape loops of "2/1"), taking its note of the chord as it starts, so the
   chord forms and dissolves rather than sitting there. Two colours, chosen by the piece: a filtered
-  Rhodes that blooms brighter as it swells, or sung voices (**Bright** moves the vowel from "oo" to
+  Rhodes that blooms brighter as it swells, or sung voices (**ENV** switches) (**Bright** moves the vowel from "oo" to
   "eh"). Both go through a dark low-pass, then into the echoes and the plate, which are most of what you
   hear. **Swell** sets how long the breaths
   are. Every so often (**Drift**, 20 s to 5 min) the chord moves
@@ -65,6 +65,7 @@ put the piece back to its recipe. Tune and MIDI out are the same for all.
 | ARP | The next chord (on the next bar). |
 | REC | **Freeze**: the chord holds and the reverb rings on forever, while the bells and pulse go on dry above it. Press again to thaw. |
 | OCT− / OCT+ | The bells' octave. |
+| ENV | The pad's colour: Rhodes or Voices (lit: Voices). Each piece keeps its own. |
 | SELECT | Tempo (30–120). |
 | ALGORITHM | Mode: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor. Editing the scale with the keys makes it Custom. |
 | PRESETS | The piece. |
