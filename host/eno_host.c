@@ -348,6 +348,8 @@ static int expect(const char *what, const char *val)
         got = en_frozen;
     else if (!strcmp(what, "view"))
         got = ui.view;
+    else if (!strcmp(what, "piece"))
+        got = proj.piece;
     else if (!strcmp(what, "pool"))               /* the scale, relative to the root (hex ok) */
         got = proj.pool;
     else if (!strcmp(what, "dirty"))

@@ -85,8 +85,8 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays.</li>
       <li><b>PLAY</b> grows / rests. <b>ARP</b> the next chord. <b>REC</b> freeze.</li>
       <li><b>OCT−</b> / <b>OCT+</b> move the bells an octave.</li>
-      <li>Pages: <b>HOME</b> garden, <b>SEQ</b> motion, <b>FX</b> space, <b>SEL</b> tone, <b>GLO</b> setup. <b>EDIT</b> steps through them.</li>
-      <li><b>SELECT</b> tempo, <b>ALGORITHM</b> mode, <b>PRESETS</b> root, <b>KNOB 1–4</b> the values on the screen. <b>SAVE</b> saves.</li>
+      <li>Pages: <b>HOME</b> layers, <b>SEQ</b> motion, <b>FX</b> space, <b>SEL</b> tone, <b>GLO</b> setup (the root is here). <b>EDIT</b> steps through them.</li>
+      <li><b>PRESETS</b> the piece (each remembers how you left it). <b>SELECT</b> tempo, <b>ALGORITHM</b> mode, <b>KNOB 1–4</b> the values on the screen. <b>SAVE</b> saves; hold it to reset the piece.</li>
     </ul>
   </div>
   <div>
@@ -210,9 +210,9 @@ function hit(c, cls) {
   c.hit = d;
 }
 // what each control does, on hover (the Buttons list below says the same)
-const TIP = { FX: "Space page", SEL: "Tone page", EDIT: "Next page", GLO: "Setup page", HOME: "Garden page", SAVE: "Save",
+const TIP = { FX: "Space page", SEL: "Tone page", EDIT: "Next page", GLO: "Setup page", HOME: "Layers page", SAVE: "Save",
   ARP: "The next chord", SEQ: "Motion page", PLAY: "Grow / rest", REC: "Freeze: the chord holds, the reverb rings on",
-  "OCT-": "Bells an octave down", "OCT+": "Bells an octave up", SELECT: "Tempo", ALGORITHM: "Mode", PRESETS: "Root",
+  "OCT-": "Bells an octave down", "OCT+": "Bells an octave up", SELECT: "Tempo", ALGORITHM: "Mode", PRESETS: "Piece",
   MASTER: "Volume" };
 for (const [n, c] of [...Object.entries(buttons), ...Object.entries(knobs)]) if (TIP[n]) c.g.setAttribute("aria-description", TIP[n]);
 for (const k of Object.values(knobs)) hit(k, "knob");

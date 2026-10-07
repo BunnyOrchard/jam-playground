@@ -10,14 +10,23 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x314F4E45u           /* "ENO1" */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                   /* 2: pieces (format 1, one set of settings, loads as Garden's) */
+#define NPIECES 8
+
+typedef struct {
+    int16_t par[P_NPARAMS];
+    uint16_t pool;
+} slot_t;
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* eno.h P_* */
-    uint16_t pool;                       /* the scale, relative to the root (bit 0 = the root) */
+    int16_t par[P_NPARAMS];              /* the piece playing, as it is now (eno.h P_*) */
+    uint16_t pool;                       /* its scale, relative to the root (bit 0 = the root) */
     uint8_t leds;                        /* key lights on */
-    uint8_t rsv[17];                     /* room to grow: an older, shorter project loads (zeros here) */
+    uint8_t piece;                       /* which piece */
+    uint8_t rsv0[2];
+    slot_t slot[NPIECES];                /* every piece as it was left (Tune and MIDI out are global) */
+    uint8_t rsv[16];                     /* room to grow */
 } project_t;
 
 extern project_t proj;
@@ -26,6 +35,9 @@ void project_defaults(void);
 int project_load(void);                  /* 0 = loaded; else defaults are in place */
 int project_save(void);                  /* 0 = saved and verified */
 void project_apply(void);                /* every value to the engine (boot, load) */
+const char *piece_name(int i);
+void project_piece(int i);               /* the playing piece kept, piece i taken up as it was left */
+void project_piece_reset(void);          /* the playing piece back to its recipe */
 
 void ui_init(void);
 void ui_frame(void);

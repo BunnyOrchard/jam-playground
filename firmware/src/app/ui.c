@@ -5,14 +5,15 @@
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
  *   PLAY           the garden grows / rests        ARP   the next chord, now
  *   REC            FREEZE: the chord holds, the reverb rings on    OCT- / OCT+   the bells' octave
- *   SELECT tempo   ALGORITHM mode (loads a pool)   PRESETS root
- *   HOME SEQ FX SEL GLO   the pages: GARDEN, MOTION, SPACE, TONE, SETUP (EDIT steps through them)
+ *   SELECT tempo   ALGORITHM mode (loads a pool)   PRESETS the piece (Root is on the Setup page)
+ *   HOME SEQ FX SEL GLO   the pages: LAYERS, MOTION, SPACE, TONE, SETUP (EDIT steps through them)
  *   KNOB 1-4       the page's four values
- *   SAVE           saves (it also saves by itself a few seconds after a change, while resting) */
+ *   SAVE           saves (it also saves by itself a few seconds after a change, while resting);
+ *                  held 1.5 s: the piece back to its recipe */
 #include "../dsp/fastmath.h"
 
 enum { V_GARDEN, V_MOTION, V_SPACE, V_TONE, V_SETUP, NVIEWS };
-static const char *const VIEW_NAME[NVIEWS] = {"Garden", "Motion", "Space", "Tone", "Setup"};
+static const char *const VIEW_NAME[NVIEWS] = {"Layers", "Motion", "Space", "Tone", "Setup"};
 /* the four knobs of each page: a parameter, or one of these */
 enum { K_LEDS = 100, K_CPU, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
@@ -20,7 +21,7 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_DENSITY, P_EVOLVE, P_DRIFT, P_HITS},
     {P_ECHO, P_ETIME, P_REVERB, P_SIZE},
     {P_BRIGHT, P_SWELL, P_BTONE, P_MOTION},
-    {P_TUNE, P_MIDI, K_LEDS, K_CPU},
+    {P_ROOT, P_TUNE, P_MIDI, K_LEDS},
 };
 
 /* the screen's colours: light and friendly, as FoMni's. Cream paper, warm brown ink, one soft colour
@@ -52,6 +53,7 @@ static struct {
     int8_t touched;                    /* the knob turned last (0..3), shown bright for a moment */
     uint32_t touch_until;
     uint32_t frame;
+    uint32_t save_t;                   /* when SAVE went down (held: the piece's recipe) */
     uint32_t sig[3];                   /* what each band shows: redrawn when it changes */
 } ui;
 
@@ -217,12 +219,13 @@ static void set_mode(int m)
     mark_dirty();
 }
 
-static void set_root(int r)
+static void set_piece(int i)                    /* the piece playing kept as it is; piece i as it was left */
 {
-    r = (r % 12 + 12) % 12;
-    proj.par[P_ROOT] = (int16_t)r;
-    en_set(P_ROOT, r);
-    say("ROOT", EN_NOTE_NAME[r]);
+    project_piece(i);
+    project_apply();
+    en_seed(plat_ms());
+    en_regrow();
+    say("PIECE", piece_name(proj.piece));
     mark_dirty();
 }
 
@@ -306,6 +309,8 @@ static void input(void)
             continue;
         if (btn & m) {
             ui.btn_used &= ~m;
+            if (i == B_SAVE)
+                ui.save_t = plat_ms();
             if (i == B_PLAY)                   /* transport on the press */
                 button((int)i);
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
@@ -325,7 +330,15 @@ static void input(void)
     if ((e = plat_enc(EN_ALGO)) != 0)
         set_mode(proj.par[P_MODE] + (e > 0 ? 1 : -1));
     if ((e = plat_enc(EN_PRESET)) != 0)
-        set_root(proj.par[P_ROOT] + (e > 0 ? 1 : -1));
+        set_piece(proj.piece + (e > 0 ? 1 : -1));
+    if ((btn >> B_SAVE & 1u) && !(ui.btn_used >> B_SAVE & 1u) && plat_ms() - ui.save_t > 1500u) {
+        ui.btn_used |= 1u << B_SAVE;           /* held: the piece back to its recipe (not saved) */
+        project_piece_reset();
+        project_apply();
+        en_regrow();
+        say("RESET", piece_name(proj.piece));
+        mark_dirty();
+    }
     for (i = 0; i < 4; i++)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
@@ -413,7 +426,7 @@ static void draw_header(void)
     int msg = plat_ms() < ui.msg_until;
     uint32_t h = hash(hash(hash(2166136261u, ui.view), en_playing | en_frozen << 1 | ui.dirty << 4 |
                                                        (uint32_t)msg << 5 | (uint32_t)en_ext << 6),
-                      (uint32_t)proj.par[P_TEMPO]);
+                      (uint32_t)proj.par[P_TEMPO] | (ui.view == V_SETUP ? plat_cpu_pct() << 8 : 0u));
     if (msg)
         h = hash(hash(h, (uint32_t)ui.msg[0][0] << 8 | ui.msg[0][1]), ui.msg_until);
     if (en_playing)
@@ -434,6 +447,13 @@ static void draw_header(void)
             t[3] = 0;
         } else {
             itoa_u((uint32_t)proj.par[P_TEMPO], t);
+        }
+        if (ui.view == V_SETUP) {                 /* Setup: the audio load too */
+            char c[12] = "CPU ";
+            itoa_u(plat_cpu_pct(), c + 4);
+            x -= text_w(&FONT_XS, c);
+            cv_text(x, 8, &FONT_XS, c, K_DIM);
+            x -= 10;
         }
         x -= text_w(&FONT_S, t);
         cv_text(x, 6, &FONT_S, t, en_playing ? K_TEXT : K_DIM);
@@ -568,7 +588,7 @@ static void draw_pulse(void)                     /* right: the three Euclidean r
 
 static void draw_main(void)
 {
-    uint32_t h = hash(2166136261u, pool_abs() | (uint32_t)proj.par[P_ROOT] << 12 | (uint32_t)en_frozen << 16 |
+    uint32_t h = hash(2166136261u, pool_abs() | (uint32_t)proj.par[P_ROOT] << 12 | (uint32_t)en_frozen << 16 | proj.piece << 24 |
                                         (uint32_t)en_playing << 17 | (uint32_t)proj.par[P_MODE] << 20), i;
     if (ui.frame % 3u)                           /* the garden moves slowly: 20 frames a second is plenty */
         return;
@@ -590,13 +610,13 @@ static void draw_main(void)
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
     {   /* the key and mode, top left; the way to the next chord, top right */
-        int32_t x = cv_text(10, 2, &FONT_B, EN_NOTE_NAME[proj.par[P_ROOT]], K_BELL);
-        cv_text(x + 5, 2, &FONT_B, mode_name(), K_TEXT);
+        int32_t x = cv_text(10, 2, &FONT_B, piece_name(proj.piece), K_TEXT);
+        x = cv_text(x + 7, 3, &FONT_XS, EN_NOTE_NAME[proj.par[P_ROOT]], K_BELL);
+        cv_text(x + 3, 3, &FONT_XS, mode_name(), K_DIM);
         if (en_frozen) {
             cv_text(232 - text_w(&FONT_XS, "held"), 4, &FONT_XS, "held", K_FROST);
         } else {
-            int32_t w = 40, f = (int32_t)(en_drift * (float)w + 0.5f);
-            cv_text(232 - w - 6 - text_w(&FONT_XS, "next"), 4, &FONT_XS, "next", K_DIM);
+            int32_t w = 30, f = (int32_t)(en_drift * (float)w + 0.5f);
             cv_round(232 - w, 8, w, 6, 3, K_LINE);
             if (f > 0)
                 cv_round(232 - w, 8, f < 6 ? 6 : f, 6, 3, K_PAD);

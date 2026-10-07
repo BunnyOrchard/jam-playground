@@ -14,9 +14,11 @@ expect par20 2
 expect pool 0x5AB
 turn ALGO -1
 expect pool 0x6AD
-# the root up a tone: E Dorian
-turn PRESET 2
+# the root up a tone (Setup page, KNOB 1): E Dorian
+tap GLO
+spin K1 2
 expect par19 4
+tap HOME
 expect pool 0x6AD
 wait 300
 shot e_dorian.png

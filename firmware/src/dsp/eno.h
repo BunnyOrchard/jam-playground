@@ -2,15 +2,20 @@
 /* The instrument: a generative ambient garden. Four layers draw on one pool of notes (a scale:
  * the root plus up to eleven more pitch classes) and one chord that drifts slowly through it:
  *
- *   PAD     four voices, three detuned saws each through a slowly moving low-pass; they glide to the
- *           next chord with smooth voice leading. The chord moves every DRIFT (20 s .. 5 min).
+ *   PAD     four breathing voices: each swells in, hangs and fades on its own cycle (unequal lengths,
+ *           as the sung loops of Music for Airports' "2/1"), taking its note of the chord as it starts,
+ *           so the chord forms and dissolves. A vowel-like tone (saws through two formants). The chord
+ *           moves every DRIFT (20 s .. 5 min), each voice the shortest way.
  *   BELLS   soft two-operator FM bells played by four tape loops of unequal length (13, 17, 23, 29
- *           quarter notes), each holding a short phrase that shifts against the others. EVOLVE
- *           changes a note now and then; DENSITY sets how many notes a loop holds.
+ *           quarter notes), each holding a short phrase that shifts against the others, each its own
+ *           shade of bell. EVOLVE changes a note now and then; DENSITY sets how many notes a loop holds.
  *   BASS    a sine and its sub-octave on the chord's root (now and then its fifth), gliding.
  *   PULSE   a soft thump, a shaker and a wood, each on its own Euclidean pattern (16, 12 and 7
- *           sixteenths): polyrhythms. HITS sets how many.
+ *           sixteenths): polyrhythms. HITS sets how many; the patterns turn and change around it.
  *
+ * Over it all, the ARC: a slow tide, minutes long, between sparse (fewer bells, a darker vowel, the
+ * pulse gone, more reverb) and full; MOTION sets how far it goes. And rests: with EVOLVE, the pulse
+ * sits out a few bars, the bass a chord, a bell loop a pass.
  * Then a ping-pong echo (half rate, 16-bit: about 1.4 s) and Dattorro's plate (from FoMni).
  * FREEZE holds the chord and lets the plate ring on forever.
  *
@@ -60,6 +65,7 @@ void en_next(void);                            /* the next chord, now */
 void en_freeze(int on);
 void en_seed(uint32_t s);                      /* stir some entropy into the generators */
 void en_panic(void);                           /* everything quiet, now */
+void en_regrow(void);                          /* a new piece: fresh loops, the home chord */
 /* MIDI clock in (as FoMni): ticks drive the 1/16 grid (6 a step) while they keep coming */
 enum { EN_CLK_TICK, EN_CLK_START, EN_CLK_CONTINUE, EN_CLK_STOP };
 void en_clock(int msg);
@@ -84,6 +90,7 @@ extern volatile uint8_t en_drum_pos[EN_NDRUM];
 extern volatile uint32_t en_drum_pat[EN_NDRUM];/* bit i: a hit on step i */
 extern volatile float en_drum_glow[EN_NDRUM];
 extern volatile uint32_t en_bars;              /* sixteenths played since start (for tests) */
+extern volatile float en_arc;                  /* the arc, -1 sparse .. +1 full (times Motion) */
 
 /* the pure parts, for the tests and the screen */
 uint32_t en_euclid(int k, int n, int rot);     /* Bjorklund's pattern, as a bitmask (bit 0 = step 0) */
