@@ -14,7 +14,7 @@ wait 4000
 tap OCT+
 expect par21 1
 spin K1 -20
-expect par0 50
+expect par0 40
 tap PLAY
 wait 50
 expect playing 0
@@ -27,6 +27,6 @@ expect dirty 0
 expect store_writes >0
 reboot
 wait 300
-expect par0 50
+expect par0 40
 expect par21 1
 expect playing 1

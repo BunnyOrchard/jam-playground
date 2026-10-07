@@ -215,6 +215,41 @@ int main(void)
         CHECK(!bad, "all at min: NaN");
     }
 
+    /* Bell tone and Bell oct are heard: brighter (zero crossings) and higher with them, bells alone */
+    {
+        float zc[3];
+        int k;
+        static const int TONE[3] = {0, 100, 0}, OCT[3] = {0, 0, 2};
+        for (k = 0; k < 3; k++) {
+            int b2, j;
+            long z = 0;
+            float prev = 0.0f;
+            en_init();
+            en_set(P_PAD, 0);
+            en_set(P_BASS, 0);
+            en_set(P_PULSE, 0);
+            en_set(P_ECHO, 0);
+            en_set(P_REVERB, 0);
+            en_set(P_DENSITY, 100);
+            en_set(P_BTONE, TONE[k]);
+            en_set(P_BOCT, OCT[k]);
+            en_play(1);
+            for (b2 = 0; b2 < 20 * 44100 / 256; b2++) {
+                en_render(buf, 256, 2048);
+                for (j = 0; j < 256; j++) {
+                    float x = (float)buf[2 * j];
+                    z += (x > 0.0f) != (prev > 0.0f);
+                    prev = x;
+                }
+            }
+            zc[k] = (float)z;
+        }
+        CHECK(zc[1] > 2.5f * zc[0], "Bell tone 100 not brighter: %.0f vs %.0f", (double)zc[1], (double)zc[0]);
+        CHECK(zc[2] > 2.5f * zc[0], "Bell oct +2 not higher: %.0f vs %.0f", (double)zc[2], (double)zc[0]);
+        en_init();
+        en_play(1);
+    }
+
     /* stop: the tails die away */
     for (i = 0; i < P_NPARAMS; i++)
         en_set(i, en_param_info(i)->def);

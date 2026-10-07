@@ -22,7 +22,7 @@ const uint8_t EN_LOOP_LEN[EN_NLOOP] = {13, 17, 23, 29};
 const uint8_t EN_DRUM_N[EN_NDRUM] = {16, 12, 7};
 
 static const en_param_t PARAMS[P_NPARAMS] = {
-    {"Pad", 0, 100, 70},      {"Bells", 0, 100, 65},    {"Bass", 0, 100, 45},     {"Pulse", 0, 100, 30},
+    {"Pad", 0, 100, 60},      {"Bells", 0, 100, 65},    {"Bass", 0, 100, 45},     {"Pulse", 0, 100, 40},
     {"Density", 0, 100, 40},  {"Evolve", 0, 100, 35},   {"Drift", 0, 100, 45},    {"Hits", 0, 100, 35},
     {"Echo", 0, 100, 45},     {"Echo time", 0, 5, 3},   {"Reverb", 0, 100, 65},   {"Size", 0, 100, 80},
     {"Bright", 0, 100, 40},   {"Swell", 0, 100, 60},    {"Bell tone", 0, 100, 50}, {"Motion", 0, 100, 50},
@@ -560,9 +560,9 @@ static void loop_regrow(int l)
 static void loop_pass(int l)                    /* the end of a pass: grow, prune, evolve */
 {
     int c = loop_count(l), t = loop_target(), s;
-    if (c < t && frand() < 0.5f)
+    for (; c < t; c++)                          /* Density: to its count by the end of a pass */
         loop_add(l);
-    else if (c > t && frand() < 0.5f && (s = loop_pick(l)) >= 0)
+    for (; c > t && (s = loop_pick(l)) >= 0; c--)
         loop_note[l][s] = -1;
     if (frand() < (float)par[P_EVOLVE] * 0.007f && (s = loop_pick(l)) >= 0) {
         if (frand() < 0.5f) {
@@ -605,8 +605,9 @@ static void bell_ring(int l, int slot)
     t60 = 4.2f - (float)(n - 60) * 0.06f;       /* the low bells ring longer */
     t60 = fm_clampf(t60, 1.6f, 5.0f);
     v->adec = fm_expf(-6.9f / (t60 * EN_SR));
-    v->idx = (0.25f + 2.2f * btone) * (0.6f + 0.4f * vel) * (1.0f / FM_TWO_PI);   /* in turns */
-    v->idec = fm_expf(-6.9f / (0.9f * EN_SR));
+    /* Bell tone: 0 a round, nearly pure tone; 100 a long metallic clang (index in radians, as turns) */
+    v->idx = (0.15f + 6.5f * btone * btone) * (0.6f + 0.4f * vel) * (1.0f / FM_TWO_PI);
+    v->idec = fm_expf(-6.9f / ((0.35f + 2.6f * btone) * EN_SR));
     v->att = 0.0f;
     p = (LOOP_PAN[l] + 1.0f) * (FM_PI / 4.0f);
     v->gl = fm_cosf(p);
@@ -876,6 +877,17 @@ static void apply(int p, int v)
         break;
     case P_BTONE: btone = (float)v * 0.01f; break;
     case P_MOTION: motion = (float)v * 0.01f; break;
+    case P_BOCT:                                 /* let it be heard now: a bell from the first loop */
+        if (en_playing && nsteps) {
+            int l, k;
+            for (l = 0; l < EN_NLOOP; l++)
+                for (k = 0; k < EN_LOOP_LEN[l]; k++)
+                    if (loop_note[l][k] >= 0) {
+                        bell_ring(l, k);
+                        return;
+                    }
+        }
+        break;
     case P_TUNE: tunefac = fm_exp2f((float)v * (1.0f / 1200.0f)); break;
     case P_TEMPO:
         tempo_set();
@@ -1153,7 +1165,7 @@ static void render_bass(uint32_t n)
 static void render_bells(uint32_t n)
 {
     int i;
-    const float g = bell_vol * 0.22f;
+    const float g = bell_vol * 0.62f;
     for (i = 0; i < NBELL; i++) {
         bell_t *v = &bell[i];
         float cph = v->cph, mph = v->mph, amp = v->amp, idx = v->idx, att = v->att;
@@ -1201,7 +1213,7 @@ static void render_bells(uint32_t n)
 static void render_drums(uint32_t n)
 {
     uint32_t j;
-    const float g = pulse_vol * 0.5f;
+    const float g = pulse_vol * 1.1f;
     drum_t *v;
     v = &drum[0];                                /* thump: a sine falling to its note */
     if (v->on) {
