@@ -190,6 +190,25 @@ int main(void)
         en_freeze(0);
     }
 
+    /* a new key while playing (a piece, the root, the scale): within 3 s no voice still sings the old
+     * chord (a voice only takes its note at its next breath otherwise, up to a minute later) */
+    {
+        int k, stale = 0;
+        en_freeze(0);
+        en_set(P_ROOT, 6);                       /* a tritone away: nothing in common to hide behind */
+        en_pool(EN_MODE_POOL[MODE_LYDIAN]);
+        en_regrow();
+        run(3.0f);
+        for (k = 0; k < EN_NPAD; k++)
+            if (en_pad_amp[k] > 0.02f && en_pad_note[k] != en_chord[k]) {
+                printf("  voice %d sings %d, the chord has %d (amp %.2f)\n", k, en_pad_note[k], en_chord[k],
+                       (double)en_pad_amp[k]);
+                stale++;
+            }
+        CHECK(!stale, "%d voices still in the old key after 3 s", stale);
+        en_set(P_ROOT, 2);
+    }
+
     /* a pool change: the chord's tones are in it */
     {
         uint32_t pent = EN_MODE_POOL[MODE_PENT_MIN];

@@ -91,6 +91,8 @@ extern volatile uint32_t en_drum_pat[EN_NDRUM];/* bit i: a hit on step i */
 extern volatile float en_drum_glow[EN_NDRUM];
 extern volatile uint32_t en_bars;              /* sixteenths played since start (for tests) */
 extern volatile float en_arc;                  /* the arc, -1 sparse .. +1 full (times Motion) */
+extern volatile uint8_t en_pad_note[EN_NPAD];  /* the note each voice sings now (MIDI) */
+extern volatile float en_pad_amp[EN_NPAD];     /* and how loud */
 
 /* the pure parts, for the tests and the screen */
 uint32_t en_euclid(int k, int n, int rot);     /* Bjorklund's pattern, as a bitmask (bit 0 = step 0) */

@@ -270,6 +270,8 @@ volatile uint32_t en_drum_pat[EN_NDRUM];
 volatile float en_drum_glow[EN_NDRUM];
 volatile uint32_t en_bars;
 volatile float en_arc;
+volatile uint8_t en_pad_note[EN_NPAD];
+volatile float en_pad_amp[EN_NPAD];
 
 static int16_t par[P_NPARAMS];
 static uint32_t pool = 0xAADu;                  /* Ionian until told */
@@ -345,7 +347,8 @@ typedef struct {
     float ic[4];                                /* the two filters' states */
     float c1[4], c2[4];                         /* their coefficients: a1, a2, a3, k */
     float vib, pan;
-    uint8_t midi_note;
+    float hf;                                   /* a handoff's fade: 1 normal */
+    uint8_t midi_note, hand;                    /* hand: 1 fading out of the old key, 2 into the new */
 } pad_t;
 static pad_t pad[EN_NPAD];
 static float pad_gate, pad_gain, pad_vol, bright, swell;
@@ -389,10 +392,41 @@ static void pad_breathe(pad_t *v, int i)        /* a new breath: its length, its
         midi(0x90, v->midi_note, (uint32_t)(50.0f + 40.0f * v->peak));
 }
 
+/* a new key (piece, root, scale): the voices still singing the old one fade out in about a second and
+ * breathe again on the new chord; a voice at rest just takes its new note. Chord drift doesn't do
+ * this: there the old notes are meant to hang over */
+#define HAND_STEP (32.0f / (1.0f * EN_SR))
+static void pad_handoff(void)
+{
+    int i;
+    for (i = 0; i < EN_NPAD; i++) {
+        pad_t *v = &pad[i];
+        if (v->amp > 0.002f && (float)v->midi_note != v->target)
+            v->hand = 1;
+        else if (!v->hand)
+            v->note = v->target;
+    }
+}
+
 static void pad_coefs(pad_t *v, int i)          /* every 32 samples: the breath, pitch, the vowel */
 {
     float f, vw, f1, f2;
     int a;
+    if (v->hand == 1) {                         /* out of the old key */
+        v->hf -= HAND_STEP;
+        if (v->hf <= 0.0f) {
+            v->hf = 0.0f;
+            v->hand = 2;
+            v->t = 0.15f;                       /* a breath already rising, on the new chord */
+            pad_breathe(v, i);
+        }
+    } else if (v->hand == 2) {                  /* into the new */
+        v->hf += HAND_STEP * 0.6f;
+        if (v->hf >= 1.0f) {
+            v->hf = 1.0f;
+            v->hand = 0;
+        }
+    }
     v->t += v->rate;
     if (v->t >= 1.0f) {
         v->t -= 1.0f;
@@ -992,6 +1026,7 @@ static void apply(int p, int v)
     case P_ROOT:
         if (nsteps) {
             pad_retarget();
+            pad_handoff();
             bass_to(chord_pcs[0]);
         }
         break;
@@ -1010,6 +1045,7 @@ static void pool_set(uint32_t p)
     if (deg >= nsteps)
         deg = 0;
     pad_retarget();
+    pad_handoff();
     bass_to(chord_pcs[0]);
 }
 
@@ -1022,6 +1058,7 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
     }
     deg = 0;
     pad_retarget();
+    pad_handoff();
     bass_to(chord_pcs[0]);
     bass.rest = 0;
     pulse_rest = 0;
@@ -1074,6 +1111,8 @@ void en_init(void)
         pad[i].ph[1] = 0.37f;
         pad[i].vib = 0.3f * (float)i;
         pad[i].midi_note = 0;
+        pad[i].hf = 1.0f;
+        pad[i].hand = 0;
     }
     arcm = 0.0f;
     pad_gain = 0.0f;
@@ -1217,7 +1256,7 @@ static void render_pad(uint32_t n)
             float x, v1, v2, v3, b1, l1, b2;
             if (!(j & 31u)) {
                 pad_coefs(v, i);
-                tgt = breath(v->t) * v->peak * pad_gain;
+                tgt = breath(v->t) * v->peak * pad_gain * v->hf;
             }
             x = blep_saw(p0, v->inc[0]) + blep_saw(p1, v->inc[1]);
             p0 += v->inc[0];
@@ -1253,6 +1292,8 @@ static void render_pad(uint32_t n)
         v->amp = amp;
         v->ph[0] = p0;
         v->ph[1] = p1;
+        en_pad_note[i] = (uint8_t)v->note;
+        en_pad_amp[i] = amp;
         lvl = fm_maxf(lvl, amp);
     }
     en_pad_level = lvl;
