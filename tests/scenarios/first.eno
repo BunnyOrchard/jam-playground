@@ -1,0 +1,28 @@
+# a first look and listen: it grows from power-on; the pages; a minute of the garden
+wav first.wav
+wait 200
+expect playing 1
+expect pool 0x6AD
+wait 6000
+shot garden.png
+expect pad_level >40
+wait 30000
+shot garden30.png
+expect sixteenths >40
+expect loopnotes >0
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+tap SEQ
+wait 100
+shot motion.png
+tap FX
+wait 100
+shot space.png
+tap SEL
+wait 100
+shot tone.png
+tap GLO
+wait 100
+shot setup.png
+tap HOME

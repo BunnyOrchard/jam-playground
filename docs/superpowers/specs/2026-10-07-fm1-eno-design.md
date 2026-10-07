@@ -19,7 +19,7 @@ Private repo (`charlesvestal/fm1-eno`, never pushed public). Built from the fm1-
 
 ## Interaction: the garden
 
-The machine runs continuously once PLAY starts it. The player shapes it, not performs it.
+It starts growing by itself at power-on and runs continuously; PLAY rests it and starts it again. The player shapes it, not performs it.
 
 **The keyboard is the scale.** All 27 keys are a piano (pitch class = key mod 12). Pressing a key toggles
 its pitch class in the **pool**, the set of notes every generator draws from. A pool of fewer than 3
@@ -64,8 +64,8 @@ wandering), through a 2-pole state-variable low-pass whose cutoff is Brightness 
 voice. Chord changes glide (~2–4 s portamento) and swell. Equal-power pan wander per voice.
 
 **BELLS** — 6-voice 2-operator FM (carrier + modulator, exponential decays, ratio and index from Bell
-tone; inspired by the user's Hank). Four **tape loops**, lengths 13, 17, 23, 29 steps (one step = a 1/8
-note at the tempo). Each loop holds a phrase: per step, either silence or a chord / pool note (degree
+tone; inspired by the user's Hank). Four **tape loops**, lengths 13, 17, 23, 29 steps (one step = a quarter
+note at the tempo, so the loops last about 10 to 24 s at 72 BPM). Each loop holds a phrase: per step, either silence or a chord / pool note (degree
 index, so it follows chord changes). New phrases fill each slot with probability Density. At the end of
 each pass, with probability Evolve, one slot is regenerated. Loops pan to fixed places, L to R.
 
@@ -81,7 +81,7 @@ others: it's an accent, not a beat.
 **Modulation** — a handful of slow random (smoothed sample-and-hold) modulators, periods 7–40 s,
 scaled by Motion: pad cutoff, detune, pan, bell brightness, echo time wobble (tiny, for tape feel).
 
-**Echo** — stereo ping-pong delay, 16-bit buffer, up to ~1 s, with low-pass + high-pass in the
+**Echo** — stereo ping-pong delay at half rate (22.05 kHz), 16-bit buffer, up to ~1.4 s, with low-pass + high-pass in the
 feedback (feedback fixed ~0.55, softened by Size), sized so the pool keeps ≥ 8 KiB spare.
 
 **Reverb** — FoMni's Dattorro plate (reused verbatim), fed by the reverb sends and by the echo's
@@ -111,7 +111,8 @@ three small Euclidean dots; the bottom the four knob values. Freeze shows a fros
 
 ## Persistence
 
-Project: pool, root, mode, all parameters, bell octave. Saved like FoMni's project (SAVE + autosave).
+Project: pool, root, mode, all parameters, bell octave. Saved like FoMni's project: SAVE, and an autosave that only runs while resting (a flash write
+interrupts the audio for a moment).
 Loop phrases are not saved: they regrow.
 
 ## Safety (kept from Felucca)
