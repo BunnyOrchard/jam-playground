@@ -11,7 +11,7 @@
 #endif
 #define PROJ_MAGIC 0x314F4E45u           /* "ENO1" */
 #define PROJ_FORMAT 3u                   /* 3: the pad's colour per piece; older formats give the recipes */
-#define NPIECES 8
+#define NPIECES EN_NPIECES
 
 typedef struct {
     int16_t par[P_NPARAMS];

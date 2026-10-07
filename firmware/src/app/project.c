@@ -2,38 +2,15 @@
 /* ENO project: one flash object (OBJ_PROJ). A project of another format, or none, gives the
  * defaults. Part of the unity build, after app.h.
  *
- * The pieces: eight recipes for the whole garden (layers, timbre, tempo, key and mode, how busy and
- * how far it moves). Each keeps its own settings as you leave it; Tune and MIDI out are global. */
+ * The pieces (their recipes are the engine's, en_piece): each keeps its own settings as you leave it;
+ * Tune and MIDI out are global. */
 project_t proj;
 
-typedef struct {
-    const char *name;
-    int8_t v[P_NPARAMS];                 /* P_* order; Tune and MIDI out are not taken from here */
-} piece_t;
-
-/*                     Pad Bel Bas Pul  Den Evo Dri Hit  Ech ET Rev Siz  Bri Swe Ton Mot  Tun MI Tem Rt Md Oc  PadTone (0 Rhodes, 1 Voices) */
-static const piece_t PIECES[NPIECES] = {
-    {"Garden",       {60, 65, 45, 40,  40, 35, 45, 35,  45, 3, 65, 80,  40, 60, 50, 50,  0, 1,  72, 2, 1, 0, 0}},
-    {"Departures",   {35, 75,  0,  0,  35, 30, 65,  0,  30, 3, 70, 85,  20, 55,  5, 40,  0, 1,  60, 1, 0, -1, 0}},
-    {"Voices",       {85,  0, 25,  0,  30, 30, 75,  0,  20, 5, 80, 90,  67, 70, 30, 55,  0, 1,  56, 5, 5, 0, 1}},
-    {"Afternoon",    {50, 65, 35, 25,  55, 45, 40, 30,  50, 2, 60, 75,  60, 50, 60, 55,  0, 1,  84, 7, 3, 0, 0}},
-    {"Night Bus",    {45, 55, 55, 60,  45, 50, 35, 55,  55, 1, 55, 70,  35, 40, 75, 70,  0, 1,  96, 9, 5, 0, 0}},
-    {"Shoreline",    {40, 60, 30,  0,  30, 40, 60,  0,  85, 4, 55, 95,  30, 80,  0, 85,  0, 1,  64, 4, 6, 0, 0}},
-    {"Glass",        {35, 80, 30, 20,  60, 55, 45, 25,  45, 2, 65, 80,  55, 45, 90, 50,  0, 1,  76, 3, 7, 1, 0}},
-    {"Tides",        {55, 60, 40, 35,  45, 75, 30, 40,  50, 3, 65, 85,  60, 60, 55, 95,  0, 1,  70, 10, 4, 0, 1}},
-};
-
-const char *piece_name(int i) { return PIECES[(unsigned)i < NPIECES ? i : 0].name; }
+const char *piece_name(int i) { return en_piece_name(i); }
 
 static int global_par(int p) { return p == P_TUNE || p == P_MIDI; }
 
-static void recipe(int i, slot_t *s)
-{
-    int p;
-    for (p = 0; p < P_NPARAMS; p++)
-        s->par[p] = PIECES[i].v[p];
-    s->pool = EN_MODE_POOL[PIECES[i].v[P_MODE]];
-}
+static void recipe(int i, slot_t *s) { en_piece(i, s->par, &s->pool); }
 
 static void take(const slot_t *s)                /* a piece's settings into play, the globals kept */
 {

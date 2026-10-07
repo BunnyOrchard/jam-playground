@@ -106,3 +106,8 @@ int en_chord_tones(uint32_t pool, int root, int deg, int *pcs);
 /* voice leading: new pad notes for the tones, each voice moving as little as possible, all in lo..hi */
 void en_voice_lead(const int *from, const int *pcs, int ntones, int *to, int lo, int hi);
 const char *en_chord_name(const int *pcs, int n, char *buf);   /* "Em7", "Dsus4", "C" ... */
+
+/* the pieces: recipes for every parameter (Tune and MIDI out included, but they are the player's) */
+#define EN_NPIECES 8
+const char *en_piece_name(int i);
+void en_piece(int i, int16_t *par, uint16_t *pool);

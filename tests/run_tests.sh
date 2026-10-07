@@ -44,6 +44,7 @@ fi
 run host-build sh host/build_host.sh
 if command -v emcc >/dev/null 2>&1; then
     run emu sh -c "sh web/emu/build.sh >/dev/null && node tests/host/emu_test.mjs build/emu/eno.wasm"
+    run app sh -c "sh web/app/build.sh >/dev/null && node tests/host/app_test.mjs build/app/eno.wasm"
 fi
 for s in tests/scenarios/*.eno; do
     n=$(basename "$s" .eno)

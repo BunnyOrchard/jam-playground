@@ -100,6 +100,17 @@ In over USB and the TRS jack, out over USB.
 - **Out** (on by default): the pad's chord on channel 1, the bells on 2, the bass on 3, the pulse on
   10, and clock with start / stop when Eno runs on its own tempo.
 
+## The web app
+
+The same engine also runs as a web app for phone and desktop (`web/app/`): the garden ring as the
+instrument (tap a note to change the scale), the eight pieces as cards, the knobs as labelled sliders,
+each piece remembered in the browser.
+
+```
+web/app/build.sh              # build/app: a static folder (index.html, worklet.js, eno.wasm), servable as is
+python3 web/app/make_artifact.py   # build/app-artifact: the same as one page, for a private claude.ai Artifact
+```
+
 ## Building and testing
 
 The toolchain is the same as X0X's (see [BUILDING.md](BUILDING.md)):
