@@ -128,7 +128,7 @@ int main(void)
         en_param_text(P_DRIFT, 100, t);
         CHECK(!strcmp(t, "5:00"), "drift 100: %s", t);
         en_param_text(P_ETIME, 3, t);
-        CHECK(!strcmp(t, "1/4."), "etime: %s", t);
+        CHECK(!strcmp(t, "1 bar"), "etime: %s", t);
         en_param_text(P_BOCT, 1, t);
         CHECK(!strcmp(t, "+1"), "boct: %s", t);
     }

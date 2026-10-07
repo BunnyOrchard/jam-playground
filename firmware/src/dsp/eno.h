@@ -17,7 +17,9 @@
  * Over it all, the ARC: a slow tide, minutes long, between sparse (fewer bells, a darker vowel, the
  * pulse gone, more reverb) and full; MOTION sets how far it goes. And rests: with EVOLVE, the pulse
  * sits out a few bars, the bass a chord, a bell loop a pass.
- * Then a ping-pong echo (half rate, 16-bit: about 1.4 s) and Dattorro's plate (from FoMni).
+ * Then, after Discreet Music's chain, an Echoplex (160 ms, fed back) and a tape loop (to ~5.6 s, two
+ * heads, each repeat darker), and Dattorro's plate (from FoMni), fed generously: the space is most of
+ * what is heard.
  * FREEZE holds the chord and lets the plate ring on forever.
  *
  * Threads: en_render() runs in the audio interrupt. Everything else posts commands, which the render

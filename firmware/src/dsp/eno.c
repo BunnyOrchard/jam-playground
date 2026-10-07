@@ -31,8 +31,8 @@ static const en_param_t PARAMS[P_NPARAMS] = {
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
-static const char *const ETIME_NAME[6] = {"1/8", "1/8.", "1/4", "1/4.", "1/2", "1/2."};
-static const float ETIME_BEATS[6] = {0.5f, 0.75f, 1.0f, 1.5f, 2.0f, 3.0f};
+static const char *const ETIME_NAME[6] = {"1/4.", "1/2", "1/2.", "1 bar", "2 bars", "4 bars"};
+static const float ETIME_BEATS[6] = {1.5f, 2.0f, 3.0f, 4.0f, 8.0f, 16.0f};
 
 static char *itoa_s(int v, char *b)
 {
@@ -437,7 +437,7 @@ static void pad_coefs(pad_t *v, int i)          /* every 32 samples: the breath,
     v->vib += (4.6f + 0.4f * (float)i) * 32.0f / EN_SR;
     if (v->vib >= 1.0f)
         v->vib -= 1.0f;
-    f = mtof(v->note + 0.06f * sine(v->vib) * breath(v->t) + 0.08f * motion * mod[i].v);
+    f = mtof(v->note + 0.08f * motion * mod[i].v);                          /* a slow drift, as tape */
     v->inc[0] = f * 0.99856f * (1.0f / EN_SR);  /* -2.5 and +2.5 cents */
     v->inc[1] = f * 1.00144f * (1.0f / EN_SR);
     vw = fm_clampf((float)bright * 0.01f + 0.25f * arcm + 0.2f * motion * mod[(i + 2) % NMOD].v, 0.0f, 1.0f) * 2.999f;
@@ -926,24 +926,33 @@ static void plate_init(void)
     lfo_c = 1.0f;
 }
 
-/* ---------------------------------------------- echo: ping-pong, half rate --- */
-#define ECHO_N 31000                             /* 1.4 s at 22.05 kHz, a side, 16-bit */
-static int16_t echo_l[ECHO_N] EN_POOL, echo_r[ECHO_N] EN_POOL;
-static int echo_w;
-static float echo_acc, echo_lp, echo_hp, echo_prev_l, echo_prev_r, echo_cur_l, echo_cur_r;
+/* ------------------------------------------------- echo: tape and Echoplex --- */
+/* After Discreet Music's chain: an Echoplex (a short, smearing echo, ~160 ms, fed back) and a tape loop
+ * (long: up to ~5.6 s, synced to the tempo), each repeat a little darker and thinner, with a little
+ * wow. The tape runs at a quarter rate (11 kHz, 16-bit, mono): it loses its highs anyway. Two heads:
+ * the left plays the loop's length, the right three quarters of it. */
+#define TAPE_N 62000                             /* 5.6 s at 11.025 kHz */
+#define TAPE_SR 11025.0f
+static int16_t tape[TAPE_N] EN_POOL;
+static int tape_w, tape_ph;
+static float tape_acc, tape_lp, tape_hp, tape_pl, tape_pr, tape_cl, tape_cr;
+#define PLEX_N 7100                              /* 160 ms at 44.1 kHz */
+static int16_t plex[PLEX_N];
+static int plex_w;
+static float plex_lp;
 
-static inline float echo_read(const int16_t *b, float d)   /* d half-rate samples ago */
+static inline float tape_read(float d)           /* d quarter-rate samples ago */
 {
     int k = (int)d, i0, i1;
     float f = d - (float)k, a, c;
-    i0 = echo_w - k;
+    i0 = tape_w - k;
     i1 = i0 - 1;
     if (i0 < 0)
-        i0 += ECHO_N;
+        i0 += TAPE_N;
     if (i1 < 0)
-        i1 += ECHO_N;
-    a = (float)b[i0];
-    c = (float)b[i1];
+        i1 += TAPE_N;
+    a = (float)tape[i0];
+    c = (float)tape[i1];
     return (a + (c - a) * f) * (1.0f / 12000.0f);
 }
 static inline int16_t s16(float x)
@@ -960,13 +969,51 @@ static void echo_time(void)
         return;                                  /* not yet (en_init applies in order) */
     beat = 60.0f / (float)par[P_TEMPO];
     t = ETIME_BEATS[i] * beat;
-    while (t * 22050.0f > (float)(ECHO_N - 4) && i > 0)
+    while (t * TAPE_SR > (float)(TAPE_N - 8) && i > 0)
         t = ETIME_BEATS[--i] * beat;             /* too long for the tape: the next shorter */
-    if (t * 22050.0f > (float)(ECHO_N - 4))
-        t = (float)(ECHO_N - 4) / 22050.0f;
-    echo_len_t = t * 22050.0f;
+    if (t * TAPE_SR > (float)(TAPE_N - 8))
+        t = (float)(TAPE_N - 8) / TAPE_SR;
+    echo_len_t = t * TAPE_SR;
     if (echo_len <= 0.0f)
         echo_len = echo_len_t;
+}
+
+/* one sample of both: the input (a mono send) to the tape's two heads (el, er) and the Echoplex (ex) */
+static inline void echoes(float in, float *el, float *er, float *ex)
+{
+    float y = (float)plex[plex_w] * (1.0f / 12000.0f);         /* the Echoplex: 160 ms, fed back, darker */
+    plex_lp += 0.35f * (y - plex_lp);
+    plex[plex_w] = s16(in + 0.55f * plex_lp);
+    if (++plex_w >= PLEX_N)
+        plex_w = 0;
+    *ex = plex_lp;
+    tape_acc += in + 0.3f * plex_lp;
+    if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
+        float d, l, r, fb;
+        tape_ph = 0;
+        echo_len += (echo_len_t - echo_len) * 0.001f;
+        d = echo_len * (1.0f + 0.003f * motion * mod[5].v);   /* wow */
+        if (d > (float)(TAPE_N - 4))
+            d = (float)(TAPE_N - 4);
+        l = tape_read(d);
+        r = tape_read(d * 0.75f);
+        tape_lp += 0.55f * (l - tape_lp);        /* each time round: darker, thinner */
+        tape_hp += 0.03f * (tape_lp - tape_hp);
+        fb = tape_lp - tape_hp;
+        if (++tape_w >= TAPE_N)
+            tape_w = 0;
+        tape[tape_w] = s16(tape_acc * 0.25f + echo_fb * fb);
+        tape_acc = 0.0f;
+        tape_pl = tape_cl;
+        tape_pr = tape_cr;
+        tape_cl = l;
+        tape_cr = r;
+    }
+    {   /* between the tape's samples: a line from the last to the next */
+        float f = (float)tape_ph * 0.25f;
+        *el = tape_pl + (tape_cl - tape_pl) * f;
+        *er = tape_pr + (tape_cr - tape_pr) * f;
+    }
 }
 
 /* ------------------------------------------------------------ parameters --- */
@@ -1001,8 +1048,8 @@ static void apply(int p, int v)
     case P_ETIME: echo_time(); break;
     case P_REVERB: rev_send = (float)(v * v) * 0.0001f; break;
     case P_SIZE:
-        pl_decay_t = 0.55f + 0.42f * (float)v * 0.01f;
-        echo_fb = 0.45f + 0.2f * (float)v * 0.01f;
+        pl_decay_t = 0.6f + 0.375f * (float)v * 0.01f;     /* to 0.975: a long hall */
+        echo_fb = 0.5f + 0.32f * (float)v * 0.01f;
         break;
     case P_BRIGHT: bright = (float)v; break;
     case P_SWELL: swell = (float)v; break;
@@ -1096,9 +1143,11 @@ void en_init(void)
     for (i = 0; i <= SN; i++)
         sint[i] = fm_sinf((float)i * (FM_TWO_PI / (float)SN));
     plate_init();
-    for (i = 0; i < ECHO_N; i++)
-        echo_l[i] = echo_r[i] = 0;
-    echo_w = 0;
+    for (i = 0; i < TAPE_N; i++)
+        tape[i] = 0;
+    for (i = 0; i < PLEX_N; i++)
+        plex[i] = 0;
+    tape_w = plex_w = tape_ph = 0;
     echo_len = 0.0f;
     q_r = q_w = 0;
     for (i = 0; i < NMOD; i++) {
@@ -1236,67 +1285,30 @@ static void drain(void)
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK];
 
-/* the pad's bus: a gentle 12 dB low-pass (Bright opens it) to take the saws' edge off, then an
- * ensemble, as the string machines' (Solina, Juno): three taps of a short delay, each swept by a slow
- * and a faster sine a third of a turn apart, two to a side. That chorus is most of the lushness. */
-#define ENS_N 1024
+/* the pad's bus: a 12 dB low-pass, darker than it sounds on paper (Eno darkened everything: the
+ * Synthi's filter below half, then tape). No chorus: a modulated delay against pure tones beats (on
+ * the FM-1's speaker above all), and that read as pulsing. The width comes from the voices' places,
+ * the echo's two heads and the plate. */
 static float padl[BLK], padr[BLK];
-static float ens_buf[ENS_N], ens_slow, ens_fast, ens_trem, plp[4];
-static int ens_w;
-
-static inline float ens_tap(float d)
-{
-    float r = (float)ens_w - d;
-    int i;
-    float f;
-    if (r < 0.0f)
-        r += (float)ENS_N;
-    i = (int)r;
-    f = r - (float)i;
-    return ens_buf[i] + (ens_buf[(i + 1) & (ENS_N - 1)] - ens_buf[i]) * f;
-}
+static float plp[4];
 
 static void pad_bus(uint32_t n)
 {
-    const float fc = fm_clampf(1400.0f * fm_exp2f(bright * 0.024f + 0.6f * arcm), 600.0f, 12000.0f);
+    const float fc = fm_clampf(700.0f * fm_exp2f(bright * 0.03f + 0.6f * arcm), 300.0f, 9000.0f);
     const float c = 1.0f - fm_expf(-FM_TWO_PI * fc * (1.0f / EN_SR));
-    const float s_inc = 0.53f / EN_SR, f_inc = 5.9f / EN_SR,
-                trem = par[P_PADTONE] == 0 ? 0.08f + 0.17f * motion : 0.0f;
     uint32_t j;
     for (j = 0; j < n; j++) {
-        float l = padl[j], r = padr[j], t0, t1, t2, ol, or_;
-        plp[0] += c * (l - plp[0]);
+        float l, r;
+        plp[0] += c * (padl[j] - plp[0]);
         plp[1] += c * (plp[0] - plp[1]);
-        plp[2] += c * (r - plp[2]);
+        plp[2] += c * (padr[j] - plp[2]);
         plp[3] += c * (plp[2] - plp[3]);
         l = plp[1];
         r = plp[3];
-        ens_buf[ens_w] = 0.5f * (l + r);
-        ens_slow += s_inc;
-        if (ens_slow >= 1.0f)
-            ens_slow -= 1.0f;
-        ens_fast += f_inc;
-        if (ens_fast >= 1.0f)
-            ens_fast -= 1.0f;
-        t0 = ens_tap(330.0f + 150.0f * sine(ens_slow) + 9.0f * sine(ens_fast));
-        t1 = ens_tap(330.0f + 150.0f * sine(ens_slow + 0.3333f) + 9.0f * sine(ens_fast + 0.3333f));
-        t2 = ens_tap(330.0f + 150.0f * sine(ens_slow + 0.6667f) + 9.0f * sine(ens_fast + 0.6667f));
-        if (++ens_w >= ENS_N)
-            ens_w = 0;
-        ol = 0.45f * l + 0.55f * (t0 + 0.6f * t1);
-        or_ = 0.45f * r + 0.55f * (t2 + 0.6f * t1);
-        if (trem > 0.0f) {                       /* the Suitcase's stereo tremolo, slow and shallow */
-            float tr = trem * sine(ens_trem);
-            ol *= 1.0f + tr;
-            or_ *= 1.0f - tr;
-        }
-        ens_trem += 3.1f / EN_SR;
-        if (ens_trem >= 1.0f)
-            ens_trem -= 1.0f;
-        mixl[j] += ol;
-        mixr[j] += or_;
-        rsend[j] += (ol + or_) * 0.45f;
-        esend[j] += (ol + or_) * 0.12f;
+        mixl[j] += l * 0.8f;
+        mixr[j] += r * 0.8f;
+        rsend[j] += (l + r) * 0.6f;
+        esend[j] += (l + r) * 0.2f;
     }
     for (j = 0; j < 4; j++)
         plp[j] = fm_flush(plp[j]);
@@ -1336,26 +1348,21 @@ static void render_pad(uint32_t n)
             }
             if (rhodes) {                        /* FM, the modulator at the carrier's pitch: a Rhodes */
                 float m = sine(p0) * idx;
-                x = (sine(p0 + m + 1.0f) + sine(p1 + 0.8f * m + 1.0f) + 0.12f * sine(2.0f * p0)) * 0.6f;
+                x = (sine(p0 + m + 1.0f) + 0.12f * sine(2.0f * p0)) * 1.2f;   /* one carrier: no beating */
                 p0 += v->inc[0];
-                p1 += v->inc[1];
                 if (p0 >= 1.0f)
                     p0 -= 1.0f;
-                if (p1 >= 1.0f)
-                    p1 -= 1.0f;
                 amp += (tgt - amp) * 0.01f;
                 x *= amp;
                 padl[j] += x * gl;
                 padr[j] += x * gr;
                 continue;
             }
-            x = blep_saw(p0, v->inc[0]) + blep_saw(p1, v->inc[1]) + 0.9f * sine(p0);   /* the sine: body */
+            /* as Discreet Music's Synthi: a mellow triangle (a sine's neighbour), a little saw in it */
+            x = (p0 < 0.5f ? 4.0f * p0 - 1.0f : 3.0f - 4.0f * p0) * 1.4f + 0.45f * blep_saw(p0, v->inc[0]) + 0.6f * sine(p0);
             p0 += v->inc[0];
-            p1 += v->inc[1];
             if (p0 >= 1.0f)
                 p0 -= 1.0f;
-            if (p1 >= 1.0f)
-                p1 -= 1.0f;
             v3 = x - s1;                         /* the first formant: TPT SVF (Zavalishin), bp and lp */
             v1 = v->c1[0] * s0 + v->c1[1] * v3;
             v2 = s1 + v->c1[1] * s0 + v->c1[2] * v3;
@@ -1552,40 +1559,11 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     render_bells(n);
     render_drums(n);
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er;
-        echo_acc += esend[j] * eg;
-        if (j & 1u) {                            /* the echo, every other sample */
-            float in = echo_acc * 0.5f, rl, rr, fb;
-            echo_acc = 0.0f;
-            echo_len += (echo_len_t - echo_len) * 0.0004f;
-            {
-                float d = echo_len * (1.0f + 0.0025f * motion * mod[5].v);
-                if (d > (float)(ECHO_N - 3))
-                    d = (float)(ECHO_N - 3);
-                rl = echo_read(echo_l, d);
-                rr = echo_read(echo_r, d);
-            }
-            fb = rr;                             /* the feedback: darker, thinner each time round */
-            echo_lp += 0.4f * (fb - echo_lp);
-            echo_hp += 0.015f * (echo_lp - echo_hp);
-            fb = echo_lp - echo_hp;
-            if (++echo_w >= ECHO_N)
-                echo_w = 0;
-            echo_l[echo_w] = s16(in + echo_fb * fb);
-            echo_r[echo_w] = s16(rl);
-            echo_prev_l = echo_cur_l;
-            echo_prev_r = echo_cur_r;
-            echo_cur_l = rl;
-            echo_cur_r = rr;
-            el = echo_cur_l;
-            er = echo_cur_r;
-        } else {
-            el = 0.5f * (echo_prev_l + echo_cur_l);
-            er = 0.5f * (echo_prev_r + echo_cur_r);
-        }
-        reverb((rsend[j] * rg + (el + er) * 0.25f * rev_send) * 0.5f, &wl, &wr);
-        l = (mixl[j] + el * 0.8f + wl) * 0.5f * gain;
-        r = (mixr[j] + er * 0.8f + wr) * 0.5f * gain;
+        float wl, wr, l, r, el, er, ex;
+        echoes(esend[j] * eg, &el, &er, &ex);
+        reverb((rsend[j] * rg + (el + er + 2.0f * ex) * 0.35f * rev_send) * 0.8f, &wl, &wr);
+        l = (mixl[j] + 0.75f * el + 0.3f * ex + 1.3f * wl) * 0.36f * gain;
+        r = (mixr[j] + 0.75f * er + 0.3f * ex + 1.3f * wr) * 0.36f * gain;
         out[2 * j] = (int32_t)(fm_tanhf(l) * 8300000.0f);
         out[2 * j + 1] = (int32_t)(fm_tanhf(r) * 8300000.0f);
     }
@@ -1647,7 +1625,6 @@ void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
             if ((float)k > pulse_left)
                 k = (uint32_t)pulse_left + 1u;
         }
-        k = (k + 1u) & ~1u;                      /* the echo runs in pairs */
         if (k > n)
             k = n;
         if (timed)

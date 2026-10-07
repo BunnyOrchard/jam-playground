@@ -2,8 +2,8 @@
 
 Eno turns the M-VAVE FM-1 into a generative ambient machine, in the spirit of *Music for Airports*.
 It plays itself from the moment it's switched on: breathing voices, soft bells on tape loops of
-unequal length, a gliding bass and quiet Euclidean percussion, all through a long echo and a plate
-reverb. You don't perform it, you tend it: pick a piece, a scale, take notes out, put them back, and
+unequal length, a gliding bass and quiet Euclidean percussion, all through a short Echoplex-style
+echo, a long tape loop and a plate reverb (after Eno's own chain for *Discreet Music*). You don't perform it, you tend it: pick a piece, a scale, take notes out, put them back, and
 let it grow.
 
 ![Eno's screen: the garden](docs/img/screen-garden.png) ![Frozen](docs/img/screen-frozen.png)
@@ -16,7 +16,8 @@ Private for now. Install it with `python3 tools/fm1_install.py build/eno.fwsc` (
   about 12 to 20 s, as the tape loops of "2/1"), taking its note of the chord as it starts, so the
   chord forms and dissolves rather than sitting there. Two colours, chosen by the piece: a filtered
   Rhodes that blooms brighter as it swells, or sung voices (**Bright** moves the vowel from "oo" to
-  "eh"). Both go through a soft low-pass and an ensemble chorus. **Swell** sets how long the breaths
+  "eh"). Both go through a dark low-pass, then into the echoes and the plate, which are most of what you
+  hear. **Swell** sets how long the breaths
   are. Every so often (**Drift**, 20 s to 5 min) the chord moves
   to another one in the scale, each voice the shortest way.
 - **Bells**: FM bells (at a low **Bell tone**, soft-struck like a piano slowed to half speed) played by four tape loops 13, 17, 23 and 29 beats long. Each holds a few
@@ -76,8 +77,10 @@ Each page puts four values on KNOB 1–4. EDIT steps through the pages.
 
 - **HOME: Layers.** Pad, Bells, Bass, Pulse: the four layers' levels.
 - **SEQ: Motion.** Density, Evolve, Drift, Hits.
-- **FX: Space.** Echo (send), Echo time (1/8 to 1/2 dotted, shortened when the tape is too short at
-  slow tempos), Reverb (send), Size (the plate's decay and the echo's feedback).
+- **FX: Space.** Echo (send), Echo time (the tape loop: a dotted quarter to 4 bars, shortened to fit
+  its 5.6 s), Reverb (send), Size (the plate's decay, up to a long hall, and the tape's feedback). The
+  tape has two heads (the right one plays three quarters of the loop), and each repeat comes back
+  darker and thinner.
 - **SEL: Tone.** Bright (the voices' vowel), Swell (how long the voices breathe), Bell tone (round to
   metallic), Motion (how far the arc and the slow random movements go).
 - **GLO: Setup.** Root, Tune, MIDI out, Key lights (and the audio load, top right).
