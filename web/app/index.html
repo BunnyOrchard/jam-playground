@@ -51,94 +51,84 @@ button { cursor: pointer; }
 
 /* the bar: the piece, its key, play */
 .top { display: flex; align-items: center; gap: 12px; }
-.piece { display: flex; flex-direction: column; align-items: flex-start; border: 0; background: none; padding: 4px 0; text-align: left; min-width: 0; }
-.piece b { font: 700 1.9rem/1 var(--display); letter-spacing: .01em; display: flex; align-items: center; gap: .35em; }
-.piece b::after { content: ""; width: .42em; height: .42em; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
-                  transform: translateY(-.15em) rotate(45deg); }
-.piece span { color: var(--muted); font-size: .95rem; }
-.piece span em { color: var(--bell); font-style: normal; font-weight: 600; }
+.piece { border: 0; background: none; padding: 2px 0; text-align: left; min-width: 0; }
+.piece b { display: block; font: 700 1.7rem/1.05 var(--display); }
+.piece span { color: var(--muted); }
+.piece b::after { content: " \25BE"; font-size: .6em; color: var(--muted); vertical-align: .25em; }
 .top .grow { flex: 1; }
-.play { width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--pad); color: var(--card);
+.play { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--ink); background: none; color: var(--ink);
         display: grid; place-items: center; flex: none; }
-.play svg { width: 20px; height: 20px; fill: currentColor; }
-.play[aria-pressed="false"] { background: var(--sunk); color: var(--ink); border: 1px solid var(--rule); }
+.play svg { width: 16px; height: 16px; fill: currentColor; }
 
 /* the garden */
-.stage { display: grid; gap: 12px; justify-items: center; }
-.ringbox { position: relative; width: min(100%, 560px, 68vh); }
-canvas#ring { display: block; width: 100%; aspect-ratio: 1 / 1.16; touch-action: manipulation; cursor: pointer; }
+.stage { display: grid; gap: 10px; justify-items: center; }
+.ringbox { position: relative; width: min(100%, 540px, 64vh); }
+canvas#ring { display: block; width: 100%; aspect-ratio: 1 / 1.1; touch-action: manipulation; cursor: pointer; }
 .begin { position: absolute; inset: 0; display: grid; place-items: center; }
-.begin button { font: 600 1.15rem var(--display); letter-spacing: .05em; padding: .8em 1.8em; border-radius: 999px; border: 0;
-                background: var(--bell); color: var(--on-accent); box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.begin button { font: 600 1.05rem var(--body); padding: .6em 1.6em; border-radius: 999px; border: 1px solid var(--ink);
+                background: var(--ground); }
 .begin[hidden] { display: none; }
-.hint { color: var(--muted); font-size: .9rem; text-align: center; margin: -4px 0 0; min-height: 1.3em; }
+.hint { color: var(--muted); font-size: .9rem; text-align: center; margin: 0; min-height: 1.3em; }
 
-.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
-.act { border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: .5em 1em; font-weight: 500;
-       display: inline-flex; align-items: center; gap: .45em; }
-.act[aria-pressed="true"] { background: var(--frost-t); border-color: var(--frost); color: var(--ink); }
-.act .dot { width: .55em; height: .55em; border-radius: 50%; background: var(--muted); }
-.act.colour .dot { background: var(--pad); }
-.act.colour[data-v="1"] .dot { background: var(--bell); }
-.stepper { display: inline-flex; align-items: center; border: 1px solid var(--rule); border-radius: 999px; background: var(--card); }
-.stepper button { border: 0; background: none; width: 2.3em; height: 2.3em; font-size: 1.1rem; }
-.stepper span { min-width: 5.6em; text-align: center; font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; width: 100%; }
+.act { border: 0; background: none; padding: .4em .2em; font-weight: 500; color: var(--ink); border-bottom: 1px solid transparent; }
+.act[aria-pressed="true"] { border-bottom-color: var(--ink); }
+.stepper { display: inline-flex; align-items: center; gap: 2px; }
+.stepper button { border: 0; background: none; width: 1.8em; height: 1.8em; font-size: 1.05rem; }
+.stepper span { min-width: 4.4em; text-align: center; font-variant-numeric: tabular-nums; }
 
 /* the controls */
-.panel { background: var(--card); border: 1px solid var(--rule); border-radius: 18px; padding: 6px 16px 16px; }
-.tabs { display: flex; gap: 2px; overflow-x: auto; margin: 0 -6px 4px; padding: 4px 0; scrollbar-width: none; }
-.tabs button { border: 0; background: none; padding: .55em .8em; border-radius: 10px; color: var(--muted);
-               font: 600 1.02rem var(--display); letter-spacing: .02em; white-space: nowrap; }
-.tabs button[aria-selected="true"] { color: var(--ink); background: var(--sunk); }
-.rows { display: grid; gap: 14px; }
+.panel { border-top: 1px solid var(--rule); padding-top: 4px; }
+@media (min-width: 900px) { .panel { border-top: 0; } }
+.tabs { display: flex; gap: 18px; overflow-x: auto; margin-bottom: 8px; scrollbar-width: none; }
+.tabs button { border: 0; background: none; padding: .5em 0; color: var(--muted); font-weight: 600; white-space: nowrap;
+               border-bottom: 2px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.rows { display: grid; gap: 6px; }
 .row { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: baseline; }
-.row label { font-weight: 600; }
-.row output { font: 600 1.05rem var(--display); font-variant-numeric: tabular-nums; color: var(--ink); }
-.row p { grid-column: 1 / -1; margin: 1px 0 6px; color: var(--muted); font-size: .9rem; line-height: 1.35; max-width: 62ch; }
+.row label { font-weight: 500; }
+.row output { font-variant-numeric: tabular-nums; color: var(--muted); }
 .row input[type="range"], .row select { grid-column: 1 / -1; }
 input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; background: none; margin: 0; }
-input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px;
-  background: linear-gradient(to right, var(--c, var(--pad)) var(--f, 50%), var(--rule) var(--f, 50%)); }
-input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--rule); }
-input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--c, var(--pad)); }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; margin-top: -8px;
-  background: var(--card); border: 2px solid var(--c, var(--pad)); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
-input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--card); border: 2px solid var(--c, var(--pad)); }
-select { width: 100%; padding: .5em .7em; border-radius: 10px; border: 1px solid var(--rule); background: var(--ground); }
-.chips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 4px; }
-.chips button { border: 1px solid var(--rule); background: var(--ground); border-radius: 10px; padding: .45em 0; font-weight: 600; }
-.chips button[aria-pressed="true"] { background: var(--pad-t); border-color: var(--pad); }
-.chips button.root { border-color: var(--bell); color: var(--bell); }
-.switch { grid-column: 1 / -1; display: flex; align-items: center; gap: .6em; font-weight: 600; }
-.switch input { width: 1.2em; height: 1.2em; accent-color: var(--pad); }
+input[type="range"]::-webkit-slider-runnable-track { height: 3px; background: linear-gradient(to right, var(--ink) var(--f, 50%), var(--rule) var(--f, 50%)); }
+input[type="range"]::-moz-range-track { height: 3px; background: var(--rule); }
+input[type="range"]::-moz-range-progress { height: 3px; background: var(--ink); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; margin-top: -7.5px; background: var(--ink); border: 0; }
+input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 0; }
+select { width: 100%; padding: .45em .6em; border-radius: 8px; border: 1px solid var(--rule); background: var(--ground); margin: 2px 0 8px; }
+.chips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 4px 0 10px; }
+.chips button { border: 1px solid var(--rule); background: none; border-radius: 8px; padding: .4em 0; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.chips button.root { box-shadow: inset 0 -2px 0 var(--bell); }
+.switch { grid-column: 1 / -1; display: flex; align-items: center; gap: .5em; margin-top: 6px; }
+.switch input { width: 1.1em; height: 1.1em; accent-color: var(--ink); }
 
 /* the pieces */
-.sheet { position: fixed; inset: 0; z-index: 10; background: rgba(20, 14, 8, .38); display: grid; align-items: end; justify-items: center;
+.sheet { position: fixed; inset: 0; z-index: 10; background: rgba(20, 14, 8, .35); display: grid; align-items: end; justify-items: center;
          padding-top: env(safe-area-inset-top, 0px); }
 .sheet[hidden] { display: none; }
-.sheet > div { background: var(--ground); width: min(100%, 760px); max-height: 88vh; overflow-y: auto; border-radius: 22px 22px 0 0;
-               padding: 18px 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
-@media (min-width: 900px) { .sheet { align-items: center; } .sheet > div { border-radius: 22px; } }
-.sheet header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
-.sheet h2 { font: 700 1.5rem var(--display); margin: 0; flex: 1; }
-.sheet .close { border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: .35em .9em; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
-.card { text-align: left; border: 1px solid var(--rule); background: var(--card); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; }
-.card b { font: 700 1.25rem var(--display); }
-.card small { color: var(--bell); font-weight: 600; }
-.card span { color: var(--muted); font-size: .9rem; line-height: 1.35; }
-.card[aria-current="true"] { border-color: var(--pad); box-shadow: inset 0 0 0 1px var(--pad); }
-.sheet footer { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: .9rem; }
-.sheet footer button { border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: .45em 1em; }
-.sheet footer button[data-armed] { border-color: var(--bell); color: var(--bell); }
-.about { color: var(--muted); font-size: .85rem; max-width: 70ch; }
+.sheet > div { background: var(--ground); width: min(100%, 520px); max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0;
+               padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 900px) { .sheet { align-items: center; } .sheet > div { border-radius: 16px; } }
+.sheet header { display: flex; align-items: baseline; margin-bottom: 4px; }
+.sheet h2 { font: 600 1rem var(--body); color: var(--muted); margin: 0; flex: 1; }
+.sheet .close { border: 0; background: none; padding: .3em 0; font-weight: 600; }
+.cards { display: grid; }
+.card { text-align: left; border: 0; border-bottom: 1px solid var(--rule); background: none; padding: 11px 0;
+        display: flex; align-items: baseline; gap: 10px; }
+.card b { font: 600 1.2rem var(--display); flex: 1; }
+.card small { color: var(--muted); font-size: .9rem; }
+.card[aria-current="true"] b::after { content: " \2022"; color: var(--bell); }
+.sheet footer { margin-top: 12px; }
+.sheet footer button { border: 0; background: none; padding: .3em 0; color: var(--muted); }
+.sheet footer button[data-armed] { color: var(--bell); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <button class="piece" id="pieceBtn" aria-haspopup="dialog"><b id="pieceName">Garden</b><span id="keyLine"><em>D</em> Dorian</span></button>
+    <button class="piece" id="pieceBtn" aria-haspopup="dialog"><b id="pieceName">Garden</b><span id="keyLine">D Dorian</span></button>
     <div class="grow"></div>
     <button class="play" id="play" aria-pressed="false" aria-label="Grow">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path id="playIcon" d="M5 3 L17 10 L5 17 Z"/></svg>
@@ -150,12 +140,12 @@ select { width: 100%; padding: .5em .7em; border-radius: 10px; border: 1px solid
       <canvas id="ring" aria-label="The garden: the scale as a ring of twelve notes, the bell loops around it, the pulse below. Tap a note to add it to the scale or take it out."></canvas>
       <div class="begin" id="begin"><button id="go">Begin</button></div>
     </div>
-    <p class="hint" id="hint">Tap a note on the ring to add it to the scale or take it out.</p>
+    <p class="hint" id="hint"></p>
     <div class="actions">
-      <button class="act" id="freeze" aria-pressed="false" title="The chord holds and the reverb rings on">Freeze</button>
-      <button class="act" id="next" title="Move to another chord on the next bar">Next chord</button>
-      <button class="act colour" id="colour" data-v="0" title="The pad's colour"><span class="dot"></span><span id="colourName">Rhodes</span></button>
-      <div class="stepper" title="The bells' octave"><button id="octDn" aria-label="Bells an octave down">−</button><span id="octVal">Bells 0</span><button id="octUp" aria-label="Bells an octave up">+</button></div>
+      <button class="act" id="freeze" aria-pressed="false" title="Hold the chord, let the reverb ring">Freeze</button>
+      <button class="act" id="next" title="Next chord, on the bar">Next</button>
+      <button class="act" id="colour" title="Pad"><span id="colourName">Rhodes</span></button>
+      <div class="stepper" title="Bell octave"><button id="octDn" aria-label="Bells down">−</button><span id="octVal">Bells 0</span><button id="octUp" aria-label="Bells up">+</button></div>
     </div>
   </section>
 
@@ -167,11 +157,10 @@ select { width: 100%; padding: .5em .7em; border-radius: 10px; border: 1px solid
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div>
-    <header><h2 id="sheetTitle">Pieces</h2><button class="close" id="sheetClose">Done</button></header>
+    <header><h2 id="sheetTitle">Pieces</h2><button class="close" id="sheetClose">Close</button></header>
     <div class="cards" id="cards"></div>
     <footer>
       <button id="reset">Reset this piece</button>
-      <span>Each piece remembers how you left it.</span>
     </footer>
     <p class="about">Eno is a generative ambient garden after Brian Eno's <i>Music for Airports</i>: breathing voices, bells on tape loops of
       unequal length, a gliding bass and a soft Euclidean pulse, through a tape echo and a plate reverb. The same engine runs on the
@@ -188,39 +177,14 @@ const GLOBAL = [P.TUNE, P.MIDI];
 const NLOOP = 4, LOOP_MAX = 29;
 const STORE = "eno-app-1";
 
-const PIECE_TEXT = [
-  "Everything, gently.",
-  "Soft, slowed-piano bells an octave down over a quiet Rhodes, as “1/1”.",
-  "Only the sung “ah” voices on unequal loops and a low bass, as “2/1”.",
-  "Bright vowels, busier bells, a light pulse.",
-  "The pulse forward, metallic bells, short echoes.",
-  "Dark, round bells lost in long echoes, as “2/2”.",
-  "Clangy bells an octave up, dense.",
-  "The most changeable: restless and wide.",
-];
 
-// what each knob does (the FM-1's pages)
+// the knobs, the FM-1's pages; a few words each, on hover
 const TABS = [
-  { name: "Layers", rows: [
-    [P.PAD, "How loud the breathing pad is.", "--pad"],
-    [P.BELLS, "How loud the bells are.", "--bell"],
-    [P.BASS, "How loud the bass is.", "--bass"],
-    [P.PULSE, "How loud the pulse is. 0 leaves it out.", "--pulse"] ] },
-  { name: "Motion", rows: [
-    [P.DENSITY, "How many notes each bell loop holds: none at 0, up to five. The loops are 13, 17, 23 and 29 beats long, so a few notes each never quite repeat."],
-    [P.EVOLVE, "How restless it is. At 0 the loops repeat exactly; turned up, bell notes change or move, the pulse shifts, and layers take rests."],
-    [P.DRIFT, "How long a chord lasts before the pad moves to another in the scale. The thin outer arc fills on the way to the next one."],
-    [P.HITS, "How many beats the three pulse rings play (thump in 16, shaker in 12, wood in 7)."] ] },
-  { name: "Space", rows: [
-    [P.ECHO, "How much goes to the tape echo and the short slap before it."],
-    [P.ETIME, "The tape loop's length, shortened to fit its 5.6 s at slow tempos. The right side repeats at three quarters of it."],
-    [P.REVERB, "How much goes to the plate."],
-    [P.SIZE, "How long the plate rings, a room to a long hall, and how often the echo comes back."] ] },
-  { name: "Tone", rows: [
-    [P.BRIGHT, "Opens the pad's filter (for the Voices pad, moves the vowel from “oo” to “eh”)."],
-    [P.SWELL, "How long the pad's voices breathe: each swells in, hangs and fades on its own cycle."],
-    [P.BTONE, "From round and soft-struck, like a slowed piano, to a long metallic clang."],
-    [P.MOTION, "How far the slow tide swings between sparse and full, and how much pitch, pan and the echo wander."] ] },
+  { name: "Layers", rows: [[P.PAD], [P.BELLS], [P.BASS], [P.PULSE]] },
+  { name: "Motion", rows: [[P.DENSITY, "Notes per bell loop"], [P.EVOLVE, "How often things change and rest"],
+                           [P.DRIFT, "How long a chord lasts"], [P.HITS, "Pulse hits"]] },
+  { name: "Space", rows: [[P.ECHO, "Tape echo send"], [P.ETIME, "Tape loop length"], [P.REVERB, "Plate send"], [P.SIZE, "Plate decay, echo feedback"]] },
+  { name: "Tone", rows: [[P.BRIGHT, "Pad filter"], [P.SWELL, "Breath length"], [P.BTONE, "Round to metallic"], [P.MOTION, "How far it drifts and swells"]] },
   { name: "Key", rows: "key" },
 ];
 
@@ -318,11 +282,11 @@ async function begin() {
     mediaSession();
     if (S.awake) wake(true);
     if (Math.abs(ac.sampleRate - 44100) > 1)
-      hint(`This browser runs audio at ${ac.sampleRate} Hz: Eno will sound ${ac.sampleRate > 44100 ? "a little high and fast" : "a little low and slow"}.`);
+      hint(`Audio at ${ac.sampleRate} Hz: pitch will be off`);
   } catch (err) {
     go.disabled = false;
     go.textContent = "Begin";
-    hint("Could not start the sound: " + (err && err.message || err));
+    hint("No sound: " + (err && err.message || err));
   }
 }
 function setPlaying(on) {
@@ -374,16 +338,15 @@ function hint(s) {
   const h = document.getElementById("hint");
   h.textContent = s;
   clearTimeout(hintT);
-  hintT = setTimeout(() => { h.textContent = "Tap a note on the ring to add it to the scale or take it out."; }, 3500);
+  hintT = setTimeout(() => { h.textContent = ""; }, 2500);
 }
 function toggleNote(pc) {
   const rel = (pc - par(P.ROOT) + 12) % 12, p = cur().pool ^ (1 << rel);
-  if (rel === 0) return hint(`${note(pc)} is the root: it stays (change the root in Key).`);
+  if (rel === 0) return hint(`${note(pc)} is the root`);
   let n = 0;
   for (let i = 0; i < 12; i++) n += (p >> i) & 1;
-  if (n < 3) return hint("The scale keeps at least three notes.");
+  if (n < 3) return hint("Three notes at least");
   setPool(p);
-  hint(`${note(pc)} ${(p >> rel) & 1 ? "added to" : "taken out of"} the scale.`);
   refresh();
 }
 function choosePiece(i) {
@@ -422,14 +385,14 @@ function buildTabs() {
     t.appendChild(b);
   });
 }
-function slider(p, text, colour) {
+function slider(p, tip) {
   const row = document.createElement("div");
   row.className = "row";
   const id = "p" + p;
-  row.innerHTML = `<label for="${id}">${pname(p)}</label><output id="${id}-v"></output>${text ? `<p>${text}</p>` : ""}` +
+  row.innerHTML = `<label for="${id}">${pname(p)}</label><output id="${id}-v"></output>` +
                   `<input type="range" id="${id}" min="${plo(p)}" max="${phi(p)}" step="1">`;
   const input = row.querySelector("input"), out = row.querySelector("output");
-  if (colour) input.style.setProperty("--c", `var(${colour})`);
+  if (tip) row.title = tip;
   const show = () => {
     const v = par(p);
     input.value = v;
@@ -445,14 +408,14 @@ function buildRows() {
   rows.innerHTML = "";
   rows.setAttribute("aria-labelledby", "tab-" + TABS[tab].name.toLowerCase());
   if (TABS[tab].rows !== "key") {
-    for (const [p, text, c] of TABS[tab].rows) rows.appendChild(slider(p, text, c));
+    for (const [p, tip] of TABS[tab].rows) rows.appendChild(slider(p, tip));
     return;
   }
   // Key: the root, the mode, the scale's notes, tempo, tune, volume, the screen
-  const sel = (label, id, opts, value, on, text) => {
+  const sel = (label, id, opts, value, on) => {
     const row = document.createElement("div");
     row.className = "row";
-    row.innerHTML = `<label for="${id}">${label}</label><output></output>${text ? `<p>${text}</p>` : ""}<select id="${id}"></select>`;
+    row.innerHTML = `<label for="${id}">${label}</label><output></output><select id="${id}"></select>`;
     const s = row.querySelector("select");
     opts.forEach((o, i) => { const e = document.createElement("option"); e.value = i; e.textContent = o; s.appendChild(e); });
     s.value = value;
@@ -460,8 +423,7 @@ function buildRows() {
     return row;
   };
   rows.appendChild(sel("Root", "root", Array.from({ length: 12 }, (_, i) => note(i)), par(P.ROOT), (v) => { setPar(P.ROOT, v); refresh(); }));
-  const mrow = sel("Mode", "mode", MODE_NAMES(), par(P.MODE), (m) => { setPar(P.MODE, m); setPool(W.app_mode_pool(m)); refresh(); },
-                   "Picks a scale. Changing its notes (on the ring or below) makes it Custom.");
+  const mrow = sel("Mode", "mode", MODE_NAMES(), par(P.MODE), (m) => { setPar(P.MODE, m); setPool(W.app_mode_pool(m)); refresh(); });
   mrow.querySelector("output").textContent = modeName() === "Custom" ? "Custom" : "";
   rows.appendChild(mrow);
   const crow = document.createElement("div");
@@ -477,8 +439,8 @@ function buildRows() {
     chips.appendChild(b);
   }
   rows.appendChild(crow);
-  rows.appendChild(slider(P.TEMPO, "Beats a minute: the pulse, the loops' steps, the echo's length."));
-  rows.appendChild(slider(P.TUNE, "Fine tuning, in cents, for every piece."));
+  rows.appendChild(slider(P.TEMPO));
+  rows.appendChild(slider(P.TUNE));
   const vrow = document.createElement("div");
   vrow.className = "row";
   vrow.innerHTML = `<label for="vol">Volume</label><output></output><input type="range" id="vol" min="0" max="4096" step="16">`;
@@ -490,7 +452,7 @@ function buildRows() {
   rows.appendChild(vrow);
   const wrow = document.createElement("label");
   wrow.className = "switch";
-  wrow.innerHTML = `<input type="checkbox" id="awake"> Keep the screen awake (a phone may stop the sound when it locks)`;
+  wrow.innerHTML = `<input type="checkbox" id="awake"> Keep screen on`;
   const aw = wrow.querySelector("input");
   aw.checked = !!S.awake;
   aw.onchange = () => { S.awake = aw.checked; wake(S.awake); save(); };
@@ -498,9 +460,7 @@ function buildRows() {
 }
 function refresh() {
   document.getElementById("pieceName").textContent = cstr(W.app_piece_name(S.piece));
-  document.getElementById("keyLine").innerHTML = `<em>${note(par(P.ROOT))}</em> ${modeName()}`;
-  const c = document.getElementById("colour");
-  c.dataset.v = par(P.PADTONE);
+  document.getElementById("keyLine").textContent = `${note(par(P.ROOT))} ${modeName()} \u00b7 ${par(P.TEMPO)}`;
   document.getElementById("colourName").textContent = ptext(P.PADTONE, par(P.PADTONE));
   document.getElementById("octVal").textContent = "Bells " + ptext(P.BOCT, par(P.BOCT));
   buildRows();
@@ -516,7 +476,7 @@ function openSheet() {
     b.className = "card";
     if (i === S.piece) b.setAttribute("aria-current", "true");
     const s = S.slots[i], mode = s.pool === W.app_mode_pool(s.par[P.MODE]) ? ptext(P.MODE, s.par[P.MODE]) : "Custom";
-    b.innerHTML = `<b>${cstr(W.app_piece_name(i))}</b><small>${note(s.par[P.ROOT])} ${mode} · ${s.par[P.TEMPO]}</small><span>${PIECE_TEXT[i] || ""}</span>`;
+    b.innerHTML = `<b>${cstr(W.app_piece_name(i))}</b><small>${note(s.par[P.ROOT])} ${mode}</small>`;
     b.onclick = () => { choosePiece(i); closeSheet(); };
     cards.appendChild(b);
   }
@@ -602,22 +562,12 @@ function draw() {
     g.fillStyle = fr ? C.frost : C.ink;
     g.font = `700 ${Math.round(R * 0.15)}px "Barlow Semi Condensed", "Arial Narrow", sans-serif`;
     g.fillText(name, cx, cy - R * 0.02);
-    g.fillStyle = C.muted;
-    g.font = `500 ${Math.round(R * 0.05)}px Barlow, sans-serif`;
-    g.fillText(fr ? "frozen" : on ? "" : "resting", cx, cy + R * 0.11);
+
   }
-  // below: the three pulse rings, the four layers' levels
+  // below: the three pulse rings
   const by = w + (h - w) * 0.5 - (h - w) * 0.05, pr = Math.min(R * 0.11, (h - w) * 0.38);
-  const lv = st ? [st[13] * par(P.PAD) / 100, Math.max(st[21], st[22], st[23], st[24]) * par(P.BELLS) / 100,
-                   st[14] * par(P.BASS) / 100, Math.max(st[28], st[29], st[30]) * par(P.PULSE) / 100] : [0, 0, 0, 0];
-  const LC = [C.pad, C.bell, C.bass, C.pulse];
-  for (let k = 0; k < 4; k++) {   // levels, left
-    const x = w * 0.06 + k * R * 0.07, top = by - pr, hh = pr * 2;
-    g.fillStyle = C.rule; g.fillRect(x, top, R * 0.035, hh);
-    g.fillStyle = LC[k]; const f = Math.min(1, lv[k]) * hh; g.fillRect(x, top + hh - f, R * 0.035, f);
-  }
   for (let dd = 0; dd < 3; dd++) {
-    const n = W.app_drum_n(dd), x0 = w * 0.48 + dd * pr * 2.6, pos = st ? st[25 + dd] : -1, glow = st ? st[28 + dd] : 0;
+    const n = W.app_drum_n(dd), x0 = w / 2 + (dd - 1) * pr * 2.8, pos = st ? st[25 + dd] : -1, glow = st ? st[28 + dd] : 0;
     for (let s = 0; s < n; s++) {
       const a = (s / n) * Math.PI * 2, x = x0 + Math.sin(a) * pr, y = by - Math.cos(a) * pr, hit = (drumPat[dd] >> s) & 1;
       if (hit) disc(x, y, R * (on && s === pos ? 0.024 : 0.017), on && s === pos ? mixc(C["pulse-t"], C.pulse, 0.5 + glow / 2) : mixc(C["pulse-t"], C.pulse, 0.35));
@@ -660,7 +610,7 @@ cv.addEventListener("click", (e) => {
     send({ t: "freeze", v: frozen ? 1 : 0 });
     e.currentTarget.setAttribute("aria-pressed", frozen ? "true" : "false");
   };
-  document.getElementById("next").onclick = () => { send({ t: "next" }); hint("The next chord, on the next bar."); };
+  document.getElementById("next").onclick = () => send({ t: "next" });
   document.getElementById("colour").onclick = () => { setPar(P.PADTONE, par(P.PADTONE) ? 0 : 1); refresh(); };
   document.getElementById("octDn").onclick = () => { setPar(P.BOCT, par(P.BOCT) - 1); refresh(); };
   document.getElementById("octUp").onclick = () => { setPar(P.BOCT, par(P.BOCT) + 1); refresh(); };
@@ -672,7 +622,7 @@ cv.addEventListener("click", (e) => {
     const b = e.currentTarget;
     if (b.dataset.armed) { resetPiece(); closeSheet(); return; }
     b.dataset.armed = "1";
-    b.textContent = `Tap again to put ${cstr(W.app_piece_name(S.piece))} back to its recipe`;
+    b.textContent = "Tap again to reset";
   };
 })();
 </script>
