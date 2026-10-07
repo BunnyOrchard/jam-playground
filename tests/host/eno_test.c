@@ -162,6 +162,34 @@ int main(void)
         printf("  chord changes in 2 min: %d\n", changes);
     }
 
+    /* a chord change is heard: within 2 s no sounding voice sings a note outside the new chord */
+    {
+        int k, i, bad_s = 0, changes = 0, last = -1;
+        en_set(P_DRIFT, 0);
+        for (k = 0; k < 90 * 4; k++) {
+            int sig = en_chord[0] | en_chord[1] << 7 | en_chord[2] << 14 | en_chord[3] << 21;
+            static int since = -1;
+            run(0.25f);
+            if (sig != last) {
+                if (last >= 0) {
+                    changes++;
+                    since = 0;
+                }
+                last = sig;
+            } else if (since >= 0 && ++since == 8) {   /* 2 s after a change */
+                uint32_t pcs = 0;
+                for (i = 0; i < EN_NPAD; i++)
+                    pcs |= 1u << (en_chord[i] % 12);
+                for (i = 0; i < EN_NPAD; i++)
+                    if (en_pad_amp[i] > 0.05f && !(pcs >> (en_pad_note[i] % 12) & 1u))
+                        bad_s++;
+                since = -1;
+            }
+        }
+        CHECK(changes >= 3, "chord changes in 90 s at Drift 0: %d", changes);
+        CHECK(!bad_s, "%d voices still off the new chord 2 s after a change", bad_s);
+    }
+
     /* the loops evolve: with Evolve at 100, the phrases change */
     {
         int8_t before[EN_NLOOP][EN_LOOP_MAX];

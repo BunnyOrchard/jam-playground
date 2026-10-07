@@ -23,7 +23,7 @@ const uint8_t EN_DRUM_N[EN_NDRUM] = {16, 12, 7};
 
 static const en_param_t PARAMS[P_NPARAMS] = {
     {"Pad", 0, 100, 60},      {"Bells", 0, 100, 65},    {"Bass", 0, 100, 45},     {"Pulse", 0, 100, 40},
-    {"Density", 0, 100, 40},  {"Evolve", 0, 100, 35},   {"Drift", 0, 100, 45},    {"Hits", 0, 100, 35},
+    {"Density", 0, 100, 40},  {"Evolve", 0, 100, 35},   {"Drift", 0, 100, 25},    {"Hits", 0, 100, 35},
     {"Echo", 0, 100, 45},     {"Echo time", 0, 5, 3},   {"Reverb", 0, 100, 65},   {"Size", 0, 100, 80},
     {"Bright", 0, 100, 40},   {"Swell", 0, 100, 60},    {"Bell tone", 0, 100, 50}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 30, 120, 72},   {"Root", 0, 11, 2},
@@ -38,14 +38,14 @@ static const struct {
     const char *name;
     int8_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
-    {"Garden",       {60, 65, 45, 40,  40, 35, 45, 35,  45, 3, 65, 80,  40, 60, 50, 50,  0, 1,  72, 2, 1, 0, 0}},
-    {"Departures",   {35, 75,  0,  0,  35, 30, 65,  0,  30, 3, 70, 85,  20, 55,  5, 40,  0, 1,  60, 1, 0, -1, 0}},
-    {"Voices",       {85,  0, 25,  0,  30, 30, 75,  0,  20, 5, 80, 90,  67, 70, 30, 55,  0, 1,  56, 5, 5, 0, 1}},
-    {"Afternoon",    {50, 65, 35, 25,  55, 45, 40, 30,  50, 2, 60, 75,  60, 50, 60, 55,  0, 1,  84, 7, 3, 0, 0}},
-    {"Night Bus",    {45, 55, 55, 60,  45, 50, 35, 55,  55, 1, 55, 70,  35, 40, 75, 70,  0, 1,  96, 9, 5, 0, 0}},
-    {"Shoreline",    {40, 60, 30,  0,  30, 40, 60,  0,  85, 4, 55, 95,  30, 80,  0, 85,  0, 1,  64, 4, 6, 0, 0}},
-    {"Glass",        {35, 80, 30, 20,  60, 55, 45, 25,  45, 2, 65, 80,  55, 45, 90, 50,  0, 1,  76, 3, 7, 1, 0}},
-    {"Tides",        {55, 60, 40, 35,  45, 75, 30, 40,  50, 3, 65, 85,  60, 60, 55, 95,  0, 1,  70, 10, 4, 0, 1}},
+    {"Garden",       {60, 65, 45, 40, 40, 35, 25, 35, 45, 3, 65, 80, 40, 60, 50, 50, 0, 1, 72, 2, 1, 0, 0}},
+    {"Departures",   {35, 75, 0, 0, 35, 30, 40, 0, 30, 3, 70, 85, 20, 55, 5, 40, 0, 1, 60, 1, 0, -1, 0}},
+    {"Voices",       {85, 0, 25, 0, 30, 30, 50, 0, 20, 5, 80, 90, 67, 70, 30, 55, 0, 1, 56, 5, 5, 0, 1}},
+    {"Afternoon",    {50, 65, 35, 25, 55, 45, 20, 30, 50, 2, 60, 75, 60, 50, 60, 55, 0, 1, 84, 7, 3, 0, 0}},
+    {"Night Bus",    {45, 55, 55, 60, 45, 50, 15, 55, 55, 1, 55, 70, 35, 40, 75, 70, 0, 1, 96, 9, 5, 0, 0}},
+    {"Shoreline",    {40, 60, 30, 0, 30, 40, 40, 0, 85, 4, 55, 95, 30, 80, 0, 85, 0, 1, 64, 4, 6, 0, 0}},
+    {"Glass",        {35, 80, 30, 20, 60, 55, 25, 25, 45, 2, 65, 80, 55, 45, 90, 50, 0, 1, 76, 3, 7, 1, 0}},
+    {"Tides",        {55, 60, 40, 35, 45, 75, 10, 40, 50, 3, 65, 85, 60, 60, 55, 95, 0, 1, 70, 10, 4, 0, 1}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -439,6 +439,23 @@ static void pad_handoff(void)
     }
 }
 
+/* a chord change: a voice singing a note the new chord doesn't have fades out in about a second and
+ * breathes in on its new note; a voice on a shared note holds it to the end of its breath */
+static void pad_leave(void)
+{
+    int i, k;
+    for (i = 0; i < EN_NPAD; i++) {
+        pad_t *v = &pad[i];
+        int pc = v->midi_note % 12, shared = 0;
+        for (k = 0; k < chord_nt; k++)
+            shared |= chord_pcs[k] == pc;
+        if (v->amp > 0.002f && !shared && !v->hand)
+            v->hand = 1;
+        else if (v->amp <= 0.002f && !v->hand)
+            v->note = v->target;
+    }
+}
+
 static void pad_coefs(pad_t *v, int i)          /* every 32 samples: the breath, pitch, the vowel */
 {
     float f, vw, f1, f2;
@@ -603,6 +620,7 @@ static void chord_change(void)                  /* to another degree: the near, 
         i = deg == 0 ? (nsteps > 1 ? 1 : 0) : 0;
     deg = i;
     pad_retarget();
+    pad_leave();
     bass_to(chord_pcs[0]);
     /* Evolve: the bass sometimes sits a chord out, more often when the arc is sparse */
     bass.rest = frand() < evolve * 0.3f + 0.25f * fm_maxf(-arcm, 0.0f);
