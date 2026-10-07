@@ -54,6 +54,13 @@ a { color: var(--accent); }
 .help h2 { font: 600 1.1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .3rem; }
 .help p, .help ul { margin: 0; color: var(--muted); max-width: 60ch; }
 .help ul { padding-left: 1.1rem; }
+.help .knobs { grid-column: 1 / -1; }
+.knobs .pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .8rem 2rem; margin-top: .4rem; }
+.knobs h3 { font: 600 1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .2rem; color: var(--ink); }
+.knobs h3 span { color: var(--muted); font-weight: 400; }
+.knobs dl { margin: 0; color: var(--muted); }
+.knobs dt { color: var(--ink); font-weight: 600; }
+.knobs dd { margin: 0 0 .45rem; }
 kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 0 .3em; color: var(--ink); }
 </style>
 </head>
@@ -79,6 +86,52 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 </div>
 
 <section class="help">
+  <div class="knobs">
+    <h2>Pages and knobs</h2>
+    <p>Each page puts four values on KNOB 1–4. <b>EDIT</b> steps through the pages, or press the page's button. Each piece remembers its own settings.</p>
+    <div class="pages">
+      <div>
+        <h3>Layers <span>HOME</span></h3>
+        <dl>
+          <dt>Pad, Bells, Bass, Pulse</dt><dd>How loud each layer is. 0 leaves it out.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Motion <span>SEQ</span></h3>
+        <dl>
+          <dt>Density</dt><dd>How many notes each bell loop holds: none at 0, up to five at the top. The four loops are 13, 17, 23 and 29 beats long, so a few notes each is already a melody that never quite repeats. A change shows up as each loop comes round.</dd>
+          <dt>Evolve</dt><dd>How restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note now and then changes or moves at the end of a pass, the pulse patterns shift, and layers take rests: the pulse sits out a few bars, the bass skips a chord, a loop goes quiet for a pass.</dd>
+          <dt>Drift</dt><dd>How long a chord lasts before the pad moves to another one in the scale: 20 s to 5 min (each time a little more or less). The thin bar at the top right of the screen fills up on the way to the next chord. ARP moves on now.</dd>
+          <dt>Hits</dt><dd>How many beats the three pulse rings play (thump in 16, shaker in 12, wood in 7). 0: no pulse.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Space <span>FX</span></h3>
+        <dl>
+          <dt>Echo</dt><dd>How much goes to the tape echo (and the short slap echo before it).</dd>
+          <dt>Echo time</dt><dd>The tape loop's length, a dotted quarter to 4 bars, shortened to fit its 5.6 s at slow tempos. The right side repeats at three quarters of it.</dd>
+          <dt>Reverb</dt><dd>How much goes to the plate.</dd>
+          <dt>Size</dt><dd>How long the plate rings, from a room to a long hall, and how many times the echo comes back.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Tone <span>SEL</span></h3>
+        <dl>
+          <dt>Bright</dt><dd>Opens the pad's filter (and for the Voices pad, moves the vowel from "oo" to "eh").</dd>
+          <dt>Swell</dt><dd>How long the pad's voices breathe: each swells in, hangs and fades on its own cycle, from a few seconds to about half a minute.</dd>
+          <dt>Bell tone</dt><dd>From round and soft-struck, like a slowed piano, to a long metallic clang.</dd>
+          <dt>Motion</dt><dd>How far the slow tide swings, a few minutes from end to end, between sparse (fewer bells, darker, the pulse gone, more reverb) and full; and how much pitch, pan and the echo wander.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Setup <span>GLO</span></h3>
+        <dl>
+          <dt>Root</dt><dd>The key's root note.</dd>
+          <dt>Tune, MIDI out, Key lights</dt><dd>Fine tuning in cents; MIDI out over USB on or off; the keys lighting up the scale. The audio load shows top right.</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
   <div>
     <h2>Buttons</h2>
     <ul>
