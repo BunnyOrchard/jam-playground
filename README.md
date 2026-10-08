@@ -84,7 +84,7 @@ Each page puts four values on KNOB 1–4. EDIT steps through the pages.
   darker and thinner.
 - **SEL: Tone.** Bright (the voices' vowel), Swell (how long the voices breathe), Bell tone (round to
   metallic), Motion (how far the arc and the slow random movements go).
-- **GLO: Setup.** Root, Tune, MIDI out, Key lights (and the audio load, top right).
+- **GLO: Setup.** Root, Tune, MIDI out, Lights (and the audio load, top right). Lights On: the key lights, and the unlit buttons glow dimly so they can be read; Keys: the key lights only; Off.
 
 The screen: the piece, its root and mode at the top; the twelve notes as a ring (the scale lit, the chord bright, the root in coral) with the
 chord's name in it; the four bell loops around it, their notes on them and their playheads going

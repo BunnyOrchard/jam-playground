@@ -122,22 +122,24 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = en_param_info(k)->hi;
     } else {
         *lo = 0;
-        *hi = k == K_LEDS ? 1 : k == K_CPU ? 100 : 0;
+        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : 0;
     }
 }
 static const char *knob_name(int k)
 {
     if (k < P_NPARAMS)
         return en_param_info(k)->name;
-    return k == K_LEDS ? "Key lights" : k == K_CPU ? "CPU" : "";
+    return k == K_LEDS ? "Lights" : k == K_CPU ? "CPU" : "";
 }
 static void knob_text(int k, char *b)
 {
     int v = knob_get(k);
     if (k < P_NPARAMS) {
         en_param_text(k, v, b);
-    } else if (k == K_LEDS) {
-        en_param_text(P_MIDI, v, b);             /* On / Off */
+    } else if (k == K_LEDS) {                    /* On: the keys, and the unlit buttons glow; Keys: no glow */
+        const char *n = v == 2 ? "Keys" : v ? "On" : "Off";
+        while ((*b++ = *n++))
+            ;
     } else if (k == K_CPU) {
         itoa_u((uint32_t)v, b);
         while (*b)
@@ -699,6 +701,7 @@ static void leds(void)
         for (i = 0; i < NKEYS; i++)
             if (ap >> ((5u + i) % 12u) & 1u)
                 k |= 1u << i;
+    plat_glow(proj.leds == 1);
     plat_leds(b, k);
 }
 
