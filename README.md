@@ -25,7 +25,7 @@ Private for now. Install it with `python3 tools/fm1_install.py build/eno.fwsc` (
   how many notes a loop holds; **Evolve** how often a note changes or moves. Each loop is its own
   shade of bell, and now and then a note rings with its octave.
 - **Bass**: the chord's root, low and soft, sometimes leaning on the fifth.
-- **Pulse**: a soft thump, a shaker and a wooden knock, each on its own Euclidean pattern over 16, 12
+- **Pulse**: a soft thump, a closed hi-hat and an open one, each on its own Euclidean pattern over 16, 12
   and 7 sixteenths: polyrhythms. **Hits** sets how many; the patterns slowly turn and gain or lose
   a hit around it.
 
@@ -36,8 +36,8 @@ Over it all:
   smaller things wander: pitch, pan, the vowel, the echo's wow).
 - **Rests**: with **Evolve**, the pulse sits out a few bars, the bass a chord, a bell loop a pass.
 
-Everything follows one scale and one chord; the thump is tuned to the chord's root and the wood
-plays the chord's notes.
+Everything follows one scale and one chord; the thump is tuned to the chord's root, and the hats
+have no pitch.
 
 ## The pieces
 

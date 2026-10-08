@@ -532,7 +532,7 @@ static const float RATIO[5] = {1.0f, 2.0f, 3.0f, 3.5f, 4.77f};
 
 /* ----------------------------------------------------------------- pulse --- */
 typedef struct {
-    float ph, inc, inc_end, amp, adec, idx, x1, x2, att;
+    float ph, inc, inc_end, amp, adec, idx, x1, x2, att, mph[4];
     uint8_t on, note;
 } drum_t;
 static drum_t drum[EN_NDRUM];
@@ -541,7 +541,9 @@ static uint32_t drum_pat[EN_NDRUM];
 static float pulse_vol;
 static uint32_t noise = 22222u;
 static const uint8_t DRUM_KMAX[EN_NDRUM] = {5, 7, 3};
-static const uint8_t DRUM_GM[EN_NDRUM] = {36, 70, 76};          /* kick, maracas, wood block */
+static const uint8_t DRUM_GM[EN_NDRUM] = {36, 42, 46};          /* kick, closed hat, open hat */
+/* the hats' metal: four square waves at the 808's inharmonic ratios (Hz / EN_SR) */
+static const float HAT_INC[4] = {304.4f / EN_SR, 369.6f / EN_SR, 522.7f / EN_SR, 800.0f / EN_SR};
 
 /* ------------------------------------------------------------------ space --- */
 static float echo_send, rev_send, echo_len, echo_len_t, echo_fb = 0.55f;
@@ -816,18 +818,15 @@ static void drum_hit(int d, float vel)
         v->adec = fm_expf(-6.9f / (0.45f * EN_SR));
         break;
     }
-    case 1:                                     /* shaker: noise through a band-pass */
+    case 1:                                     /* closed hat: short; it chokes the open one */
         v->note = DRUM_GM[1];
-        v->adec = fm_expf(-6.9f / (0.13f * EN_SR));
+        v->adec = fm_expf(-6.9f / (0.06f * EN_SR));
+        drum[2].adec = fm_expf(-6.9f / (0.02f * EN_SR));
         break;
-    default: {                                  /* wood: a short FM knock on a chord tone */
-        int n = 84 + chord_pcs[irand(chord_nt)];
+    default:                                    /* open hat: a long, soft "tss" */
         v->note = DRUM_GM[2];
-        v->inc = mtof((float)n) * (1.0f / EN_SR);
-        v->idx = 0.35f;
-        v->adec = fm_expf(-6.9f / (0.16f * EN_SR));
+        v->adec = fm_expf(-6.9f / (0.42f * EN_SR));
         break;
-    }
     }
     en_drum_glow[d] = 1.0f;
     midi(0x99, v->note, (uint32_t)(vel * 100.0f));
@@ -1520,6 +1519,43 @@ static void render_bells(uint32_t n)
     }
 }
 
+/* a hat: the metal and noise, high-passed (Chamberlin SVF, ~7 kHz); no pitch, little echo */
+static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr)
+{
+    uint32_t j;
+    int k;
+    float x1, x2, amp, att;
+    if (!v->on)
+        return;
+    x1 = v->x1, x2 = v->x2, amp = v->amp, att = v->att;
+    for (j = 0; j < n; j++) {
+        float in = 0.0f, hp, x;
+        for (k = 0; k < 4; k++) {
+            v->mph[k] += HAT_INC[k];
+            if (v->mph[k] >= 1.0f)
+                v->mph[k] -= 1.0f;
+            in += v->mph[k] < 0.5f ? 0.25f : -0.25f;
+        }
+        noise = noise * 1664525u + 1013904223u;
+        in = 0.5f * in + 0.6f * (float)(int32_t)noise * (1.0f / 2147483648.0f);
+        hp = in - x2 - 0.8f * x1;
+        x1 += 0.9f * hp;
+        x2 += 0.9f * x1;
+        x = hp * amp * att * g;
+        mixl[j] += x * pl;
+        mixr[j] += x * pr;
+        rsend[j] += x * 0.2f;
+        esend[j] += x * 0.08f;
+        amp *= v->adec;
+        att += (1.0f - att) * 0.3f;
+    }
+    v->x1 = fm_flush(x1);
+    v->x2 = fm_flush(x2);
+    v->amp = amp;
+    v->att = att;
+    v->on = amp > 0.0005f;
+}
+
 static void render_drums(uint32_t n)
 {
     uint32_t j;
@@ -1546,53 +1582,8 @@ static void render_drums(uint32_t n)
         v->att = att;
         v->on = amp > 0.0005f;
     }
-    v = &drum[1];                                /* shaker: noise, band-passed, a little right */
-    if (v->on) {
-        float x1 = v->x1, x2 = v->x2, amp = v->amp, att = v->att;
-        const float f = 1.2f, qd = 0.7f;         /* Chamberlin SVF near 7 kHz */
-        for (j = 0; j < n; j++) {
-            float in, hp, x;
-            noise = noise * 1664525u + 1013904223u;
-            in = (float)(int32_t)noise * (1.0f / 2147483648.0f);
-            hp = in - x2 - qd * x1;
-            x1 += f * 0.5f * hp;
-            x2 += f * 0.5f * x1;
-            x = x1 * amp * att * g * 0.35f;
-            mixl[j] += x * 0.6f;
-            mixr[j] += x;
-            rsend[j] += x * 0.25f;
-            esend[j] += x * 0.4f;
-            amp *= v->adec;
-            att += (1.0f - att) * 0.004f;
-        }
-        v->x1 = fm_flush(x1);
-        v->x2 = fm_flush(x2);
-        v->amp = amp;
-        v->att = att;
-        v->on = amp > 0.0005f;
-    }
-    v = &drum[2];                                /* wood: FM, a little left */
-    if (v->on) {
-        float ph = v->ph, amp = v->amp, idx = v->idx, att = v->att;
-        for (j = 0; j < n; j++) {
-            float x = sine(ph + sine(ph * 2.3f - (float)(int)(ph * 2.3f)) * idx + 2.0f) * amp * att * g * 0.4f;
-            mixl[j] += x;
-            mixr[j] += x * 0.6f;
-            rsend[j] += x * 0.3f;
-            esend[j] += x * 0.5f;
-            ph += v->inc;
-            if (ph >= 1.0f)
-                ph -= 1.0f;
-            amp *= v->adec;
-            idx *= 0.9993f;
-            att += (1.0f - att) * 0.08f;
-        }
-        v->ph = ph;
-        v->amp = amp;
-        v->idx = idx;
-        v->att = att;
-        v->on = amp > 0.0005f;
-    }
+    render_hat(&drum[1], n, g * 0.2f, 0.6f, 1.0f);    /* closed: a little right */
+    render_hat(&drum[2], n, g * 0.14f, 1.0f, 0.7f);   /* open: a little left */
 }
 
 static void render_chunk(int32_t *out, uint32_t n, float gain)

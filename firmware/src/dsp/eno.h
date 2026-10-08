@@ -11,7 +11,7 @@
  *           quarter notes), each holding a short phrase that shifts against the others, each its own
  *           shade of bell. EVOLVE changes a note now and then; DENSITY sets how many notes a loop holds.
  *   BASS    a sine and its sub-octave on the chord's root (now and then its fifth), gliding.
- *   PULSE   a soft thump, a shaker and a wood, each on its own Euclidean pattern (16, 12 and 7
+ *   PULSE   a soft thump, a closed hat and an open hat, each on its own Euclidean pattern (16, 12 and 7
  *           sixteenths): polyrhythms. HITS sets how many; the patterns turn and change around it.
  *
  * Over it all, the ARC: a slow tide, minutes long, between sparse (fewer bells, a darker vowel, the
@@ -31,7 +31,7 @@
 #define EN_SR 44100.0f
 #define EN_NLOOP 4                     /* bell tape loops */
 #define EN_LOOP_MAX 29
-#define EN_NDRUM 3                     /* pulse: thump, shaker, wood */
+#define EN_NDRUM 3                     /* pulse: thump, closed hat, open hat */
 #define EN_NPAD 4                      /* pad voices */
 
 /* modes: pools relative to the root (bit i: root + i semitones) */
