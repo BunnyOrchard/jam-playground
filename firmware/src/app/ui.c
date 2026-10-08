@@ -579,7 +579,9 @@ static void draw_pulse(void)                     /* right: the three Euclidean r
             int32_t x, y;
             int cur = en_playing && s == en_drum_pos[d];
             polar(cx, cy, 13.0f, s, n, &x, &y);
-            if (p >> s & 1u)
+            if ((p >> s & 1u) && en_pulse_rest)   /* sitting a few bars out: faded */
+                cv_disc(x, y, 2, K_LINE);
+            else if (p >> s & 1u)
                 cv_disc(x, y, cur ? 3 : 2, cur ? mix(K_PULSE_T, K_PULSE, 8 + g / 2) : mix(K_PULSE_T, K_PULSE, 6));
             else if (cur)
                 cv_disc(x, y, 1, K_DIM);
@@ -606,7 +608,7 @@ static void draw_main(void)
             h = hash(h, (uint32_t)(en_loop_note[i][s] >= 0));
     }
     for (i = 0; i < EN_NDRUM; i++)
-        h = hash(h, en_drum_pos[i] | (uint32_t)q16(en_drum_glow[i]) << 8 | en_drum_pat[i] << 13);
+        h = hash(h, en_drum_pos[i] | (uint32_t)q16(en_drum_glow[i]) << 8 | en_drum_pat[i] << 13 | (uint32_t)en_pulse_rest << 31);
     h = hash(h, (uint32_t)(en_drift * 40.0f) | (uint32_t)q16(en_pad_level) << 8 | (uint32_t)q16(en_bass_level) << 13);
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)proj.par[i]);

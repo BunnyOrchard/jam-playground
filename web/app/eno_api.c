@@ -71,7 +71,7 @@ API float *app_state(void)
         st[25 + i] = en_drum_pos[i];
         st[28 + i] = en_drum_glow[i];
     }
-    st[31] = 0.0f;
+    st[31] = en_pulse_rest;
     for (l = 0; l < EN_NLOOP; l++)
         for (i = 0; i < EN_LOOP_MAX; i++)
             st[32 + l * EN_LOOP_MAX + i] = en_loop_note[l][i];

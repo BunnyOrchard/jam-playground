@@ -417,10 +417,10 @@ function draw() {
   // below: the three pulse rings
   const by = w + (h - w) * 0.45, pr = Math.min(R * 0.1, (h - w) * 0.36);
   for (let k = 0; k < 3; k++) {
-    const n = W.app_drum_n(k), x0 = w / 2 + (k - 1) * pr * 2.8, pos = st ? st[25 + k] : -1;
+    const n = W.app_drum_n(k), x0 = w / 2 + (k - 1) * pr * 2.8, pos = st ? st[25 + k] : -1, rest = st && st[31] > 0;
     for (let s = 0; s < n; s++) {
       const a = (s / n) * Math.PI * 2, x = x0 + Math.sin(a) * pr, y = by - Math.cos(a) * pr, hit = (drumPat[k] >> s) & 1, now = on && s === pos;
-      if (hit) disc(x, y, R * (now ? 0.022 : 0.015), now ? C.ink : C.g3);
+      if (hit) disc(x, y, R * (now ? 0.022 : 0.015), rest ? C.g1 : now ? C.ink : C.g3);   /* resting: faded */
       else disc(x, y, R * (now ? 0.01 : 0.005), now ? C.ink : C.g3);
     }
   }

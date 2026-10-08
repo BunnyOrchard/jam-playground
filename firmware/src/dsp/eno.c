@@ -299,6 +299,7 @@ volatile uint32_t en_drum_pat[EN_NDRUM];
 volatile float en_drum_glow[EN_NDRUM];
 volatile uint32_t en_bars;
 volatile float en_arc;
+volatile uint8_t en_pulse_rest;
 volatile uint8_t en_pad_note[EN_NPAD];
 volatile float en_pad_amp[EN_NPAD];
 
@@ -838,17 +839,18 @@ static uint32_t sixteenth;
 static void tick(void)
 {
     int d, l;
-    const float pa = fm_clampf(1.0f + 1.3f * arcm, 0.0f, 1.15f);   /* the arc: the pulse fades and returns */
+    const float pa = fm_clampf(1.0f + 1.3f * arcm, 0.3f, 1.15f);   /* the arc: the pulse fades (never out) */
     if ((sixteenth & 15u) == 0u) {              /* a bar: Evolve's rests and turns */
         if (pulse_rest > 0)
             pulse_rest--;
-        else if (frand() < evolve * 0.05f)
-            pulse_rest = 4 + irand(13);
+        else if (frand() < evolve * 0.015f)
+            pulse_rest = 2 + irand(3);           /* a short breath: 2 to 4 bars */
+        en_pulse_rest = (uint8_t)(pulse_rest > 0);
         if (frand() < evolve * 0.25f)
             drums_evolve();
     }
     for (d = 0; d < EN_NDRUM; d++) {
-        if (drum_pat[d] >> drum_pos[d] & 1u && !pulse_rest && pa > 0.06f)
+        if (drum_pat[d] >> drum_pos[d] & 1u && !pulse_rest)
             drum_hit(d, ((drum_pos[d] == 0 ? 0.95f : 0.6f) + 0.25f * frand()) * pa);
         en_drum_pos[d] = drum_pos[d];
         if (++drum_pos[d] >= EN_DRUM_N[d])
@@ -1158,6 +1160,7 @@ static void regrow(void)                        /* a new piece: fresh loops, hom
     bass_to(chord_pcs[0]);
     bass.rest = 0;
     pulse_rest = 0;
+    en_pulse_rest = 0;
     drums_pattern();
     drift_reset();
     change_pending = 0;
