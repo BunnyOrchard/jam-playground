@@ -156,13 +156,15 @@ AMB-1 grows four layers from one scale and one chord.
 
 Then the space, after Eno's chain for *Discreet Music*: a short tape echo, a long tape loop (up to
 5.6 seconds, with two heads, each repeat coming back darker and thinner) and a plate reverb.
-They're most of what you hear.
+They're most of what you hear. The echo is stereo, and it evolves: with **Motion** up, its two
+heads wander across the field, the repeats fall in changing patterns, and now and then the second
+head slides to another part of the loop, bending the repeats a little as it goes.
 
 Over it all:
 
 - **The arc:** a slow tide, a few minutes from end to end, between sparse (fewer bells, a darker
   pad, a quieter pulse, more reverb) and full. **Motion** sets how far it swings, and how far the
-  smaller things wander: pitch, pan, the vowel, the echo's wow.
+  smaller things wander: pitch, pan, the vowel, the echo's heads.
 - **Rests:** with **Evolve** up, the layers take breaths: the pulse sits out two to four bars,
   the bass skips a chord, a bell loop goes quiet for a pass.
 
@@ -201,7 +203,8 @@ always KNOB 1. SELECT steps through them in this order.
 - **Evolve:** how restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note
   now and then changes or moves at the end of a pass, the pulse patterns turn and gain or lose a
   hit, and the layers take rests.
-- **Motion:** how far the arc swings, and how much pitch, pan, the vowel and the echo wander.
+- **Motion:** how far the arc swings, and how much pitch, pan, the vowel and the echo wander
+  (at 0 the echo stays put: one head left, one right).
 - **Drift:** how long a chord lasts before the pad moves on, 20 seconds to 5 minutes (each time a
   little more or less). EDIT moves on now.
 
@@ -249,7 +252,8 @@ always KNOB 1. SELECT steps through them in this order.
 
 - **Echo:** how much goes to the echoes.
 - **Echo time:** the tape loop's length: a dotted quarter, a half, a dotted half, 1, 2 or 4 bars,
-  shortened to fit its 5.6 seconds at slow tempos. The right side repeats at three quarters of it.
+  shortened to fit its 5.6 seconds at slow tempos. The second head repeats at three quarters of it,
+  or with Motion up, at two thirds, five eighths, a half or three eighths.
 - **Reverb:** how much goes to the plate.
 - **Size:** how long the plate rings, from a room to a long hall, and how many times the echo
   comes back.

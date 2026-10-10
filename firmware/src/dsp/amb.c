@@ -350,7 +350,8 @@ static inline float sine(float ph)              /* ph in turns, any value >= 0 *
 }
 
 /* ------------------------------------------------- slow random motion --- */
-#define NMOD 6
+#define NMOD 9                                  /* 0..5 the pads', 6..8 the echo's */
+#define NMOD_PAD 6
 static struct {
     float v, tgt, rate;
     uint32_t left;                              /* samples until a new target */
@@ -496,7 +497,7 @@ static void pad_coefs(pad_t *v, int i)          /* every 32 samples: the breath,
     f = mtof(v->note + 0.08f * motion * mod[i].v);                          /* a slow drift, as tape */
     v->inc[0] = f * 0.99856f * (1.0f / EN_SR);  /* -2.5 and +2.5 cents */
     v->inc[1] = f * 1.00144f * (1.0f / EN_SR);
-    vw = fm_clampf((float)bright * 0.01f + 0.25f * arcm + 0.2f * motion * mod[(i + 2) % NMOD].v, 0.0f, 1.0f) * 2.999f;
+    vw = fm_clampf((float)bright * 0.01f + 0.25f * arcm + 0.2f * motion * mod[(i + 2) % NMOD_PAD].v, 0.0f, 1.0f) * 2.999f;
     a = (int)vw;
     vw -= (float)a;
     f1 = VOWEL[a][0] + (VOWEL[a + 1][0] - VOWEL[a][0]) * vw;
@@ -1020,16 +1021,26 @@ static void plate_init(void)
 /* After Discreet Music's chain: an Echoplex (a short, smearing echo, ~160 ms, fed back) and a tape loop
  * (long: up to ~5.6 s, synced to the tempo), each repeat a little darker and thinner, with a little
  * wow. The tape runs at a quarter rate (11 kHz, 16-bit, mono): it loses its highs anyway. Two heads:
- * the left plays the loop's length, the right three quarters of it. */
+ * the first plays the loop's length, the second a part of it (3/4 at first). With Motion the echo
+ * evolves: each head wanders across the field, the feedback leans now on one head, now on the other
+ * (the repeats fall in changing patterns, left and right), and now and then the second head slides to
+ * another part of the loop, as a head moved by hand (the repeats bend a little in pitch on the way).
+ * The Echoplex has a second tap, for the right. */
 #define TAPE_N 62000                             /* 5.6 s at 11.025 kHz */
 #define TAPE_SR 11025.0f
 static int16_t tape[TAPE_N] EN_POOL;
 static int tape_w, tape_ph;
-static float tape_acc, tape_lp, tape_hp, tape_pl, tape_pr, tape_cl, tape_cr;
+static float tape_acc, tape_lp, tape_hp, tape_p1, tape_p2, tape_c1, tape_c2;
+static const float HEAD2[5] = {0.75f, 0.6667f, 0.625f, 0.5f, 0.375f};   /* the second head's parts */
+static float head2 = 0.75f, head2_t = 0.75f, head2_v;   /* its place (of the loop), target, speed */
+static float fb_lean;                            /* 0..1: how much of the feedback is the second head's */
+static float hg[4] = {1.0f, 0.0f, 0.0f, 1.0f};   /* the heads' pan gains: 1 left, 1 right, 2 left, 2 right */
+static uint32_t head_left;                       /* samples until the second head may move */
 #define PLEX_N 7100                              /* 160 ms at 44.1 kHz */
+#define PLEX_TAP 2700                            /* the right's tap: ~100 ms */
 static int16_t plex[PLEX_N];
 static int plex_w;
-static float plex_lp;
+static float plex_lp, plex_lp2;
 
 static inline float tape_read(float d)           /* d quarter-rate samples ago */
 {
@@ -1068,41 +1079,71 @@ static void echo_time(void)
         echo_len = echo_len_t;
 }
 
-/* one sample of both: the input (a mono send) to the tape's two heads (el, er) and the Echoplex (ex) */
-static inline void echoes(float in, float *el, float *er, float *ex)
+/* once a chunk: where the heads sit in the field, how the feedback leans, the second head's slide */
+static void heads_step(uint32_t n)
+{
+    float p, want, vmax;
+    int i;
+    for (i = 0; i < 2; i++) {
+        p = fm_clampf((i ? 0.7f : -0.7f) + 0.9f * motion * mod[6 + i].v, -1.0f, 1.0f);
+        p = (p + 1.0f) * (FM_PI / 4.0f);
+        hg[2 * i] = fm_cosf(p);
+        hg[2 * i + 1] = fm_sinf(p);
+    }
+    fb_lean = 0.25f * motion * (1.0f + mod[8].v);
+    if (head_left <= n) {
+        head_left = (uint32_t)((20.0f + 40.0f * frand()) * EN_SR);
+        if (en_playing && !en_frozen && frand() < motion)
+            head2_t = HEAD2[(int)(frand() * 4.999f)];
+    } else {
+        head_left -= n;
+    }
+    /* its speed (a part of the loop per tape sample): at most a bend of ~14 cents, easing in and out */
+    vmax = 0.008f / fm_maxf(echo_len, 100.0f);
+    want = fm_clampf((head2_t - head2) * (1.0f / (2.0f * TAPE_SR)), -vmax, vmax);
+    head2_v += (want - head2_v) * fm_minf((float)n * (1.0f / EN_SR), 1.0f);
+}
+
+/* one sample of both: the input (a mono send) to the tape's heads (el, er) and the Echoplex (xl, xr) */
+static inline void echoes(float in, float *el, float *er, float *xl, float *xr)
 {
     float y = (float)plex[plex_w] * (1.0f / 12000.0f);         /* the Echoplex: 160 ms, fed back, darker */
+    int t = plex_w - PLEX_TAP;
     plex_lp += 0.35f * (y - plex_lp);
+    plex_lp2 += 0.35f * ((float)plex[t < 0 ? t + PLEX_N : t] * (1.0f / 12000.0f) - plex_lp2);
     plex[plex_w] = s16(in + 0.55f * plex_lp);
     if (++plex_w >= PLEX_N)
         plex_w = 0;
-    *ex = plex_lp;
+    *xl = plex_lp;
+    *xr = plex_lp2;
     tape_acc += in + 0.3f * plex_lp;
     if (++tape_ph >= 4) {                        /* the tape, a quarter of the time */
-        float d, l, r, fb;
+        float d, h1, h2, fb;
         tape_ph = 0;
         echo_len += (echo_len_t - echo_len) * 0.001f;
+        head2 += head2_v;
         d = echo_len * (1.0f + 0.003f * motion * mod[5].v);   /* wow */
         if (d > (float)(TAPE_N - 4))
             d = (float)(TAPE_N - 4);
-        l = tape_read(d);
-        r = tape_read(d * 0.75f);
-        tape_lp += 0.55f * (l - tape_lp);        /* each time round: darker, thinner */
+        h1 = tape_read(d);
+        h2 = tape_read(d * head2);
+        tape_lp += 0.55f * (h1 + fb_lean * (h2 - h1) - tape_lp);   /* each time round: darker, thinner */
         tape_hp += 0.03f * (tape_lp - tape_hp);
         fb = tape_lp - tape_hp;
         if (++tape_w >= TAPE_N)
             tape_w = 0;
         tape[tape_w] = s16(tape_acc * 0.25f + echo_fb * fb);
         tape_acc = 0.0f;
-        tape_pl = tape_cl;
-        tape_pr = tape_cr;
-        tape_cl = l;
-        tape_cr = r;
+        tape_p1 = tape_c1;
+        tape_p2 = tape_c2;
+        tape_c1 = h1;
+        tape_c2 = h2;
     }
-    {   /* between the tape's samples: a line from the last to the next */
+    {   /* between the tape's samples: a line from the last to the next; then to the field */
         float f = (float)tape_ph * 0.25f;
-        *el = tape_pl + (tape_cl - tape_pl) * f;
-        *er = tape_pr + (tape_cr - tape_pr) * f;
+        float h1 = tape_p1 + (tape_c1 - tape_p1) * f, h2 = tape_p2 + (tape_c2 - tape_p2) * f;
+        *el = hg[0] * h1 + hg[2] * h2;
+        *er = hg[1] * h1 + hg[3] * h2;
     }
 }
 
@@ -1249,6 +1290,8 @@ void en_init(void)
     for (i = 0; i < PLEX_N; i++)
         plex[i] = 0;
     tape_w = plex_w = tape_ph = 0;
+    head2 = head2_t = 0.75f;
+    head2_v = 0.0f;
     echo_len = 0.0f;
     q_r = q_w = 0;
     for (i = 0; i < NMOD; i++) {
@@ -1436,7 +1479,7 @@ static void render_pad(uint32_t n)
             v->amp = 0.0f;
             continue;
         }
-        pn = fm_clampf(v->pan + 0.35f * motion * mod[(i + 3) % NMOD].v, -1.0f, 1.0f);
+        pn = fm_clampf(v->pan + 0.35f * motion * mod[(i + 3) % NMOD_PAD].v, -1.0f, 1.0f);
         gl = fm_cosf((pn + 1.0f) * (FM_PI / 4.0f)) * g;
         gr = fm_sinf((pn + 1.0f) * (FM_PI / 4.0f)) * g;
         for (j = 0; j < n; j++) {
@@ -1654,11 +1697,11 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     render_bells(n);
     render_drums(n);
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er, ex;
-        echoes(esend[j] * eg, &el, &er, &ex);
-        reverb((rsend[j] * rg + (el + er + 2.0f * ex) * 0.35f * rev_send) * 0.8f, &wl, &wr);
-        l = (mixl[j] + 0.75f * el + 0.3f * ex + 1.3f * wl) * 0.36f * gain;
-        r = (mixr[j] + 0.75f * er + 0.3f * ex + 1.3f * wr) * 0.36f * gain;
+        float wl, wr, l, r, el, er, xl, xr;
+        echoes(esend[j] * eg, &el, &er, &xl, &xr);
+        reverb((rsend[j] * rg + (el + er + xl + xr) * 0.35f * rev_send) * 0.8f, &wl, &wr);
+        l = (mixl[j] + 0.75f * el + 0.3f * xl + 1.3f * wl) * 0.36f * gain;
+        r = (mixr[j] + 0.75f * er + 0.3f * xr + 1.3f * wr) * 0.36f * gain;
         out[2 * j] = (int32_t)(fm_tanhf(l) * 8300000.0f);
         out[2 * j + 1] = (int32_t)(fm_tanhf(r) * 8300000.0f);
     }
@@ -1672,6 +1715,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
 {
     int i;
     mods_step(n);
+    heads_step(n);
     if (arc_left <= n) {
         float r = frand() * 2.0f - 1.0f;
         arc_tgt = r * (0.6f + 0.4f * frand()) + (r > 0.0f ? 0.25f : -0.25f);   /* away from the middle */
