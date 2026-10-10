@@ -35,10 +35,11 @@ LANDING = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AMB-1</title>
 <meta name="description" content="A generative ambient machine for the M-VAVE FM-1, inspired by Brian Eno's Music for Airports: breathing voices, bells on tape loops of unequal length, a slow tide.">
-<meta name="theme-color" content="#f6eeb5">
+<meta name="theme-color" content="#fdf9e4">
 <style>
-/* the colours of Ambient 1: Music for Airports (1978), as the web app and the manual */
-:root { --paper: #f6eeb5; --sheet: #fffbe0; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #549995;
+/* the colours of Ambient 1: Music for Airports (1978), as the manual: the page a shade lighter than the
+   cover's paper, so the screenshots (on that paper) stand out; the cover's paper for the cards */
+:root { --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #549995;
         --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f; color-scheme: light; }
 body { background: var(--paper); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
        font: 400 17px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif; }
@@ -50,13 +51,13 @@ h2 { font-size: 1.1rem; font-weight: 400; text-transform: uppercase; letter-spac
 .lede { font-size: 1.15rem; margin: 0 0 1.6rem; max-width: 36rem; }
 .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 1.8rem; }
 .shots img { width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--ink); }
-.status { border: 1px solid var(--ink); background: var(--sheet); padding: 12px 16px; margin: 0 0 1.6rem; }
 .ways { display: grid; gap: 10px; margin: 0 0 1rem; }
 .ways a { display: block; text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
 .ways a:first-child { background: var(--river); }
 .ways a:hover, .ways a:focus-visible { background: var(--green-1); outline: none; }
 .ways strong { font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .05em; display: block; }
 .ways span { color: var(--muted); font-size: .95rem; }
+.ways em.v { font-style: normal; text-transform: none; letter-spacing: 0; }
 ul.garden { padding-left: 1.2rem; margin: 0 0 1rem; }
 ul.garden li { margin: 0 0 .4rem; }
 ul.garden li::marker { color: var(--river-2); }
@@ -76,13 +77,11 @@ piece and a scale, take notes out, put them back, and let it grow.</p>
   <img src="img/screen-voices.png" width="240" height="240" alt="AMB-1's screen: the piece Voices, F Aeolian, the chord Fm7">
   <img src="img/screen-frozen.png" width="240" height="240" alt="AMB-1's screen: frozen, the chord held">
 </div>
-<div class="status"><strong>Version __VERSION__.</strong> It installs and uninstalls the way Felucca and X0X do,
-and the installer can put M-VAVE's own firmware back. Installing is at your own risk.</div>
 <nav class="ways" aria-label="Get AMB-1">
   <a href="emu/"><strong>Try it in the browser</strong><span>The same code the FM-1 runs, with sound. Mouse, touch or keyboard; no FM-1 needed.</span></a>
-  <a href="install/"><strong>Install</strong><span>From Chrome or Edge, with the FM-1 connected by USB. Nothing to install on the computer.</span></a>
+  <a href="install/"><strong>Install <em class="v">v__VERSION__</em></strong><span>From Chrome or Edge, with the FM-1 connected by USB. Nothing to install on the computer.</span></a>
   <a href="manual/"><strong>Manual</strong><span>Getting started in a few minutes, then everything else.</span></a>
-  <a href="firmware/__PKG__"><strong>Download __PKG__</strong><span>For the command-line installer: <code>python3 tools/fm1_install.py __PKG__</code></span></a>
+  <a href="firmware/__PKG__"><strong>Download <em class="v">__PKG__</em></strong><span>For the command-line installer: <code>python3 tools/fm1_install.py __PKG__</code></span></a>
   <a href="__REPO__"><strong>Source</strong><span>GitHub, GPL-3.0. Built on Felucca by Hügelton Instruments.</span></a>
 </nav>
 
