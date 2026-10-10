@@ -6,7 +6,8 @@
  *           as the loops of Music for Airports), taking its note of the chord as it starts, so the
  *           chord forms and dissolves. Two colours, by piece: a filtered Rhodes (FM, blooming brighter
  *           as it swells) or Voices (saws through two formants, as "2/1"); then a soft low-pass and an
- *           ensemble chorus. The chord moves every DRIFT (20 s .. 5 min), each voice the shortest way.
+ *           ensemble chorus. The chord moves every DRIFT (20 s .. 5 min): voices on shared
+ *           notes hold, the others breathe in anew.
  *   BELLS   soft two-operator FM bells played by four tape loops of unequal length (13, 17, 23, 29
  *           quarter notes), each holding a short phrase that shifts against the others, each its own
  *           shade of bell. EVOLVE changes a note now and then; DENSITY sets how many notes a loop holds.
@@ -14,8 +15,8 @@
  *   PULSE   a soft thump, a closed hat and an open hat, each on its own Euclidean pattern (16, 12 and 7
  *           sixteenths): polyrhythms. HITS sets how many; the patterns turn and change around it.
  *
- * Over it all, the ARC: a slow tide, minutes long, between sparse (fewer bells, a darker vowel, the
- * pulse gone, more reverb) and full; MOTION sets how far it goes. And rests: with EVOLVE, the pulse
+ * Over it all, the ARC: a slow tide, minutes long, between sparse (fewer bells, a darker vowel, a quieter
+ * pulse, more reverb) and full; MOTION sets how far it goes. And rests: with EVOLVE, the pulse
  * sits out a few bars, the bass a chord, a bell loop a pass.
  * Then, after Discreet Music's chain, an Echoplex (160 ms, fed back) and a tape loop (to ~5.6 s, two
  * heads, each repeat darker), and Dattorro's plate (from FoMni), fed generously: the space is most of
@@ -65,7 +66,7 @@ void en_init(void);
 void en_set(int param, int value);
 void en_pool(uint32_t pool);                   /* the scale, relative to the root (bit 0 always set) */
 void en_play(int on);                          /* the garden grows / rests (the tails ring on) */
-void en_next(void);                            /* the next chord, now */
+void en_next(void);                            /* the next chord: on the next bar (now while resting) */
 void en_freeze(int on);
 void en_seed(uint32_t s);                      /* stir some entropy into the generators */
 void en_panic(void);                           /* everything quiet, now */

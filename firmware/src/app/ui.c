@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO UI: the panel and the screen. Part of the unity build (after gfx.c and project.c); the host
+/* AMB-1 UI: the panel and the screen. Part of the unity build (after gfx.c and project.c); the host
  * simulator includes it too.
  *
  *   keys           the scale: each key adds or removes its note from the pool (the root stays)
@@ -198,7 +198,7 @@ static void toggle_note(int pc)                 /* a key: its note in or out of 
     int rel = (pc - proj.par[P_ROOT] + 12) % 12;
     uint32_t p = proj.pool ^ (1u << rel);
     if (rel == 0) {
-        say("THE ROOT STAYS", "(PRESETS)");
+        say("THE ROOT STAYS", "(SETUP)");
         return;
     }
     if (pool_count(p) < 3) {

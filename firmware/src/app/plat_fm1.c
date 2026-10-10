@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO platform on the FM-1: plat.h over Felucca's HAL, panel map, USB rings and storage.
- * Part of the unity build (eno.c), after the HAL, usb.c, storage.c and panel.c. */
+/* AMB-1 platform on the FM-1: plat.h over Felucca's HAL, panel map, USB rings and storage.
+ * Part of the unity build (amb.c), after the HAL, usb.c, storage.c and panel.c. */
 
 uint32_t plat_ms(void) { return fm1_ms; }
 

@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO app: the project (everything that is saved) and the app's entry points. Included by the unity
+/* AMB-1 app: the project (everything that is saved) and the app's entry points. Included by the unity
  * build after gfx.c (drawing helpers in scope) and by the host simulator. */
 #pragma once
 #include <stdint.h>
 #include "plat.h"
-#include "../dsp/eno.h"
+#include "../dsp/amb.h"
 
 #ifndef EN_VERSION                       /* a release build passes its own (tools/build.py --release) */
 #define EN_VERSION "DEV"
@@ -20,7 +20,7 @@ typedef struct {
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* the piece playing, as it is now (eno.h P_*) */
+    int16_t par[P_NPARAMS];              /* the piece playing, as it is now (amb.h P_*) */
     uint16_t pool;                       /* its scale, relative to the root (bit 0 = the root) */
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     uint8_t piece;                       /* which piece */

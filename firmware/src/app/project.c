@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO project: one flash object (OBJ_PROJ). A project of another format, or none, gives the
+/* AMB-1 project: one flash object (OBJ_PROJ). A project of another format, or none, gives the
  * defaults. Part of the unity build, after app.h.
  *
  * The pieces (their recipes are the engine's, en_piece): each keeps its own settings as you leave it;

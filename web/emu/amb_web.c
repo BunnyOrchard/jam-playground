@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO in the browser: the host simulator (host/eno_host.c: the whole app, UI and instrument,
+/* AMB-1 in the browser: the host simulator (host/amb_host.c: the whole app, UI and instrument,
  * against a simulated FM-1) compiled to WebAssembly and run in an AudioWorklet (from X0X's). The worklet asks
  * for audio; producing it advances the device's clock one millisecond at a time, which runs the
  * engine every 256 samples (the I2S half buffer) and the UI every 16 ms, as on the FM-1. The page
  * sends input, and reads the screen, the lights and the saved objects back through these exports.
  *
- *   web/emu/build.sh   ->  build/emu/eno.wasm (+ the page) */
+ *   web/emu/build.sh   ->  build/emu/amb.wasm (+ the page) */
 #include <stdint.h>
 
 static void web_audio(const int32_t *blk, uint32_t n);
-#include "../../host/eno_host.c"
+#include "../../host/amb_host.c"
 
 #undef __attribute__
 

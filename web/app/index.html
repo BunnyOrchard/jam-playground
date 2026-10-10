@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f6eeb5">
-<title>Eno</title>
-<meta name="description" content="Eno: a generative ambient garden.">
+<title>AMB-1</title>
+<meta name="description" content="AMB-1: a generative ambient garden.">
 <style>
 /* the colours of Ambient 1: Music for Airports (1978): the map's paper, its greens, its rivers, the ink */
 :root {
@@ -50,7 +50,7 @@ td.v { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
 </head>
 <body>
 <div id="page">
-<h1>Eno <small>1</small></h1>
+<h1>AMB-1 <small>1</small></h1>
 <p id="sub">A generative ambient garden</p>
 <hr>
 
@@ -83,7 +83,7 @@ td.v { width: 4.5em; text-align: right; font-variant-numeric: tabular-nums; }
 
 <script>
 "use strict";
-// ------------------------------------------------------------------ the engine's names (eno.h)
+// ------------------------------------------------------------------ the engine's names (amb.h)
 const P = { PAD: 0, BELLS: 1, BASS: 2, PULSE: 3, DENSITY: 4, EVOLVE: 5, DRIFT: 6, HITS: 7, ECHO: 8, ETIME: 9, REVERB: 10, SIZE: 11,
             BRIGHT: 12, SWELL: 13, BTONE: 14, MOTION: 15, TUNE: 16, MIDI: 17, TEMPO: 18, ROOT: 19, MODE: 20, BOCT: 21, PADTONE: 22 };
 const NLOOP = 4, LOOP_MAX = 29;
@@ -109,8 +109,8 @@ function cstr(ptr) {
   return new TextDecoder().decode(m.subarray(ptr, e));
 }
 async function loadWasm() {
-  if (typeof ENO_WASM !== "undefined") wasmBytes = Uint8Array.from(atob(ENO_WASM), (c) => c.charCodeAt(0)).buffer;
-  else wasmBytes = await (await fetch("eno.wasm")).arrayBuffer();
+  if (typeof AMB_WASM !== "undefined") wasmBytes = Uint8Array.from(atob(AMB_WASM), (c) => c.charCodeAt(0)).buffer;
+  else wasmBytes = await (await fetch("amb.wasm")).arrayBuffer();
   const stub = new Proxy({}, { get: () => () => 0 });
   const { instance } = await WebAssembly.instantiate(wasmBytes.slice(0), { env: stub, wasi_snapshot_preview1: stub });
   W = instance.exports;
@@ -158,7 +158,7 @@ async function begin() {
   try {
     ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100, latencyHint: "playback" });
     await ac.audioWorklet.addModule("worklet.js");
-    node = new AudioWorkletNode(ac, "eno-app", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
+    node = new AudioWorkletNode(ac, "amb-app", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
     // iPhone: through a media element, which may keep playing with the screen locked; elsewhere, directly
     let routed = false;
     if (isIOS && ac.createMediaStreamDestination) {
@@ -207,7 +207,7 @@ function setPlaying(on) {
 }
 function mediaSession() {
   if (!navigator.mediaSession || !window.MediaMetadata) return;
-  navigator.mediaSession.metadata = new MediaMetadata({ title: pieceName(S.piece), artist: "Eno" });
+  navigator.mediaSession.metadata = new MediaMetadata({ title: pieceName(S.piece), artist: "AMB-1" });
   try {
     navigator.mediaSession.setActionHandler("play", () => setPlaying(true));
     navigator.mediaSession.setActionHandler("pause", () => setPlaying(false));

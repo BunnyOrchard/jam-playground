@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* ENO on the host: the whole app (UI, project, engine) against a simulated FM-1 driven by a script.
+/* AMB-1 on the host: the whole app (UI, project, engine) against a simulated FM-1 driven by a script.
  * Audio goes to a WAV, the screen to PNGs, the lights to text, MIDI out to a log. The device-only
  * parts (HAL, USB, OTA, flash driver) are replaced by plat.h implemented here. (From X0X's x0x_host.)
  *
- *   eno_host SCRIPT [OUTDIR]
+ *   amb_host SCRIPT [OUTDIR]
  *
  * Script, one command per line (# comments):
  *   wait MS                      run the device for MS milliseconds
@@ -381,7 +381,7 @@ static int expect(const char *what, const char *val)
         for (l = 0; l < EN_NLOOP; l++)
             for (i = 0; i < EN_LOOP_MAX; i++)
                 got += en_loop_note[l][i] >= 0;
-    } else if (!strncmp(what, "par", 3))          /* parN: parameter N (eno.h P_*) */
+    } else if (!strncmp(what, "par", 3))          /* parN: parameter N (amb.h P_*) */
         got = proj.par[atoi(what + 3)];
     else if (!strcmp(what, "peak_db_max") || !strcmp(what, "peak_db_min")) {
         double db = 20.0 * log10(peak_out > 1e-9f ? peak_out : 1e-9f);
@@ -417,7 +417,7 @@ int main(int argc, char **argv)
     const char *dir = argc > 2 ? argv[2] : ".";
     int lineno = 0, fails = 0;
     if (argc < 2) {
-        fprintf(stderr, "usage: eno_host SCRIPT [OUTDIR]\n");
+        fprintf(stderr, "usage: amb_host SCRIPT [OUTDIR]\n");
         return 2;
     }
     sc = fopen(argv[1], "r");

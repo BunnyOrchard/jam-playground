@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include "eno.h"
+#include "amb.h"
 
 static int fails;
 #define CHECK(c, ...)                                                                                              \
@@ -307,6 +307,6 @@ int main(void)
     CHECK(peak < 0.01f, "quiet after stopping (%f)", (double)peak);
     CHECK(midi_count > 50u, "MIDI out (%u)", midi_count);
 
-    printf(fails ? "eno: %d FAILED\n" : "eno: ok\n", fails);
+    printf(fails ? "amb: %d FAILED\n" : "amb: ok\n", fails);
     return fails != 0;
 }

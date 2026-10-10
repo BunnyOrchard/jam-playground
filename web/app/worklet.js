@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// The Eno web app's audio: eno.wasm (the engine alone, as on the FM-1) in an AudioWorklet. The page
+// The AMB-1 web app's audio: amb.wasm (the engine alone, as on the FM-1) in an AudioWorklet. The page
 // posts commands; each render quantum runs the engine for 128 frames; about 30 times a second the
 // garden's state goes back to the page for drawing.
 
-class Eno extends AudioWorkletProcessor {
+class Amb extends AudioWorkletProcessor {
   constructor() {
     super();
     this.ex = null;
@@ -59,4 +59,4 @@ class Eno extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("eno-app", Eno);
+registerProcessor("amb-app", Amb);

@@ -1,12 +1,12 @@
-# Building Eno
+# Building AMB-1
 
 The build makes three files in `build/`:
 
 | File | What |
 | --- | --- |
-| `eno.bin` | the firmware app |
+| `amb.bin` | the firmware app |
 | `loader/ota.bin` | the update loader |
-| `eno.fwsc` | the installable package (app + loader) |
+| `amb.fwsc` | the installable package (app + loader) |
 
 ## Prerequisites (macOS)
 
@@ -41,7 +41,7 @@ On Linux x86-64 the toolchain runs natively and Docker is not needed.
 `JIELI_TOOLCHAIN` and `AC79_SDK` override the default locations
 (`~/.jieli/toolchain`, `~/fw-AC79_AIoT_SDK`).
 
-`./build.sh --release 0.1` makes a release build; the package is `build/eno-0.1.fwsc`.
+`./build.sh --release 1.0` makes a release build; the package is `build/amb-1.0.fwsc`.
 
 On macOS with podman instead of Docker, put a `docker` script that runs `exec podman "$@"` first
 on your PATH. `EN_JOBS` (default 4) limits parallel compiles: a podman machine drops
@@ -59,20 +59,20 @@ The build also generates `build/gen/` (the font). It fails if a soft-double rout
 tests/run_tests.sh
 ```
 
-Runs, on the build machine: the maths library against libm; the instrument (`tests/host/eno_test.c`:
+Runs, on the build machine: the maths library against libm; the instrument (`tests/host/amb_test.c`:
 Euclidean patterns, scales and chords, voice leading, the render's levels, drift, evolving loops, freeze); flash
-storage; Felucca's update-path tests against `build/eno.fwsc`; and the whole app in the simulator
-(`tests/scenarios/*.eno`), with its screenshots and audio in `build/scenarios/`.
+storage; Felucca's update-path tests against `build/amb.fwsc`; and the whole app in the simulator
+(`tests/scenarios/*.amb`), with its screenshots and audio in `build/scenarios/`.
 
-`host/build_host.sh` builds the simulator alone; `build/host/eno_host SCRIPT OUTDIR` runs one
-script (the command list is at the top of `host/eno_host.c`).
+`host/build_host.sh` builds the simulator alone; `build/host/amb_host SCRIPT OUTDIR` runs one
+script (the command list is at the top of `host/amb_host.c`).
 
 ## Install
 
 From the command line (needs `pip3 install mido python-rtmidi`):
 
 ```
-python3 tools/fm1_install.py build/eno.fwsc
+python3 tools/fm1_install.py build/amb.fwsc
 python3 tools/fm1_install.py --info          # identity of the connected FM-1
 ```
 
@@ -84,7 +84,8 @@ mode. If the FM-1 no longer starts but reaches the chip's update mode (4C4A:8057
 ## Publishing a release
 
 1. `./build.sh --release X.Y` (the identity, FM-1_7XXYYZZ, is what the installer checks).
-2. `tools/publish_pages.sh X.Y`: builds the site (landing page, browser emulator, web installer,
-   firmware) with `tools/make_pages.py` and pushes it to the `gh-pages` branch, which GitHub Pages
-   serves at <https://charlesvestal.github.io/fm1-eno/>.
-3. `gh release create vX.Y build/eno-X.Y.fwsc` for the command-line download.
+2. `tools/publish_pages.sh X.Y`: builds the site (landing page, manual, browser emulator, web
+   installer, firmware) with `tools/make_pages.py` and pushes it to the `gh-pages` branch, which
+   GitHub Pages serves at <https://charlesvestal.github.io/fm1-amb/>. The manual's source is
+   `docs/MANUAL.md` (`tools/manual_html.py` turns it into the page).
+3. `gh release create vX.Y build/amb-X.Y.fwsc` for the command-line download.

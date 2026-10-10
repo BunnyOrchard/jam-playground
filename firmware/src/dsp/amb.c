@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* The instrument (eno.h). One compilation unit, -O2. */
-#include "eno.h"
+/* The instrument (amb.h). One compilation unit, -O2. */
+#include "amb.h"
 #include "fastmath.h"
 
 #ifdef EN_HOST
@@ -1335,7 +1335,7 @@ static void drain(void)
 #define BLK 256
 static float mixl[BLK], mixr[BLK], rsend[BLK], esend[BLK];
 
-/* the pad's bus: a 12 dB low-pass, darker than it sounds on paper (Eno darkened everything: the
+/* the pad's bus: a 12 dB low-pass, darker than it sounds on paper (Brian Eno darkened everything: the
  * Synthi's filter below half, then tape). No chorus: a modulated delay against pure tones beats (on
  * the FM-1's speaker above all), and that read as pulsing. The width comes from the voices' places,
  * the echo's two heads and the plate. */

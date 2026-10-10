@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Boot, audio ISR and main loop adapted from Felucca's main.c / audio.c, Copyright (C) 2026
  * Leo Kuroshita (@kurogedelic), Hugelton Instruments. */
-/* Eno on the FM-1 (from X0X's): boot (WDT first, boot-loop guard, guards), LCD, input (TIMER5
+/* AMB-1 on the FM-1 (from X0X's): boot (WDT first, boot-loop guard, guards), LCD, input (TIMER5
  * 10 kHz), audio (ALNK0), USB; then the main loop: UI at ~60 frames/s, input polled in between. */
 extern uint32_t _data_start[], _data_end[], _data_load[], _bss_start[], _bss_end[];
 extern uint32_t _pool_start[], _pool_end[], _rt_start[], _rt_end[], _rt_load[];
 
 /* --------------------------------------------------------------- audio --- */
-/* Felucca's 256-frame halves (5.8 ms): Eno's render is light, and a strum wants the short latency */
+/* Felucca's 256-frame halves (5.8 ms): AMB-1's render is light, and a strum wants the short latency */
 #define HALF_FRAMES 256u                    /* I2S half buffer: 5.8 ms at 44.1 kHz */
 #define HALF_WORDS (HALF_FRAMES * 2u)
 #define FS 44100u
@@ -145,7 +145,7 @@ static void fm1_fault(const fm1_crash_t *c)
     uint32_t t0;
     fm1_audio_stop();
     lcd_fill(0, 0, 240, 240, RGB(160, 0, 0));
-    draw_text_box(0, 8, 240, &FONT_S, "Eno CRASH", C_WHITE, 1);
+    draw_text_box(0, 8, 240, &FONT_S, "AMB-1 CRASH", C_WHITE, 1);
     hexs(b, c->vec);
     draw_text_box(10, 40, 220, &FONT_S, b, C_WHITE, 0);
     hexs(b, c->pc);
@@ -174,15 +174,15 @@ static void enter_uboot(const char *why)
     fm1_enter_uboot();
 }
 
-/* SAFE MODE: Eno crashed (or hung) twice while starting. Nothing that makes sound runs: no audio,
- * no engine, no UI; USB is on, so the web installer (Eno, or the stock firmware) and M-UPGRADE can
- * reach it. PLAY tries Eno again. The chip's own update mode stays the last resort (fm1_cstart). */
+/* SAFE MODE: AMB-1 crashed (or hung) twice while starting. Nothing that makes sound runs: no audio,
+ * no engine, no UI; USB is on, so the web installer (AMB-1, or the stock firmware) and M-UPGRADE can
+ * reach it. PLAY tries AMB-1 again. The chip's own update mode stays the last resort (fm1_cstart). */
 static void safe_main(void)
 {
     char b[24];
     uint32_t t0, play;
     lcd_fill(0, 0, 240, 240, C_BLACK);
-    draw_text_box(0, 18, 240, &FONT_B, "Eno SAFE MODE", C_HI, 1);
+    draw_text_box(0, 18, 240, &FONT_B, "AMB-1 SAFE MODE", C_HI, 1);
     draw_text_box(0, 52, 240, &FONT_S, "IT CRASHED TWICE", C_WHITE, 1);
     draw_text_box(0, 72, 240, &FONT_S, "WHILE STARTING.", C_WHITE, 1);
     draw_text_box(0, 102, 240, &FONT_S, "NO SOUND. USB IS ON:", C_WHITE, 1);
@@ -210,9 +210,9 @@ static void safe_main(void)
         if (bootguard.pending && fm1_ms - t0 > 10000u)
             bootguard.pending = 0;                  /* safe mode itself is up: not another failed boot */
         if ((fm1_in.buttons & play) && fm1_ms - t0 > 500u) {
-            bootguard.failed = 0;                   /* try Eno again, from scratch */
+            bootguard.failed = 0;                   /* try AMB-1 again, from scratch */
             bootguard.pending = 0;
-            draw_text_box(0, 172, 240, &FONT_S, "STARTING Eno...", C_HI, 1);
+            draw_text_box(0, 172, 240, &FONT_S, "STARTING AMB-1...", C_HI, 1);
             usb_detach();
             fm1_delay_ms(30);
             fm1_reboot();
@@ -233,8 +233,8 @@ static void splash(void)
     lcd_fill(0, 0, 240, 240, RGB(250, 244, 232));
     cv_begin(240, 64, RGB(250, 244, 232));
     {
-        int32_t w = text_w(&FONT_L, "Eno");
-        cv_text((240 - w) / 2, 0, &FONT_L, "Eno", RGB(242, 120, 72));
+        int32_t w = text_w(&FONT_L, "AMB-1");
+        cv_text((240 - w) / 2, 0, &FONT_L, "AMB-1", RGB(242, 120, 72));
         w = text_w(&FONT_S, "An ambient garden for the FM-1");
         cv_text((240 - w) / 2, 42, &FONT_S, "An ambient garden for the FM-1", RGB(150, 136, 118));
     }

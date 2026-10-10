@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* The engine for the web app: dsp/eno.c alone, the same code the FM-1 runs, behind a few exports.
+/* The engine for the web app: dsp/amb.c alone, the same code the FM-1 runs, behind a few exports.
  * One instance runs in the AudioWorklet (en_render); another on the page answers the pure questions
  * (parameter names and texts, chord names, the pieces' recipes). No device, no panel, no screen.
  *
- *   web/app/build.sh  ->  build/app/eno.wasm */
+ *   web/app/build.sh  ->  build/app/amb.wasm */
 #include <stdint.h>
-#include "eno.h"
+#include "amb.h"
 
 #define API __attribute__((used, visibility("default")))
 

@@ -8,13 +8,13 @@ cd "$(dirname "$0")/../.."
 SITE="${SITE:-$(cd ../.. && pwd)/charles.pizza}"
 [ -d "$SITE/.git" ] || { echo "no site checkout at $SITE (set SITE)"; exit 1; }
 sh web/app/build.sh
-node tests/host/app_test.mjs build/app/eno.wasm
+node tests/host/app_test.mjs build/app/amb.wasm
 git -C "$SITE" pull -q --ff-only
 mkdir -p "$SITE/eno"
-cp build/app/index.html build/app/worklet.js build/app/eno.wasm "$SITE/eno/"
+cp build/app/index.html build/app/worklet.js build/app/amb.wasm "$SITE/eno/"
 SHA=$(git rev-parse --short HEAD)
 git -C "$SITE" add eno
 if git -C "$SITE" diff --cached --quiet; then echo "site: eno unchanged"; exit 0; fi
-git -C "$SITE" commit -q -m "${1:-Eno web app} (fm1-eno $SHA)"
+git -C "$SITE" commit -q -m "${1:-AMB-1 web app} (fm1-amb $SHA)"
 git -C "$SITE" push -q
-echo "published: https://charles.pizza/eno/ (fm1-eno $SHA)"
+echo "published: https://charles.pizza/eno/ (fm1-amb $SHA)"
