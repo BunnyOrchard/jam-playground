@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 # Build the GitHub Pages site for release VERSION (tools/make_pages.py) and push it to the gh-pages
 # branch of origin, replacing what was there (the branch holds only the generated site).
-#   tools/publish_pages.sh 1.0          (after ./build.sh --release 1.0)
+#   tools/publish_pages.sh 0.9          (after ./build.sh --release 0.9)
 set -e
 cd "$(dirname "$0")/.."
 V="${1:?usage: tools/publish_pages.sh VERSION}"

@@ -10,7 +10,7 @@
   manual/index.html, img/     the manual (tools/manual_html.py, from docs/MANUAL.md)
   firmware/amb-VERSION.fwsc   the package the installer writes; also the download
 
-  tools/make_pages.py build/amb-1.0.fwsc 1.0 OUT_DIR
+  tools/make_pages.py build/amb-0.9.fwsc 0.9 OUT_DIR
 
 The package must be a release build (./build.sh --release X.Y): its identity, FM-1_7XXYYZZ, is what
 the installer checks the download against and what the FM-1 reports after the install."""
@@ -35,43 +35,41 @@ LANDING = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AMB-1</title>
 <meta name="description" content="A generative ambient machine for the M-VAVE FM-1, inspired by Brian Eno's Music for Airports: breathing voices, bells on tape loops of unequal length, a slow tide.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
+<meta name="theme-color" content="#f6eeb5">
 <style>
-:root { --ground: #faf4e8; --ink: #48392f; --muted: #8a7764; --rule: #e6dccb; --accent: #d85f30; --teal: #1f8f84; --card: #fffaf1; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a; --teal: #4cc3b6; --card: #26201b; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a; --teal: #4cc3b6; --card: #26201b; color-scheme: dark; }
-body { background: var(--ground); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
-       font: 400 17px/1.6 "Barlow", "Helvetica Neue", Arial, sans-serif; }
+/* the colours of Ambient 1: Music for Airports (1978), as the web app and the manual */
+:root { --paper: #f6eeb5; --sheet: #fffbe0; --green-1: #d0dc92; --green-3: #9cb16f; --river: #85c3c1; --river-2: #549995;
+        --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f; color-scheme: light; }
+body { background: var(--paper); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 48px 64px;
+       font: 400 17px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif; }
 main { max-width: 42rem; margin: 0 auto; }
-h1 { font: 700 3rem/1 "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .5rem; color: var(--accent); }
-h2 { font: 700 1.4rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 2.2rem 0 .6rem; }
+h1 { font-size: 3rem; font-weight: 300; line-height: 1; letter-spacing: .06em; margin: 0 0 .3rem; }
+.sub { text-transform: uppercase; letter-spacing: .08em; font-size: .9rem; margin: 0 0 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--ink); }
+h2 { font-size: 1.1rem; font-weight: 400; text-transform: uppercase; letter-spacing: .06em; margin: 2.4rem 0 .6rem;
+     padding-top: .6rem; border-top: 1px solid var(--ink); }
 .lede { font-size: 1.15rem; margin: 0 0 1.6rem; max-width: 36rem; }
 .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 0 0 1.8rem; }
-.shots img { width: 100%; height: auto; border-radius: 14px; image-rendering: pixelated; box-shadow: 0 1px 0 var(--rule), 0 6px 18px rgba(72, 57, 47, .12); }
-.status { border: 1px solid var(--rule); background: var(--card); border-radius: 14px; padding: 12px 16px; margin: 0 0 1.6rem; }
-.ways { display: grid; gap: 12px; margin: 0 0 1rem; }
-.ways a { display: block; text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--rule);
-          border-radius: 14px; padding: 14px 18px; }
-.ways a:hover, .ways a:focus-visible { border-color: var(--accent); outline: none; }
-.ways strong { font: 600 1.25rem "Barlow Semi Condensed", "Barlow", sans-serif; color: var(--accent); display: block; }
+.shots img { width: 100%; height: auto; image-rendering: pixelated; border: 1px solid var(--ink); }
+.status { border: 1px solid var(--ink); background: var(--sheet); padding: 12px 16px; margin: 0 0 1.6rem; }
+.ways { display: grid; gap: 10px; margin: 0 0 1rem; }
+.ways a { display: block; text-decoration: none; color: var(--ink); background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
+.ways a:first-child { background: var(--river); }
+.ways a:hover, .ways a:focus-visible { background: var(--green-1); outline: none; }
+.ways strong { font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .05em; display: block; }
 .ways span { color: var(--muted); font-size: .95rem; }
 ul.garden { padding-left: 1.2rem; margin: 0 0 1rem; }
 ul.garden li { margin: 0 0 .4rem; }
-ul.garden b { color: var(--teal); }
+ul.garden li::marker { color: var(--river-2); }
 p.small { color: var(--muted); font-size: .9rem; }
-a { color: var(--accent); }
+a { color: var(--ink); text-decoration-color: var(--river-2); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 code { font-size: .9em; }
 </style>
 </head>
 <body>
 <main>
 <h1>AMB-1</h1>
-<p class="lede">A generative ambient machine for the M-VAVE FM-1, inspired by Brian Eno's <i>Music for
-Airports</i>. It plays itself from the moment it's switched on. You don't perform it, you tend it: pick a
+<p class="sub">An ambient garden for the M-VAVE FM-1</p>
+<p class="lede">A generative ambient machine, inspired by Brian Eno's <i>Music for Airports</i>. It plays itself from the moment it's switched on. You don't perform it, you tend it: pick a
 piece and a scale, take notes out, put them back, and let it grow.</p>
 <div class="shots">
   <img src="img/screen-garden.png" width="240" height="240" alt="AMB-1's screen: the scale as a ring with the chord Dm7, the four bell loops around it, the pulse rings on the right">

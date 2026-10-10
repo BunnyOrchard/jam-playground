@@ -41,7 +41,7 @@ On Linux x86-64 the toolchain runs natively and Docker is not needed.
 `JIELI_TOOLCHAIN` and `AC79_SDK` override the default locations
 (`~/.jieli/toolchain`, `~/fw-AC79_AIoT_SDK`).
 
-`./build.sh --release 1.0` makes a release build; the package is `build/amb-1.0.fwsc`.
+`./build.sh --release 0.9` makes a release build; the package is `build/amb-0.9.fwsc`.
 
 On macOS with podman instead of Docker, put a `docker` script that runs `exec podman "$@"` first
 on your PATH. `EN_JOBS` (default 4) limits parallel compiles: a podman machine drops

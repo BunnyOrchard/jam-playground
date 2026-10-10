@@ -9,19 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Barlow+Semi+Condensed:wght@600;700&display=swap">
 <style>
-:root { --ground: #faf4e8; --ink: #48392f; --muted: #8a7764; --rule: #e6dccb; --accent: #e0683a; --teal: #26a69a; --card: #fffaf1; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a; --teal: #4cc3b6; --card: #26201b; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --ground: #1c1814; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a; --accent: #f28a5a; --teal: #4cc3b6; --card: #26201b; color-scheme: dark; }
+/* the colours of Ambient 1: Music for Airports (1978), as the site; the FM-1 itself stays black */
+:root { --ground: #f6eeb5; --ink: #1d1b02; --muted: #4f4b25; --rule: #1d1b02; --accent: #1d1b02; --river: #85c3c1; --river-2: #549995;
+        --green-1: #d0dc92; --card: #fffbe0; color-scheme: light; }
 body { background: var(--ground); color: var(--ink); margin: 0; padding-inline: 16px; padding-block: 28px 48px;
-       font: 400 16px/1.55 "Barlow", "Helvetica Neue", Arial, sans-serif; }
+       font: 400 16px/1.55 "Helvetica Neue", Helvetica, Arial, sans-serif; }
 main { max-width: 1040px; margin: 0 auto; }
 header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; margin: 0 0 1rem; }
-h1 { font: 700 2rem/1.1 "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0; }
+h1 { font-size: 2rem; font-weight: 300; line-height: 1.1; letter-spacing: .06em; margin: 0; }
 header p { margin: 0; color: var(--muted); }
 header nav { margin-left: auto; display: flex; gap: 1rem; }
-a { color: var(--accent); }
+a { color: var(--ink); text-decoration-color: var(--river-2); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .device { position: relative; width: 100%; aspect-ratio: 1000 / 640; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
 .device svg { pointer-events: none; }
 .hit { position: absolute; touch-action: none; cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 12px; }
@@ -40,28 +38,28 @@ a { color: var(--accent); }
 .lit .keyface.white { fill: #f6b48e; }
 .lit .keyface.black { fill: #4cc3b6; }
 .start { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 11, 13, .55); border-radius: 4.4% / 6.9%; }
-.start button { font: 600 1.25rem "Barlow Semi Condensed", "Barlow", sans-serif; letter-spacing: .04em; padding: .7em 1.6em;
-                border-radius: 999px; border: 0; background: #f28a5a; color: #2a140a; cursor: pointer; }
+.start button { font: 400 1.2rem "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; padding: .6em 1.6em;
+                border: 1px solid var(--ink); background: var(--river); color: var(--ink); cursor: pointer; }
 .start[hidden] { display: none; }
 .turn { display: none; margin: 0 0 .8rem; color: var(--muted); font-size: .92rem; }
 @media (orientation: portrait) and (max-width: 700px) { .turn { display: block; } }
 .start button:disabled { opacity: .6; cursor: progress; }
 .bar { display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; align-items: center; margin: .9rem 0 0; color: var(--muted); font-size: .92rem; }
-.bar button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: .3em .8em; cursor: pointer; }
+.bar button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--ink); padding: .3em .8em; cursor: pointer; }
 .bar .cpu { font-variant-numeric: tabular-nums; }
-.help h2 { font: 600 1.1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .3rem; }
+.help h2 { font: 600 1.1rem "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0 0 .3rem; }
 .help { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem 2rem; margin: 1.6rem 0 0; }
-.help h2 { font: 600 1.1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .3rem; }
+.help h2 { font: 600 1.1rem "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0 0 .3rem; }
 .help p, .help ul { margin: 0; color: var(--muted); max-width: 60ch; }
 .help ul { padding-left: 1.1rem; }
 .help .knobs { grid-column: 1 / -1; }
 .knobs .pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .8rem 2rem; margin-top: .4rem; }
-.knobs h3 { font: 600 1rem "Barlow Semi Condensed", "Barlow", sans-serif; margin: 0 0 .2rem; color: var(--ink); }
+.knobs h3 { font: 600 1rem "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0 0 .2rem; color: var(--ink); }
 .knobs h3 span { color: var(--muted); font-weight: 400; }
 .knobs dl { margin: 0; color: var(--muted); }
 .knobs dt { color: var(--ink); font-weight: 600; }
 .knobs dd { margin: 0 0 .45rem; }
-kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 0 .3em; color: var(--ink); }
+kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); border: 1px solid var(--ink); padding: 0 .3em; color: var(--ink); }
 </style>
 </head>
 <body>
@@ -139,6 +137,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
       <li><b>PLAY</b> grows / rests. <b>ARP</b> the next chord. <b>REC</b> freeze. <b>ENV</b> the pad's colour, Rhodes or Voices (lit: Voices).</li>
       <li><b>OCT−</b> / <b>OCT+</b> move the bells an octave.</li>
       <li>Pages: <b>HOME</b> layers, <b>SEQ</b> motion, <b>FX</b> space, <b>SEL</b> tone, <b>GLO</b> setup (the root is here). <b>EDIT</b> steps through them.</li>
+      <li>Hold a button for a second and a card says what it does (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
       <li><b>PRESETS</b> the piece (each remembers how you left it). <b>SELECT</b> tempo, <b>ALGORITHM</b> mode, <b>KNOB 1–4</b> the values on the screen. <b>SAVE</b> saves; hold it to reset the piece.</li>
     </ul>
   </div>

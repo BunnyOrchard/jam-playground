@@ -47,6 +47,11 @@ static struct {
     uint8_t view;
     uint32_t btn, keys, btn_used;
     uint32_t enc_t[NE];
+    uint8_t enc_run[NE];               /* detents in the current quick run, per knob (accel) */
+    uint32_t down_t[NB];               /* when each button went down */
+    uint32_t turn_t;                   /* the last knob turn */
+    uint8_t help;                      /* a button's card is up: the button + 1 */
+    uint8_t reset_done;                /* SAVE held: the piece went back to its recipe this hold */
     uint8_t dirty;                     /* the project changed since the last save */
     uint32_t act_t, saved_t;
     char msg[2][24];
@@ -54,7 +59,6 @@ static struct {
     int8_t touched;                    /* the knob turned last (0..3), shown bright for a moment */
     uint32_t touch_until;
     uint32_t frame;
-    uint32_t save_t;                   /* when SAVE went down (held: the piece's recipe) */
     uint32_t sig[3];                   /* what each band shows: redrawn when it changes */
 } ui;
 
@@ -169,17 +173,24 @@ static void knob_set(int k, int v)
     mark_dirty();
 }
 
-/* knob acceleration by speed: a slow turn is one step a detent, a quick one up to 6 */
+/* knob acceleration by speed (X0X's): a few clicks are one step each however quick, so small
+ * corrections stay exact; a longer quick turn speeds up to 8 a detent, so half a turn sweeps 0-100.
+ * Small ranges never accelerate. */
 static uint8_t accel_off;              /* the host simulator's "spin": exact steps */
 static int32_t accel(int role, int32_t s, int range)
 {
     uint32_t now = plat_ms(), dt = now - ui.enc_t[role], a = (uint32_t)(s < 0 ? -s : s), m;
     ui.enc_t[role] = now;
-    if (range <= 24 || !a || accel_off)
+    if (!a)
         return s;
     if (a > 1)
-        dt /= a;
-    m = dt < 15u ? 6u : dt < 30u ? 4u : dt < 60u ? 2u : 1u;
+        dt /= a;                                      /* per detent */
+    ui.enc_run[role] = (uint8_t)(dt < 60u ? (ui.enc_run[role] + a > 255u ? 255u : ui.enc_run[role] + a) : a);
+    if (range <= 24 || accel_off || ui.enc_run[role] < 4u)
+        return s;
+    m = dt < 12u ? 8u : dt < 25u ? 5u : dt < 45u ? 3u : 1u;
+    if (range < 100 && m > 3u)
+        m = 3u;
     return s * (int32_t)m;
 }
 
@@ -304,6 +315,31 @@ static void midi_in(void)
     }
 }
 
+/* HELP CARDS (X0X's): hold one button alone for HELP_HOLD and a card says what it does. A key, a
+ * turn or another button puts it away; letting go after its card does nothing else. PLAY acts on
+ * its press, and LFO has no job here: neither has a card. */
+#define HELP_HOLD 900u
+#define RESET_HOLD 1500u
+static void help_tick(uint32_t btn, uint32_t keys)
+{
+    uint32_t now = plat_ms();
+    int i;
+    if (ui.help) {
+        uint32_t m = 1u << (ui.help - 1);
+        if (btn != m || keys || (int32_t)(ui.turn_t - ui.down_t[ui.help - 1]) > 0)
+            ui.help = 0;
+        return;
+    }
+    if (!btn || (btn & (btn - 1u)) || keys)
+        return;
+    for (i = 0; i < NB; i++)
+        if (btn == 1u << i && i != B_PLAY && i != B_LFO && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
+            (int32_t)(ui.turn_t - ui.down_t[i]) <= 0) {
+            ui.help = (uint8_t)(i + 1);
+            ui.btn_used |= btn;                  /* its release now does nothing */
+        }
+}
+
 static void input(void)
 {
     uint32_t btn = plat_buttons(), keys = plat_keys(), ch, i;
@@ -316,8 +352,9 @@ static void input(void)
             continue;
         if (btn & m) {
             ui.btn_used &= ~m;
+            ui.down_t[i] = plat_ms();
             if (i == B_SAVE)
-                ui.save_t = plat_ms();
+                ui.reset_done = 0;
             if (i == B_PLAY)                   /* transport on the press */
                 button((int)i);
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
@@ -332,14 +369,22 @@ static void input(void)
     if (btn || keys || ch)
         ui.act_t = plat_ms();
     midi_in();
-    if ((e = plat_enc(EN_SELECT)) != 0)
+    if ((e = plat_enc(EN_SELECT)) != 0) {
         turn(EN_SELECT, P_TEMPO, e);
-    if ((e = plat_enc(EN_ALGO)) != 0)
+        ui.turn_t = plat_ms();
+    }
+    if ((e = plat_enc(EN_ALGO)) != 0) {
         set_mode(proj.par[P_MODE] + (e > 0 ? 1 : -1));
-    if ((e = plat_enc(EN_PRESET)) != 0)
+        ui.turn_t = plat_ms();
+    }
+    if ((e = plat_enc(EN_PRESET)) != 0) {
         set_piece(proj.piece + (e > 0 ? 1 : -1));
-    if ((btn >> B_SAVE & 1u) && !(ui.btn_used >> B_SAVE & 1u) && plat_ms() - ui.save_t > 1500u) {
-        ui.btn_used |= 1u << B_SAVE;           /* held: the piece back to its recipe (not saved) */
+        ui.turn_t = plat_ms();
+    }
+    if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
+        ui.reset_done = 1;                     /* held: the piece back to its recipe (not saved) */
+        ui.btn_used |= 1u << B_SAVE;
+        ui.help = 0;
         project_piece_reset();
         project_apply();
         en_regrow();
@@ -351,8 +396,9 @@ static void input(void)
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
-            ui.act_t = plat_ms();
+            ui.act_t = ui.turn_t = plat_ms();
         }
+    help_tick(btn, keys);
 }
 
 /* ------------------------------------------------------------- screen --- */
@@ -405,6 +451,94 @@ static void text_c(int32_t cx, int32_t y, const felucca_font_t *f, const char *s
     cv_text(cx - text_w(f, s) / 2, y, f, s, c);
 }
 
+/* anti-aliased drawing (X0X's): a pixel blended over the canvas, a disc, and a knob's ring */
+static void px_blend(int32_t x, int32_t y, uint16_t c, uint32_t a)
+{
+    uint16_t *q;
+    uint32_t bg;
+    y += cv_oy;
+    if ((uint32_t)x >= cv_w || y < cv_y0 || y >= cv_y1 || !a)
+        return;
+    q = &cv_px[(uint32_t)y * cv_w + (uint32_t)x];
+    if (a >= 16u) {
+        *q = swap16(c);
+        return;
+    }
+    bg = swap16(*q);
+    *q = swap16((uint32_t)(((((c >> 11) * a + (bg >> 11) * (16u - a)) >> 4) << 11) |
+                           (((((c >> 5) & 63u) * a + ((bg >> 5) & 63u) * (16u - a)) >> 4) << 5) |
+                           (((c & 31u) * a + (bg & 31u) * (16u - a)) >> 4)));
+}
+
+static void disc(float cx, float cy, float r, uint16_t c)
+{
+    int32_t x0 = (int32_t)fm_floorf(cx - r - 1.0f), x1 = (int32_t)(cx + r + 1.0f);
+    int32_t y0 = (int32_t)fm_floorf(cy - r - 1.0f), y1 = (int32_t)(cy + r + 1.0f), x, y;
+    for (y = y0; y <= y1; y++)
+        for (x = x0; x <= x1; x++) {
+            float dx = (float)x + 0.5f - cx, dy = (float)y + 0.5f - cy, d = fm_sqrtf(dx * dx + dy * dy);
+            px_blend(x, y, c, (uint32_t)(fm_clampf(r - d + 0.5f, 0.0f, 1.0f) * 16.0f + 0.5f));
+        }
+}
+
+/* atan2 in turns, 0..1 from +x going clockwise on screen (y down) */
+static float turns(float y, float x)
+{
+    float ax = fm_fabsf(x), ay = fm_fabsf(y), a = ax < ay ? ax / (ay + 1e-9f) : ay / (ax + 1e-9f), s = a * a, r;
+    r = ((-0.0464964749f * s + 0.15931422f) * s - 0.327622764f) * s * a + a;   /* atan on [0, 1] */
+    if (ay > ax)
+        r = 1.57079637f - r;
+    if (x < 0.0f)
+        r = FM_PI - r;
+    if (y < 0.0f)
+        r = FM_TWO_PI - r;
+    return r * (1.0f / FM_TWO_PI);
+}
+
+/* a knob: a 270-degree track from 7:30 to 4:30, anti-aliased, round ends; the value filled from
+ * the start (or from the top, for a centred value) and a round handle */
+static void arc(int32_t cx, int32_t cy, int32_t r, float v, uint16_t track, uint16_t fill, uint16_t bg, int bipolar)
+{
+    const float th = 3.4f, a0 = 0.375f, sweep = 0.75f;
+    float ro = (float)r, ri = ro - th, rm = ro - th * 0.5f, fx = (float)cx + 0.5f, fy = (float)cy + 0.5f, lo, hi;
+    int32_t x, y;
+    v = fm_clampf(v, 0.0f, 1.0f);
+    lo = bipolar ? (v < 0.5f ? v : 0.5f) : 0.0f;
+    hi = bipolar ? (v < 0.5f ? 0.5f : v) : v;
+    for (y = -r - 1; y <= r + 1; y++)
+        for (x = -r - 1; x <= r + 1; x++) {
+            float dx = (float)x, dy = (float)y, d = fm_sqrtf(dx * dx + dy * dy), t, a;
+            a = fm_clampf(ro + 0.5f - d, 0.0f, 1.0f) * fm_clampf(d - ri + 0.5f, 0.0f, 1.0f);
+            if (a <= 0.0f)
+                continue;
+            t = turns(dy, dx) - a0;
+            if (t < 0.0f)
+                t += 1.0f;
+            t /= sweep;
+            if (t > 1.0f)
+                continue;
+            px_blend(cx + x, cy + y, (t >= lo && t <= hi) ? fill : track, (uint32_t)(a * 16.0f + 0.5f));
+        }
+    {
+        float e0 = a0 * FM_TWO_PI, e1 = (a0 + sweep) * FM_TWO_PI, ev = (a0 + sweep * v) * FM_TWO_PI;
+        float el = (a0 + sweep * lo) * FM_TWO_PI;
+        disc(fx + fm_cosf(e0) * rm - 0.5f, fy + fm_sinf(e0) * rm - 0.5f, th * 0.5f, lo <= 0.0f && hi > 0.0f ? fill : track);
+        disc(fx + fm_cosf(e1) * rm - 0.5f, fy + fm_sinf(e1) * rm - 0.5f, th * 0.5f, hi >= 1.0f ? fill : track);
+        if (hi > lo)
+            disc(fx + fm_cosf(el) * rm - 0.5f, fy + fm_sinf(el) * rm - 0.5f, th * 0.5f, fill);
+        disc(fx + fm_cosf(ev) * rm - 0.5f, fy + fm_sinf(ev) * rm - 0.5f, th * 0.5f + 1.3f, bg);
+        disc(fx + fm_cosf(ev) * rm - 0.5f, fy + fm_sinf(ev) * rm - 0.5f, th * 0.5f + 0.6f, fill);
+    }
+}
+
+static void caps(char *d, const char *s, int n)  /* s in capitals, at most n - 1 characters */
+{
+    int i;
+    for (i = 0; i < n - 1 && s[i]; i++)
+        d[i] = (char)(s[i] >= 'a' && s[i] <= 'z' ? s[i] - 32 : s[i]);
+    d[i] = 0;
+}
+
 static uint16_t mix(uint16_t a, uint16_t b, int t)   /* t 0..16: a -> b */
 {
     int r, g, bl;
@@ -427,12 +561,15 @@ static void tag(int32_t *x, const char *s, uint16_t bg, uint16_t fg)
     *x += w + 4;
 }
 
+/* the header: the piece in a tag, its root and mode; on the right, the tempo with a slow beat light
+ * (a play triangle while resting) and a dot while there is something unsaved. Messages take its place
+ * for a moment. */
 static void draw_header(void)
 {
     char t[24];
     int msg = plat_ms() < ui.msg_until;
-    uint32_t h = hash(hash(hash(2166136261u, ui.view), en_playing | en_frozen << 1 | ui.dirty << 4 |
-                                                       (uint32_t)msg << 5 | (uint32_t)en_ext << 6),
+    uint32_t h = hash(hash(hash(2166136261u, proj.piece | (uint32_t)proj.par[P_ROOT] << 8 | (uint32_t)proj.pool << 12),
+                           en_playing | ui.dirty << 4 | (uint32_t)msg << 5 | (uint32_t)en_ext << 6 | (uint32_t)proj.par[P_MODE] << 8),
                       (uint32_t)proj.par[P_TEMPO] | (ui.view == V_SETUP ? plat_cpu_pct() << 8 : 0u));
     if (msg)
         h = hash(hash(h, (uint32_t)ui.msg[0][0] << 8 | ui.msg[0][1]), ui.msg_until);
@@ -446,7 +583,11 @@ static void draw_header(void)
         int32_t x = cv_text(10, 6, &FONT_B, ui.msg[0], K_TEXT);
         cv_text(x + 8, 6, &FONT_B, ui.msg[1], K_BELL);
     } else {
-        int32_t x = 232;
+        int32_t x = 232, w;
+        if (ui.dirty) {                            /* unsaved */
+            cv_round(x - 5, 12, 5, 5, 2, K_DIM);
+            x -= 11;
+        }
         if (en_ext) {
             t[0] = 'E';
             t[1] = 'X';
@@ -467,20 +608,17 @@ static void draw_header(void)
         x -= 16;
         if (en_playing) {                         /* a slow beat light */
             int on = ((en_bars / 4u) & 1u) == 0u;
-            cv_round(x, 8, 10, 10, 5, on ? K_PAD : K_PAD_T);
+            cv_round(x, 9, 10, 10, 5, on ? K_PAD : K_PAD_T);
         } else {
             int32_t j;                            /* resting: a play triangle */
             for (j = 0; j < 5; j++)
-                cv_rect(x + j, 9 + j, 1, 11 - 2 * j, K_DIM);
+                cv_rect(x + 2 + j, 9 + j, 1, 11 - 2 * j, K_DIM);
         }
-        cv_text(10, 6, &FONT_B, VIEW_NAME[ui.view], K_TEXT);
-        x = 18 + text_w(&FONT_B, VIEW_NAME[ui.view]);
-        if (en_frozen)
-            tag(&x, "FROZEN", K_FROST_T, K_FROST);
-        else if (!en_playing)
-            tag(&x, "RESTING", K_PANEL, K_DIM);
-        if (ui.dirty)
-            cv_round(x, 12, 5, 5, 2, K_DIM);
+        w = text_w(&FONT_B, piece_name(proj.piece)) + 12;   /* the piece, in a coral tag */
+        cv_round(4, 4, w, 20, 6, K_BELL);
+        cv_text(10, 6, &FONT_B, piece_name(proj.piece), K_BG);
+        w = cv_text(w + 10, 8, &FONT_XS, EN_NOTE_NAME[proj.par[P_ROOT]], K_BELL);
+        cv_text(w + 3, 8, &FONT_XS, mode_name(), K_DIM);
     }
     cv_blit(0, 0);
 }
@@ -595,12 +733,61 @@ static void draw_pulse(void)                     /* right: the three Euclidean r
     }
 }
 
+/* a button's card (help_tick): its name, then what it does, in the garden's place */
+#define HELP_LINES 4
+static const char *const BTN_LABEL[NB] = {"FX", "SEL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ",
+                                          "PLAY", "REC", "OCT-", "OCT+"};
+static int help_lines(int b, const char *l[HELP_LINES])
+{
+    int n = 0;
+#define L(t) (l[n++] = (t))
+    switch (b) {
+    case B_HOME: L("LAYERS"); L("PAD, BELLS, BASS, PULSE:"); L("HOW LOUD EACH ONE IS"); break;
+    case B_SEQ: L("MOTION"); L("DENSITY, EVOLVE, DRIFT, HITS"); break;
+    case B_FX: L("SPACE"); L("ECHO, ECHO TIME, REVERB, SIZE"); break;
+    case B_SEL: L("TONE"); L("BRIGHT, SWELL, BELL TONE,"); L("MOTION"); break;
+    case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
+    case B_EDIT: L("THE NEXT PAGE"); break;
+    case B_ARP: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
+    case B_REC: L("FREEZE: THE CHORD HOLDS"); L("AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
+    case B_ENV: L("THE PAD'S COLOUR:"); L("RHODES OR VOICES (LIT)"); break;
+    case B_OCTDN: L("THE BELLS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
+    case B_OCTUP: L("THE BELLS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
+    case B_SAVE: L("SAVES ALL EIGHT PIECES"); L("KEEP HOLDING: THE PIECE"); L("BACK TO ITS RECIPE"); break;
+    default: break;
+    }
+#undef L
+    return n;
+}
+
+static void draw_help(void)
+{
+    const char *l[HELP_LINES];
+    int n = help_lines(ui.help - 1, l), k;
+    cv_round(16, 14, 208, 116, 6, K_PANEL);
+    cv_round(16, 14, 208, 26, 6, K_BELL);
+    cv_rect(16, 34, 208, 6, K_BELL);
+    text_c(120, 18, &FONT_B, BTN_LABEL[ui.help - 1], K_BG);
+    for (k = 0; k < n; k++)
+        text_c(120, 56 + k * 20, &FONT_S, l[k], K_TEXT);
+}
+
 static void draw_main(void)
 {
     uint32_t h = hash(2166136261u, pool_abs() | (uint32_t)proj.par[P_ROOT] << 12 | (uint32_t)en_frozen << 16 | proj.piece << 24 |
                                         (uint32_t)en_playing << 17 | (uint32_t)proj.par[P_MODE] << 20), i;
     if (ui.frame % 3u)                           /* the garden moves slowly: 20 frames a second is plenty */
         return;
+    if (ui.help) {
+        h = hash(0x48454C50u, ui.help);
+        if (h != ui.sig[1]) {
+            ui.sig[1] = h;
+            cv_begin(240, MAIN_H, K_BG);
+            draw_help();
+            cv_blit(0, MAIN_Y);
+        }
+        return;
+    }
     for (i = 0; i < EN_NPAD; i++)
         h = hash(h, en_chord[i]);
     for (i = 0; i < EN_NLOOP; i++) {
@@ -618,18 +805,13 @@ static void draw_main(void)
         return;
     ui.sig[1] = h;
     cv_begin(240, MAIN_H, K_BG);
-    {   /* the key and mode, top left; the way to the next chord, top right */
-        int32_t x = cv_text(10, 2, &FONT_B, piece_name(proj.piece), K_TEXT);
-        x = cv_text(x + 7, 3, &FONT_XS, EN_NOTE_NAME[proj.par[P_ROOT]], K_BELL);
-        cv_text(x + 3, 3, &FONT_XS, mode_name(), K_DIM);
-        if (en_frozen) {
-            cv_text(232 - text_w(&FONT_XS, "held"), 4, &FONT_XS, "held", K_FROST);
-        } else {
-            int32_t w = 30, f = (int32_t)(en_drift * (float)w + 0.5f);
-            cv_round(232 - w, 8, w, 6, 3, K_LINE);
-            if (f > 0)
-                cv_round(232 - w, 8, f < 6 ? 6 : f, 6, 3, K_PAD);
-        }
+    if (en_frozen) {                             /* the way to the next chord, top right (held: frozen) */
+        cv_text(232 - text_w(&FONT_XS, "held"), 4, &FONT_XS, "held", K_FROST);
+    } else {
+        int32_t w = 30, f = (int32_t)(en_drift * (float)w + 0.5f);
+        cv_round(232 - w, 8, w, 6, 3, K_LINE);
+        if (f > 0)
+            cv_round(232 - w, 8, f < 6 ? 6 : f, 6, 3, K_PAD);
     }
     draw_ring();
     draw_meters();
@@ -637,6 +819,10 @@ static void draw_main(void)
     cv_blit(0, MAIN_Y);
 }
 
+/* the knob strip (X0X's): a rule with the page's name and five page dots at its right end; under
+ * it a cell a knob: its name, a ring (or pips, for a switch of a few positions), the value. The
+ * knob being turned is drawn on a tint. Only redrawn when what it shows changes (the rings cost a
+ * square root and an arctangent per pixel). */
 static void draw_knobs(void)
 {
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8), i;
@@ -648,40 +834,41 @@ static void draw_knobs(void)
         return;
     ui.sig[2] = h;
     cv_begin(240, KNB_H, K_BG);
-    cv_round(4, 2, 232, KNB_H - 6, 6, K_PANEL);
+    {   /* the rule; at its right end, where you are: the page, then the dots */
+        char t[12];
+        int k;
+        int32_t xd = 237 - NVIEWS * 6, xt;
+        caps(t, VIEW_NAME[ui.view], sizeof t);
+        xt = xd - 5 - text_w(&FONT_XS, t);
+        cv_rect(4, 5, xt - 9, 1, K_LINE);
+        cv_text(xt, -1, &FONT_XS, t, K_BELL);
+        for (k = 0; k < NVIEWS; k++)
+            cv_round(xd + k * 6, 3, 4, 4, 2, k == ui.view ? K_BELL : K_LINE);
+    }
     for (i = 0; i < 4; i++) {
-        int k = VIEW_KNOB[ui.view][i], lo, hi, v;
-        int32_t x = (int32_t)i * 60, cx = x + 30, bw;
-        int hot = now_touch && ui.touched == (int)i;
+        int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i;
+        int32_t x = (int32_t)i * 60, cx = x + 30;
         char t[16];
+        uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_BELL : K_PAD;
         if (k == K_NONE)
             continue;
         if (i)
-            cv_rect(x, 14, 1, KNB_H - 30, K_LINE);
+            cv_rect(x, 16, 1, 46, K_LINE);
+        if (hot)
+            cv_round(x + 3, 11, 54, 57, 6, K_PANEL);
         knob_range(k, &lo, &hi);
         v = knob_get(k);
-        text_c(cx, 6, &FONT_XS, knob_name(k), hot ? K_TEXT : K_DIM);
+        caps(t, knob_name(k), sizeof t);
+        text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
+        if (k != K_CPU && hi - lo < 6) {         /* a switch: its positions as pips */
+            int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
+            for (j = 0; j < n; j++)
+                cv_round(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, 2, j == v - lo ? fill : K_LINE);
+        } else if (k != K_CPU) {
+            arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
+        }
         knob_text(k, t);
-        {   /* the value: big, unless it has lower case (the big face has none) or is long */
-            const char *q = t;
-            int lower = 0;
-            for (; *q; q++)
-                lower |= *q >= 'a' && *q <= 'z';
-            if (lower || text_w(&FONT_M, t) > 56)
-                text_c(cx, 26, &FONT_B, t, hot ? K_BELL : K_TEXT);
-            else
-                text_c(cx, 22, &FONT_M, t, hot ? K_BELL : K_TEXT);
-        }
-        if (k == K_CPU)
-            continue;
-        bw = hi > lo ? (int32_t)(44 * (v - lo) / (hi - lo)) : 0;
-        cv_round(cx - 22, 50, 44, 6, 3, K_LINE);
-        if (lo < 0) {                                /* centred values: a bar from the middle */
-            int32_t m = cx - 22 + 44 * (0 - lo) / (hi - lo), e = cx - 22 + bw;
-            cv_round(e < m ? e : m, 50, (e < m ? m - e : e - m) + 6, 6, 3, hot ? K_BELL : K_PAD);
-        } else if (bw) {
-            cv_round(cx - 22, 50, bw < 6 ? 6 : bw, 6, 3, hot ? K_BELL : K_PAD);
-        }
+        text_c(cx, 50, &FONT_B, t, hot ? K_BELL : K_TEXT);
     }
     cv_blit(0, KNB_Y);
 }

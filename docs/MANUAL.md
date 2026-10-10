@@ -46,12 +46,12 @@ updater, M-UPGRADE, works too.
 
 <details><summary>Install from the command line</summary>
 
-Download the firmware file (for example `amb-1.0.fwsc`) from the
+Download the firmware file (for example `amb-0.9.fwsc`) from the
 [releases page](https://github.com/charlesvestal/fm1-amb/releases), get the AMB-1 source from GitHub,
 install Python 3 with `pip3 install mido python-rtmidi`, and run:
 
 ```
-python3 tools/fm1_install.py amb-1.0.fwsc
+python3 tools/fm1_install.py amb-0.9.fwsc
 ```
 
 </details>
@@ -78,6 +78,8 @@ AMB-1 starts playing as soon as it's on. A few minutes with it:
 
 What you change is kept with the piece. AMB-1 saves it by itself while resting, or press SAVE.
 
+Not sure what a button does? Hold it for a second: a card says. Let go and nothing happens.
+
 ---
 
 ## 3. Controls
@@ -94,9 +96,14 @@ What you change is kept with the piece. AMB-1 saves it by itself while resting, 
 | ALGORITHM | Mode: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor. Loads the mode's scale; editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#s6)). |
 | HOME, SEQ, FX, SEL, GLO | The pages: Layers, Motion, Space, Tone, Setup. The lit button shows the page. EDIT steps through them. |
-| KNOB 1–4 | The four values on the screen. Turn slowly for single steps, quickly for big ones. |
+| KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
+
+**Help:** hold any button but PLAY for a second and a card says what it does. A key, a knob or
+another button puts the card away; letting go after it does nothing else.
+
+![SAVE's card](img/screen-help.png)
 
 ---
 
@@ -105,11 +112,11 @@ What you change is kept with the piece. AMB-1 saves it by itself while resting, 
 ![Layers, the HOME page](img/screen-garden.png)
 ![Voices, a piece with only the sung pad and a bass](img/screen-voices.png)
 
-- **Top line:** the page, then FROZEN or RESTING when they apply, and a dot when there are
-  unsaved changes. On the right, a slow beat light and the tempo (EXT when it follows MIDI clock).
+- **Top line:** the piece, its root and mode. On the right, a slow beat light (a play triangle while
+  resting), the tempo (EXT when it follows MIDI clock) and a dot when there are unsaved changes.
   Messages ("ADDED F#", "NEXT CHORD") show here for a moment.
-- **Below it:** the piece, its root (coral) and mode. On the right, a thin bar fills up on the way
-  to the next chord; while frozen it says "held".
+- **Top right of the garden:** a thin bar fills up on the way to the next chord; while frozen it
+  says "held".
 - **The ring:** the twelve notes, C at the top. Notes in the scale are pale teal, the chord's notes
   bright teal, the root has a coral ring. The chord's name is in the middle.
 - **Around it:** the four bell loops, 13, 17, 23 and 29 beats, from the inside out. Each dot is a
@@ -118,7 +125,10 @@ What you change is kept with the piece. AMB-1 saves it by itself while resting, 
   pulse (pink).
 - **Right:** the three pulse rings: thump (16 steps), closed hat (12) and open hat (7). Hits are
   pink; they fade while the pulse sits a few bars out.
-- **Bottom:** the page's four values, one for each knob. The one you're turning lights up.
+- **Bottom:** the page's name and five dots, one a page, then its four values, one for each knob:
+  a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
+
+![Turning Echo time on the Space page](img/screen-turning.png)
 
 ---
 

@@ -19,69 +19,62 @@ SRC = Path(__file__).resolve().parents[1]
 PART_COLOURS = {}                                     # (X0X marks its parts with a swatch; AMB-1 has none)
 
 CSS = """
+/* the colours of Ambient 1: Music for Airports (1978), as the web app: the map's paper, its greens,
+   its rivers, the ink. Light only, as the cover is. */
 :root {
-  --ground: #faf4e8; --sheet: #fffaf1; --ink: #48392f; --muted: #8a7764; --rule: #e6dccb;
-  --accent: #d85f30; --teal: #1f8f84; --code-bg: #f1e8d8; --swatch-ring: rgba(0,0,0,.18);
+  --paper: #f6eeb5; --sheet: #fffbe0; --green-1: #d0dc92; --green-3: #9cb16f;
+  --river: #85c3c1; --river-2: #549995; --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: #1c1814; --sheet: #26201b; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a;
-    --accent: #f28a5a; --teal: #4cc3b6; --code-bg: #2c251f; --swatch-ring: rgba(255,255,255,.22);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ground: #1c1814; --sheet: #26201b; --ink: #f2e8d8; --muted: #b3a28e; --rule: #3a322a;
-  --accent: #f28a5a; --teal: #4cc3b6; --code-bg: #2c251f; --swatch-ring: rgba(255,255,255,.22);
-  color-scheme: dark;
-}
 body {
-  background: var(--ground); color: var(--ink); margin: 0;
-  font: 400 17px/1.6 "Barlow", "Helvetica Neue", Arial, sans-serif;
+  background: var(--paper); color: var(--ink); margin: 0;
+  font: 400 17px/1.6 "Helvetica Neue", Helvetica, Arial, sans-serif;
   padding-inline: 16px; padding-block: 32px 64px;
 }
 main { max-width: 46rem; margin: 0 auto; }
-h1, h2, h3 { font-family: "Barlow Semi Condensed", "Barlow", "Arial Narrow", sans-serif; text-wrap: balance; line-height: 1.15; }
-h1 { font-size: 2.3rem; font-weight: 700; margin: 0 0 .3rem; letter-spacing: -.01em; }
-h2 { font-size: 1.55rem; font-weight: 600; margin: 3rem 0 .8rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
-h2 .num { color: var(--accent); margin-right: .35em; font-variant-numeric: tabular-nums; }
-h3 { font-size: 1.2rem; font-weight: 600; margin: 2rem 0 .5rem; color: var(--teal); }
+h1, h2, h3 { font-family: inherit; text-wrap: balance; line-height: 1.2; }
+h1 { font-size: 2.2rem; font-weight: 300; margin: 0 0 .4rem; letter-spacing: .04em; text-transform: uppercase; }
+h2 { font-size: 1.3rem; font-weight: 400; margin: 3rem 0 .8rem; padding-top: .8rem; border-top: 1px solid var(--ink);
+     text-transform: uppercase; letter-spacing: .04em; }
+h2 .num { color: var(--river-2); margin-right: .5em; font-variant-numeric: tabular-nums; }
+h3 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 .5rem; }
 p, li { max-width: 65ch; }
 p { margin: 0 0 1rem; }
 ul, ol { padding-left: 1.3rem; margin: 0 0 1rem; }
 li { margin: .2rem 0; }
+li::marker { color: var(--river-2); }
 strong { font-weight: 600; }
-a { color: var(--accent); text-underline-offset: 2px; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
-code, pre { font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; font-size: .86em; }
-code { background: var(--code-bg); padding: .08em .35em; border-radius: 4px; }
-pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.45; margin: 0 0 1.2rem; }
-pre code { background: none; padding: 0; font-size: inherit; }
+a { color: var(--ink); text-decoration-color: var(--river-2); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:hover { background: var(--green-1); }
+a:focus-visible { outline: 2px solid var(--river-2); outline-offset: 2px; }
+code, pre { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .86em; }
+code { background: var(--sheet); padding: .08em .35em; border: 1px solid var(--rule); }
+pre { background: var(--sheet); border: 1px solid var(--ink); padding: 14px 16px; overflow-x: auto; line-height: 1.45; margin: 0 0 1.2rem; }
+pre code { background: none; padding: 0; border: 0; font-size: inherit; }
 hr { display: none; }
 .table { overflow-x: auto; margin: 0 0 1.3rem; }
 table { border-collapse: collapse; width: 100%; font-size: .95rem; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; vertical-align: top; padding: .45rem .7rem .45rem 0; border-bottom: 1px solid var(--rule); }
-th { font-family: "Barlow Semi Condensed", "Barlow", sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: .82rem; color: var(--muted); }
+th { font-weight: 400; text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; color: var(--muted); border-bottom-color: var(--ink); }
 td:first-child { white-space: nowrap; }
-.lede { color: var(--muted); margin-bottom: 1.6rem; }
-.status { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+.lede { margin-bottom: 1.6rem; }
+.status { background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
 .status p { margin: 0; }
 a.home { color: inherit; text-decoration: none; }
-main > a.home { display: inline-block; font: 700 1rem "Barlow Semi Condensed", "Barlow", sans-serif; letter-spacing: .03em; color: var(--muted); margin: 0 0 .4rem; }
-a.home:hover { color: var(--accent); }
-.callout { border-left: 3px solid var(--accent); background: var(--sheet); border-radius: 0 8px 8px 0; padding: 10px 16px; margin: 0 0 1.2rem; max-width: 65ch; }
+a.home:hover { background: none; color: var(--river-2); }
+main > a.home { display: inline-block; font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 .4rem; }
+.callout { border-left: 4px solid var(--river); background: var(--sheet); padding: 10px 16px; margin: 0 0 1.2rem; max-width: 65ch; }
 .callout p { margin: 0; }
-details { border: 1px solid var(--rule); border-radius: 8px; padding: 0 16px; margin: 0 0 1.2rem; }
-details > summary { cursor: pointer; padding: 10px 0; font-weight: 600; color: var(--muted); }
+details { border: 1px solid var(--ink); background: var(--sheet); padding: 0 16px; margin: 0 0 1.2rem; }
+details > summary { cursor: pointer; padding: 10px 0; }
 details[open] > summary { margin-bottom: .4rem; }
 details > :last-child { margin-bottom: 1rem; }
-.swatch { display: inline-block; width: .7em; height: .7em; border-radius: 3px; margin-right: .4em; vertical-align: .02em; box-shadow: 0 0 0 1px var(--swatch-ring); }
+.swatch { display: inline-block; width: .7em; height: .7em; margin-right: .4em; vertical-align: .02em; box-shadow: 0 0 0 1px var(--ink); }
 nav.contents ol { columns: 2 14rem; column-gap: 2rem; padding-left: 1.3rem; }
 .figs { display: flex; flex-wrap: wrap; gap: 20px; margin: .4rem 0 1.6rem; }
 figure { margin: 0; flex: 0 1 auto; }
-figure img { display: block; max-width: 100%; height: auto; border-radius: 10px; }
-figure.shot img { width: 300px; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--rule); }
+figure img { display: block; max-width: 100%; height: auto; }
+figure.shot img { width: 300px; image-rendering: pixelated; border: 1px solid var(--ink); }
 figure.wide { flex-basis: 100%; }
 figure.wide img { width: 100%; }
 figcaption { color: var(--muted); font-size: .88rem; margin-top: .4rem; max-width: 300px; }
@@ -244,10 +237,6 @@ def main():
     body = convert(md)
     page = (f"<title>{html.escape(title)}</title>\n"
             f'<meta name="description" content="{html.escape(what)} for {NAME}, a generative ambient firmware for the M-VAVE FM-1.">\n'
-            '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
-            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&'
-            'family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400&display=swap">\n'
             f"<style>{CSS}</style>\n<main>\n{body}\n</main>\n")
     if not fragment:
         head, _, rest = page.partition("<main>")
