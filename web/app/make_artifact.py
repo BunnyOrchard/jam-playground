@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """The web app as a private claude.ai Artifact: build/app (web/app/build.sh) -> build/app-artifact/
 {index.html, worklet.js}. The page loses its document wrapper (the Artifact host adds one); amb.wasm
-goes into it as base64, so nothing is fetched. build/app itself is a static site, servable as is (not published: charles.pizza/eno now leads to the emulator)."""
+goes into it as base64, so nothing is fetched. build/app itself is the static site (charles.pizza/amb, web/app/publish.sh)."""
 import base64
 import re
 from pathlib import Path
