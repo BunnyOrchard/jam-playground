@@ -6,8 +6,7 @@ bells on tape loops of unequal length, a gliding bass and quiet Euclidean percus
 a short echo, a long tape loop and a plate reverb. You don't perform it, you tend it: pick a piece
 and a scale, take notes out, put them back, and let it grow.
 
-![The garden: the scale as a ring, the bell loops around it, the pulse on the right](img/screen-garden.png)
-![Frozen: the chord held, the reverb ringing on](img/screen-frozen.png)
+![The FM-1 (a drawing), running AMB-1, each control labelled](img/fm1-panel.svg)
 
 ---
 
@@ -84,6 +83,8 @@ Not sure what a button does? Hold it for a second: a card says. Let go and nothi
 ---
 
 ## 3. Controls
+
+The drawing at the top shows them all; here they are in more detail.
 
 | Control | What it does |
 |---|---|
