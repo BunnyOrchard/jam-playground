@@ -20,9 +20,10 @@ PART_COLOURS = {}                                     # (X0X marks its parts wit
 
 CSS = """
 /* the colours of Ambient 1: Music for Airports (1978), as the web app: the map's paper, its greens,
-   its rivers, the ink. Light only, as the cover is. */
+   its rivers, the ink. Light only, as the cover is. The page a shade lighter than the cover's paper, so
+   the screenshots (on that paper) stand out from it; the cover's paper for code and callouts. */
 :root {
-  --paper: #f6eeb5; --sheet: #fffbe0; --green-1: #d0dc92; --green-3: #9cb16f;
+  --paper: #fdf9e4; --sheet: #f6eeb5; --green-1: #d0dc92; --green-3: #9cb16f;
   --river: #85c3c1; --river-2: #549995; --ink: #1d1b02; --muted: #4f4b25; --rule: #c2ce7f;
   color-scheme: light;
 }
