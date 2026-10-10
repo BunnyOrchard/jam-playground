@@ -173,7 +173,7 @@ async function begin() {
     node = new AudioWorkletNode(ac, "amb-app", { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
     // iPhone: through a media element, which may keep playing with the screen locked; elsewhere, directly
     let routed = false;
-    if (isIOS && ac.createMediaStreamDestination) {
+    if (isIOS && ac.createMediaStreamDestination && !/[?&]direct\b/.test(location.search)) {   // ?direct skips the media element (to compare)
       try {
         const dest = ac.createMediaStreamDestination(), el = new Audio();
         node.connect(dest);
@@ -233,6 +233,7 @@ async function wake(on) {
   } catch { /* refused: the screen sleeps as usual */ }
 }
 document.addEventListener("visibilitychange", () => {
+  send({ t: "vis", v: document.visibilityState === "visible" });   // hidden: the worklet stops sending the state
   if (document.visibilityState === "visible") {
     if (S && S.awake && !lock) wake(true);
     if (ac && ac.state !== "running" && playing) ac.resume();
