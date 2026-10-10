@@ -61,6 +61,12 @@ td:first-child { white-space: nowrap; }
 .lede { margin-bottom: 1.6rem; }
 .status { background: var(--sheet); border: 1px solid var(--ink); padding: 12px 16px; }
 .status p { margin: 0; }
+.site { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem 1.2rem; margin: 0 0 1.6rem; padding-bottom: .5rem; border-bottom: 1px solid var(--ink); }
+.site .home { font-size: 1.05rem; font-weight: 400; letter-spacing: .08em; color: var(--ink); text-decoration: none; }
+.site .home:hover { color: var(--river-2); background: none; }
+.site nav { margin-left: auto; display: flex; flex-wrap: wrap; gap: .2rem 1rem; font-size: .92rem; }
+.site nav a { color: var(--ink); text-decoration-color: var(--river-2); text-underline-offset: 3px; }
+.site nav a[aria-current] { text-decoration: none; color: var(--river-2); }
 a.home { color: inherit; text-decoration: none; }
 a.home:hover { background: none; color: var(--river-2); }
 main > a.home { display: inline-block; font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 .4rem; }
@@ -162,8 +168,9 @@ def convert(md):
             continue
         if ln.startswith("# "):                         # the title; AMB-1's own a way home (the site's root)
             t = ln[2:].strip()
-            if t == NAME:
-                out.append(f'<h1><a class="home" href="../">{NAME}</a></h1>')
+            if t == NAME:                               # the site's header (home, the other pages), then the title
+                out.append('<header class="site"><a class="home" href="../">AMB-1</a><nav><a href="../emu/">Emulator</a><a href="../install/">Install</a><a href="../manual/" aria-current="page">Manual</a><a href="https://github.com/charlesvestal/fm1-amb">Source</a></nav></header>')
+                out.append('<h1>Manual</h1>')
             else:
                 out.append(f'<a class="home" href="../">{NAME}</a>\n<h1>{inline(t)}</h1>')
         elif ln.startswith("## "):
