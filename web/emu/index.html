@@ -86,46 +86,48 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
 <section class="help">
   <div class="knobs">
     <h2>Pages and knobs</h2>
-    <p>Each page puts four values on KNOB 1–4. <b>EDIT</b> steps through the pages, or press the page's button. Each piece remembers its own settings.</p>
+    <p>One page a layer, each on its own button; a layer's level is always KNOB 1. <b>SELECT</b> steps through the pages. Each piece remembers its own settings.</p>
     <div class="pages">
       <div>
-        <h3>Layers <span>HOME</span></h3>
+        <h3>Garden <span>HOME</span></h3>
         <dl>
-          <dt>Pad, Bells, Bass, Pulse</dt><dd>How loud each layer is. 0 leaves it out.</dd>
+          <dt>Tempo</dt><dd>30 to 120 (also HOME + SELECT, from any page).</dd><dt>Evolve</dt><dd>How restless the garden is: at 0 the loops repeat exactly; turned up, bell notes change, the pulse patterns turn, and the layers take rests.</dd><dt>Motion</dt><dd>How far the slow tide swings between sparse and full, and how much pitch, pan and the echo wander.</dd><dt>Drift</dt><dd>How long a chord lasts, 20 s to 5 min. The thin bar top right fills on the way to the next. EDIT moves on now.</dd>
         </dl>
       </div>
       <div>
-        <h3>Motion <span>SEQ</span></h3>
+        <h3>Pad <span>ENV</span></h3>
         <dl>
-          <dt>Density</dt><dd>How many notes each bell loop holds: none at 0, up to five at the top. The four loops are 13, 17, 23 and 29 beats long, so a few notes each is already a melody that never quite repeats. A change shows up as each loop comes round.</dd>
-          <dt>Evolve</dt><dd>How restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note now and then changes or moves at the end of a pass, the pulse patterns shift, and layers take rests: the pulse sits out a few bars, the bass skips a chord, a loop goes quiet for a pass.</dd>
-          <dt>Drift</dt><dd>How long a chord lasts before the pad moves to another one in the scale: 20 s to 5 min (each time a little more or less). The thin bar at the top right of the screen fills up on the way to the next chord. ARP moves on now.</dd>
-          <dt>Hits</dt><dd>How many beats the three pulse rings play (thump in 16, closed hat in 12, open hat in 7). 0: no pulse.</dd>
+          <dt>Level, Swell</dt><dd>How loud; how long the voices breathe.</dd><dt>Bright</dt><dd>Opens the filter (and moves the Voices' vowel).</dd><dt>Colour</dt><dd>Rhodes or Voices.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Bells <span>ARP</span></h3>
+        <dl>
+          <dt>Level, Density</dt><dd>How loud; how many notes each of the four loops (13, 17, 23, 29 beats) holds.</dd><dt>Tone, Octave</dt><dd>Round to metallic; two octaves down to two up.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Bass <span>LFO</span></h3>
+        <dl>
+          <dt>Level, Octave</dt><dd>How loud; an octave down or up.</dd><dt>Glide, Fifth</dt><dd>How slowly it slides to its note; how often it leans on the fifth.</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>Pulse <span>SEQ</span></h3>
+        <dl>
+          <dt>Level, Hits</dt><dd>How loud; how many beats the three rings play (16, 12 and 7 steps).</dd><dt>Swing, Hats</dt><dd>The off sixteenths late (50% to 75%); the hats dark to bright.</dd>
         </dl>
       </div>
       <div>
         <h3>Space <span>FX</span></h3>
         <dl>
-          <dt>Echo</dt><dd>How much goes to the tape echo (and the short slap echo before it).</dd>
-          <dt>Echo time</dt><dd>The tape loop's length, a dotted quarter to 4 bars, shortened to fit its 5.6 s at slow tempos. The right side repeats at three quarters of it.</dd>
-          <dt>Reverb</dt><dd>How much goes to the plate.</dd>
-          <dt>Size</dt><dd>How long the plate rings, from a room to a long hall, and how many times the echo comes back.</dd>
-        </dl>
-      </div>
-      <div>
-        <h3>Tone <span>SEL</span></h3>
-        <dl>
-          <dt>Bright</dt><dd>Opens the pad's filter (and for the Voices pad, moves the vowel from "oo" to "eh").</dd>
-          <dt>Swell</dt><dd>How long the pad's voices breathe: each swells in, hangs and fades on its own cycle, from a few seconds to about half a minute.</dd>
-          <dt>Bell tone</dt><dd>From round and soft-struck, like a slowed piano, to a long metallic clang.</dd>
-          <dt>Motion</dt><dd>How far the slow tide swings, a few minutes from end to end, between sparse (fewer bells, darker, a quieter pulse, more reverb) and full; and how much pitch, pan and the echo wander.</dd>
+          <dt>Echo, Echo time</dt><dd>The tape echo's send; its loop, a dotted quarter to 4 bars.</dd><dt>Reverb, Size</dt><dd>The plate's send; how long it rings, and how often the echo returns.</dd>
         </dl>
       </div>
       <div>
         <h3>Setup <span>GLO</span></h3>
         <dl>
-          <dt>Root</dt><dd>The key's root note.</dd>
-          <dt>Tune, MIDI out, Lights</dt><dd>Fine tuning in cents; MIDI out over USB on or off; the keys lighting up the scale, and on the FM-1 the unlit buttons glowing dimly (Keys: the keys only). The audio load shows top right.</dd>
+          <dt>Root, Tune</dt><dd>The key's root; fine tuning in cents.</dd><dt>MIDI out, Lights</dt><dd>MIDI out over USB; the key lights and the buttons' glow. The audio load shows top right.</dd>
         </dl>
       </div>
     </div>
@@ -134,11 +136,10 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <h2>Buttons</h2>
     <ul>
       <li><b>Keys</b> are the scale: each one adds or removes its note. The root stays.</li>
-      <li><b>PLAY</b> grows / rests. <b>ARP</b> the next chord. <b>REC</b> freeze. <b>ENV</b> the pad's colour, Rhodes or Voices (lit: Voices).</li>
-      <li><b>OCT−</b> / <b>OCT+</b> move the bells an octave.</li>
-      <li>Pages: <b>HOME</b> layers, <b>SEQ</b> motion, <b>FX</b> space, <b>SEL</b> tone, <b>GLO</b> setup (the root is here). <b>EDIT</b> steps through them.</li>
+      <li><b>PLAY</b> grows / rests. <b>REC</b> freezes. <b>EDIT</b> the next chord.</li>
+      <li><b>SELECT</b> the previous or next page; with <b>HOME</b> held, the tempo. <b>ALGORITHM</b> the mode, <b>PRESETS</b> the piece (each remembers how you left it).</li>
+      <li><b>OCT−</b> / <b>OCT+</b> move the bells an octave. <b>SAVE</b> saves; hold it to reset the piece.</li>
       <li>Hold a button for a second and a card says what it does (with a mouse: <kbd>Shift</kbd>-click to hold it, click again to let go).</li>
-      <li><b>PRESETS</b> the piece (each remembers how you left it). <b>SELECT</b> tempo, <b>ALGORITHM</b> mode, <b>KNOB 1–4</b> the values on the screen. <b>SAVE</b> saves; hold it to reset the piece.</li>
     </ul>
   </div>
   <div>
@@ -153,7 +154,7 @@ kbd { font: 600 .85em ui-monospace, Menlo, monospace; background: var(--card); b
     <h2>Keyboard</h2>
     <ul>
       <li>White keys 1–8: <kbd>Q</kbd>–<kbd>I</kbd>, 9–16: <kbd>A</kbd>–<kbd>K</kbd>. Black keys 1–11: <kbd>1</kbd>–<kbd>0</kbd>, <kbd>-</kbd>.</li>
-      <li><kbd>Space</kbd> PLAY, <kbd>Enter</kbd> REC (freeze), <kbd>V</kbd> ENV (pad colour), <kbd>Esc</kbd> HOME, <kbd>Z</kbd> / <kbd>X</kbd> OCT− / OCT+.</li>
+      <li><kbd>Space</kbd> PLAY, <kbd>Enter</kbd> REC (freeze), <kbd>V</kbd> ENV (the Pad page), <kbd>Esc</kbd> HOME, <kbd>Z</kbd> / <kbd>X</kbd> OCT− / OCT+.</li>
       <li><kbd>↑</kbd> <kbd>↓</kbd> turn SELECT.</li>
     </ul>
   </div>

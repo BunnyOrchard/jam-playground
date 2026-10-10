@@ -230,13 +230,13 @@ static void safe_main(void)
 
 static void splash(void)
 {
-    lcd_fill(0, 0, 240, 240, RGB(250, 244, 232));
-    cv_begin(240, 64, RGB(250, 244, 232));
+    lcd_fill(0, 0, 240, 240, RGB(246, 238, 181));    /* the paper of Music for Airports' cover */
+    cv_begin(240, 64, RGB(246, 238, 181));
     {
         int32_t w = text_w(&FONT_L, "AMB-1");
-        cv_text((240 - w) / 2, 0, &FONT_L, "AMB-1", RGB(242, 120, 72));
+        cv_text((240 - w) / 2, 0, &FONT_L, "AMB-1", RGB(29, 27, 2));
         w = text_w(&FONT_S, "An ambient garden for the FM-1");
-        cv_text((240 - w) / 2, 42, &FONT_S, "An ambient garden for the FM-1", RGB(150, 136, 118));
+        cv_text((240 - w) / 2, 42, &FONT_S, "An ambient garden for the FM-1", RGB(112, 106, 58));
     }
     cv_blit(0, 92);
     lcd_sync();

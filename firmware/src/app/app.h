@@ -10,7 +10,8 @@
 #define EN_VERSION "DEV"
 #endif
 #define PROJ_MAGIC 0x314F4E45u           /* "ENO1" */
-#define PROJ_FORMAT 3u                   /* 3: the pad's colour per piece; older formats give the recipes */
+#define PROJ_FORMAT 4u                   /* 4: the bass's and the pulse's own settings (3 is carried over;
+                                          * older formats give the recipes) */
 #define NPIECES EN_NPIECES
 
 typedef struct {

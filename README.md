@@ -22,14 +22,14 @@ installer can reach.
 | | |
 |---|---|
 | Keys | The scale: each key adds its note or takes it out |
-| PLAY | Grow / rest |
-| ARP | The next chord |
-| REC | Freeze: the chord holds, the reverb rings on |
+| PLAY · REC · EDIT | Grow / rest · freeze · the next chord |
+| HOME · ENV · ARP · LFO · SEQ · FX · GLO | The pages: Garden, Pad, Bells, Bass, Pulse, Space, Setup; KNOB 1–4 set their values, a layer's level on KNOB 1 |
+| SELECT | The previous or next page; with HOME held, the tempo |
+| ALGORITHM · PRESETS | The mode · the piece (eight of them) |
 | OCT− / OCT+ | The bells' octave |
-| ENV | The pad: Rhodes or Voices |
-| SELECT · ALGORITHM · PRESETS | Tempo · mode · the piece (eight of them) |
-| HOME SEQ FX SEL GLO | Pages: Layers, Motion, Space, Tone, Setup; KNOB 1–4 set their values |
 | SAVE | Saves; held, puts the piece back to its recipe |
+
+Hold any button for a second and a card says what it does.
 
 The [manual](https://charlesvestal.github.io/fm1-amb/manual/) has the rest.
 

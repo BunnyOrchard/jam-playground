@@ -68,11 +68,12 @@ AMB-1 starts playing as soon as it's on. A few minutes with it:
    and amount of movement.
 3. **Change the scale.** Press a key whose note is lit: it leaves the scale, and nothing plays
    it any more. Press it again to bring it back. Any key that isn't lit adds its note.
-4. **Move on.** Press ARP: the pad moves to the next chord at the start of the next bar.
+4. **Move on.** Press EDIT: the pad moves to the next chord at the start of the next bar.
 5. **Freeze.** Press REC: the chord holds and the reverb rings on forever, while the bells and
    pulse go on above it. Press REC again to let it go.
-6. **Turn the knobs.** KNOB 1–4 set the four values at the bottom of the screen. HOME, SEQ, FX,
-   SEL and GLO choose the page (or EDIT steps through them).
+6. **Shape a layer.** Each layer has a button: ENV the pad, ARP the bells, LFO the bass, SEQ the
+   pulse, FX the space, HOME the garden as a whole, GLO the setup. KNOB 1–4 set the four values
+   at the bottom of the screen, a layer's level always on KNOB 1. SELECT steps through the pages.
 7. **Rest.** Press PLAY: the garden stops growing and its sounds fade out slowly. PLAY again and
    it grows back.
 
@@ -88,15 +89,16 @@ Not sure what a button does? Hold it for a second: a card says. Let go and nothi
 |---|---|
 | Keys | The scale. Each key adds its note to the scale or takes it out; the keys light up for the notes in it. Every octave of a note is the same key. The root stays, and the scale keeps at least three notes. |
 | PLAY | Grow / rest. AMB-1 starts growing by itself when it's switched on. At rest, the sounds fade out slowly and the reverb rings away. Lit green while growing. |
-| ARP | The next chord, at the start of the next bar (at once while resting). |
 | REC | **Freeze**: the chord holds and the reverb rings on forever, while the bells and pulse go on dry above it. Press again to thaw. Lit while frozen. |
-| OCT− / OCT+ | The bells' octave, two down to two up. |
-| ENV | The pad's colour: Rhodes or Voices. Lit for Voices. Each piece keeps its own. |
-| SELECT | Tempo, 30 to 120. |
+| EDIT | The next chord, at the start of the next bar (at once while resting). |
+| HOME | The Garden page: the whole garden. |
+| ENV · ARP · LFO · SEQ | The layers' pages: Pad, Bells, Bass, Pulse. |
+| FX · GLO | The Space and Setup pages. The lit button shows the page. |
+| SELECT | The previous or next page. Hold HOME and turn it for the tempo, from any page. |
 | ALGORITHM | Mode: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, pentatonic major and minor. Loads the mode's scale; editing it with the keys makes it Custom. |
 | PRESETS | The piece (see [The pieces](#s6)). |
-| HOME, SEQ, FX, SEL, GLO | The pages: Layers, Motion, Space, Tone, Setup. The lit button shows the page. EDIT steps through them. |
 | KNOB 1–4 | The four values on the screen. A few clicks are always single steps; a quick turn speeds up, so half a turn sweeps the range. |
+| OCT− / OCT+ | The bells' octave, two down to two up, from any page. |
 | MASTER | Volume. |
 | SAVE | Saves all eight pieces. Held for 1.5 s: puts the piece back to its recipe. |
 
@@ -109,7 +111,7 @@ another button puts the card away; letting go after it does nothing else.
 
 ## 4. The screen
 
-![Layers, the HOME page](img/screen-garden.png)
+![The Garden page (HOME)](img/screen-garden.png)
 ![Voices, a piece with only the sung pad and a bass](img/screen-voices.png)
 
 - **Top line:** the piece, its root and mode. On the right, a slow beat light (a play triangle while
@@ -117,15 +119,15 @@ another button puts the card away; letting go after it does nothing else.
   Messages ("ADDED F#", "NEXT CHORD") show here for a moment.
 - **Top right of the garden:** a thin bar fills up on the way to the next chord; while frozen it
   says "held".
-- **The ring:** the twelve notes, C at the top. Notes in the scale are pale teal, the chord's notes
-  bright teal, the root has a coral ring. The chord's name is in the middle.
+- **The ring:** the twelve notes, C at the top. Notes in the scale are green, the chord's notes
+  a deeper green, the root is ringed in ink. The chord's name is in the middle.
 - **Around it:** the four bell loops, 13, 17, 23 and 29 beats, from the inside out. Each dot is a
-  beat; the coral ones hold a note. A playhead goes round each loop and glows when it rings a bell.
-- **Left:** the four layers' levels as they sound: pad (teal), bells (coral), bass (amber),
-  pulse (pink).
-- **Right:** the three pulse rings: thump (16 steps), closed hat (12) and open hat (7). Hits are
-  pink; they fade while the pulse sits a few bars out.
-- **Bottom:** the page's name and five dots, one a page, then its four values, one for each knob:
+  beat; the blue ones hold a note. A playhead goes round each loop and glows when it rings a bell.
+- **Left:** the four layers' levels as they sound: pad (green), bells (blue), bass (olive),
+  pulse (dark).
+- **Right:** the three pulse rings: thump (16 steps), closed hat (12) and open hat (7). Hits
+  fade while the pulse sits a few bars out.
+- **Bottom:** the page's name and seven dots, one a page, then its four values, one for each knob:
   a dial (or, for a switch, its positions) and the value. The one you're turning lights up.
 
 ![Turning Echo time on the Space page](img/screen-turning.png)
@@ -187,24 +189,58 @@ the same for all.
 
 ## 7. The pages
 
-Each page puts four values on KNOB 1–4.
+One page a layer, each on its own button, with four values on KNOB 1–4. A layer's level is
+always KNOB 1. SELECT steps through them in this order.
 
-### HOME: Layers
+### HOME: Garden
 
-**Pad, Bells, Bass, Pulse:** how loud each layer is. 0 leaves it out.
+![The Garden page](img/screen-garden.png)
 
-### SEQ: Motion
-
-![The Motion page](img/screen-motion.png)
-
-- **Density:** how many notes each bell loop holds, none at 0 to five at the top. A change shows
-  up as each loop comes round.
+- **Tempo:** 30 to 120 (also HOME + SELECT, from any page).
 - **Evolve:** how restless the garden is. At 0 the loops repeat exactly. Turned up, a bell note
-  now and then changes or moves at the end of a pass, the pulse patterns shift, and the layers
-  take rests.
+  now and then changes or moves at the end of a pass, the pulse patterns turn and gain or lose a
+  hit, and the layers take rests.
+- **Motion:** how far the arc swings, and how much pitch, pan, the vowel and the echo wander.
 - **Drift:** how long a chord lasts before the pad moves on, 20 seconds to 5 minutes (each time a
-  little more or less). ARP moves on now.
-- **Hits:** how many beats the three pulse rings play. 0: no pulse.
+  little more or less). EDIT moves on now.
+
+### ENV: Pad
+
+![The Pad page](img/screen-pad.png)
+
+- **Level.**
+- **Swell:** how long the voices breathe, from a few seconds to about half a minute.
+- **Bright:** opens the pad's filter and brightens the Rhodes; for the Voices it also moves the
+  vowel from "oo" to "eh".
+- **Colour:** Rhodes or Voices. Each piece keeps its own.
+
+### ARP: Bells
+
+![The Bells page](img/screen-bells.png)
+
+- **Level.**
+- **Density:** how many notes each loop holds, none at 0 to five at the top. A change shows up as
+  each loop comes round.
+- **Tone:** from round and soft-struck to a long metallic clang.
+- **Octave:** two down to two up (OCT− and OCT+ too).
+
+### LFO: Bass
+
+![The Bass page](img/screen-bass.png)
+
+- **Level.**
+- **Octave:** one down, home, or one up.
+- **Glide:** how slowly the bass slides to its next note, from a quick step to over a second.
+- **Fifth:** how often, halfway through a chord, the bass leans on the fifth.
+
+### SEQ: Pulse
+
+![The Pulse page](img/screen-pulse.png)
+
+- **Level.**
+- **Hits:** how many beats the three rings play. 0: no pulse.
+- **Swing:** the off sixteenths later, from straight (50%) to a heavy lilt (75%).
+- **Hats:** from dark and long to bright and crisp.
 
 ### FX: Space
 
@@ -216,16 +252,6 @@ Each page puts four values on KNOB 1–4.
 - **Reverb:** how much goes to the plate.
 - **Size:** how long the plate rings, from a room to a long hall, and how many times the echo
   comes back.
-
-### SEL: Tone
-
-![The Tone page](img/screen-tone.png)
-
-- **Bright:** opens the pad's filter and brightens the Rhodes; for the Voices pad it also moves
-  the vowel from "oo" to "eh".
-- **Swell:** how long the pad's voices breathe, from a few seconds to about half a minute.
-- **Bell tone:** from round and soft-struck to a long metallic clang.
-- **Motion:** how far the arc swings, and how much pitch, pan, the vowel and the echo wander.
 
 ### GLO: Setup
 
@@ -323,27 +349,35 @@ The defaults are Garden's; each piece has its own.
 
 | Page | Value | Range | Garden |
 |---|---|---|---|
-| Layers | Pad, Bells, Bass, Pulse | 0–100 | 60, 65, 45, 40 |
-| Motion | Density | 0–100 (0 to 5 notes a loop) | 40 |
-| Motion | Evolve | 0–100 | 35 |
-| Motion | Drift | 20 s – 5:00 | 25 (about 40 s) |
-| Motion | Hits | 0–100 | 35 |
+| Garden | Tempo | 30–120 | 72 |
+| Garden | Evolve | 0–100 | 35 |
+| Garden | Motion | 0–100 | 50 |
+| Garden | Drift | 20 s – 5:00 | 25 (about 40 s) |
+| Pad | Level | 0–100 | 60 |
+| Pad | Swell | 0–100 | 60 |
+| Pad | Bright | 0–100 | 40 |
+| Pad | Colour | Rhodes, Voices | Rhodes |
+| Bells | Level | 0–100 | 65 |
+| Bells | Density | 0–100 (0 to 5 notes a loop) | 40 |
+| Bells | Tone | 0–100 | 50 |
+| Bells | Octave | −2 – +2 | 0 |
+| Bass | Level | 0–100 | 45 |
+| Bass | Octave | −1 – +1 | 0 |
+| Bass | Glide | 0–100 (20 ms – 1.2 s) | 20 |
+| Bass | Fifth | 0–100 | 35 |
+| Pulse | Level | 0–100 | 40 |
+| Pulse | Hits | 0–100 | 35 |
+| Pulse | Swing | 50%–75% | 50% |
+| Pulse | Hats | 0–100 | 50 |
 | Space | Echo | 0–100 | 45 |
 | Space | Echo time | 1/4., 1/2, 1/2., 1 bar, 2 bars, 4 bars | 1 bar |
 | Space | Reverb | 0–100 | 65 |
 | Space | Size | 0–100 | 80 |
-| Tone | Bright | 0–100 | 40 |
-| Tone | Swell | 0–100 | 60 |
-| Tone | Bell tone | 0–100 | 50 |
-| Tone | Motion | 0–100 | 50 |
 | Setup | Root | C – B | D |
 | Setup | Tune | −50 – +50 cents | 0 |
 | Setup | MIDI out | Off, On | On |
 | Setup | Lights | Off, On, Keys | On |
-| SELECT | Tempo | 30–120 | 72 |
 | ALGORITHM | Mode | 8 modes, or Custom | Dorian |
-| OCT− / OCT+ | Bell octave | −2 – +2 | 0 |
-| ENV | Pad | Rhodes, Voices | Rhodes |
 
 ---
 

@@ -28,24 +28,27 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Bright", 0, 100, 40},   {"Swell", 0, 100, 60},    {"Bell tone", 0, 100, 50}, {"Motion", 0, 100, 50},
     {"Tune", -50, 50, 0},     {"MIDI out", 0, 1, 1},    {"Tempo", 30, 120, 72},   {"Root", 0, 11, 2},
     {"Mode", 0, EN_NMODES - 1, 1}, {"Bell oct", -2, 2, 0}, {"Pad tone", 0, 1, 0},
+    {"Bass oct", -1, 1, 0},   {"Glide", 0, 100, 20},    {"Fifth", 0, 100, 35},
+    {"Swing", 0, 100, 0},     {"Hats", 0, 100, 50},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
 /* the pieces: eight recipes for the whole garden (the FM-1's PRESETS, the web app's cards). Tune and
  * MIDI out are taken from here by neither: they belong to the player, not the piece */
-/*                     Pad Bel Bas Pul  Den Evo Dri Hit  Ech ET Rev Siz  Bri Swe Ton Mot  Tun MI Tem Rt Md Oc  PadTone (0 Rhodes, 1 Voices) */
+/*                     Pad Bel Bas Pul  Den Evo Dri Hit  Ech ET Rev Siz  Bri Swe Ton Mot  Tun MI Tem Rt Md Oc  PT  BO Gli Fif  Swi Hat
+ * (PT: the pad's colour, 0 Rhodes, 1 Voices; BO: the bass's octave) */
 static const struct {
     const char *name;
     int8_t v[P_NPARAMS];
 } PIECES[EN_NPIECES] = {
-    {"Garden",       {60, 65, 45, 40, 40, 35, 25, 35, 45, 3, 65, 80, 40, 60, 50, 50, 0, 1, 72, 2, 1, 0, 0}},
-    {"Departures",   {35, 75, 0, 0, 35, 30, 40, 0, 30, 3, 70, 85, 20, 55, 5, 40, 0, 1, 60, 1, 0, -1, 0}},
-    {"Voices",       {85, 0, 25, 0, 30, 30, 50, 0, 20, 5, 80, 90, 67, 70, 30, 55, 0, 1, 56, 5, 5, 0, 1}},
-    {"Afternoon",    {50, 65, 35, 25, 55, 45, 20, 30, 50, 2, 60, 75, 60, 50, 60, 55, 0, 1, 84, 7, 3, 0, 0}},
-    {"Night Bus",    {45, 55, 55, 60, 45, 50, 15, 55, 55, 1, 55, 70, 35, 40, 75, 70, 0, 1, 96, 9, 5, 0, 0}},
-    {"Shoreline",    {40, 60, 30, 0, 30, 40, 40, 0, 85, 4, 55, 95, 30, 80, 0, 85, 0, 1, 64, 4, 6, 0, 0}},
-    {"Glass",        {35, 80, 30, 20, 60, 55, 25, 25, 45, 2, 65, 80, 55, 45, 90, 50, 0, 1, 76, 3, 7, 1, 0}},
-    {"Tides",        {55, 60, 40, 35, 45, 75, 10, 40, 50, 3, 65, 85, 60, 60, 55, 95, 0, 1, 70, 10, 4, 0, 1}},
+    {"Garden",       {60, 65, 45, 40, 40, 35, 25, 35, 45, 3, 65, 80, 40, 60, 50, 50, 0, 1, 72, 2, 1, 0, 0, 0, 20, 35, 0, 50}},
+    {"Departures",   {35, 75, 0, 0, 35, 30, 40, 0, 30, 3, 70, 85, 20, 55, 5, 40, 0, 1, 60, 1, 0, -1, 0, 0, 30, 25, 0, 40}},
+    {"Voices",       {85, 0, 25, 0, 30, 30, 50, 0, 20, 5, 80, 90, 67, 70, 30, 55, 0, 1, 56, 5, 5, 0, 1, -1, 45, 30, 0, 40}},
+    {"Afternoon",    {50, 65, 35, 25, 55, 45, 20, 30, 50, 2, 60, 75, 60, 50, 60, 55, 0, 1, 84, 7, 3, 0, 0, 0, 15, 40, 15, 65}},
+    {"Night Bus",    {45, 55, 55, 60, 45, 50, 15, 55, 55, 1, 55, 70, 35, 40, 75, 70, 0, 1, 96, 9, 5, 0, 0, 0, 10, 45, 30, 70}},
+    {"Shoreline",    {40, 60, 30, 0, 30, 40, 40, 0, 85, 4, 55, 95, 30, 80, 0, 85, 0, 1, 64, 4, 6, 0, 0, 0, 40, 20, 0, 30}},
+    {"Glass",        {35, 80, 30, 20, 60, 55, 25, 25, 45, 2, 65, 80, 55, 45, 90, 50, 0, 1, 76, 3, 7, 1, 0, 1, 10, 30, 10, 85}},
+    {"Tides",        {55, 60, 40, 35, 45, 75, 10, 40, 50, 3, 65, 85, 60, 60, 55, 95, 0, 1, 70, 10, 4, 0, 1, 0, 25, 55, 10, 50}},
 };
 
 const char *en_piece_name(int i) { return PIECES[(unsigned)i < EN_NPIECES ? i : 0].name; }
@@ -119,7 +122,13 @@ void en_param_text(int i, int v, char *b)
         }
         return;
     }
-    if ((i == P_TUNE || i == P_BOCT) && v > 0)
+    if (i == P_SWING) {                          /* as a swing percentage: 50% (straight) .. 75% */
+        b = itoa_s(50 + v / 4, b);
+        *b++ = '%';
+        *b = 0;
+        return;
+    }
+    if ((i == P_TUNE || i == P_BOCT || i == P_BASSOCT) && v > 0)
         *b++ = '+';
     itoa_s(v, b);
 }
@@ -514,7 +523,7 @@ static struct {
     float ph, inc, note, target, amp;
     uint8_t midi_note, rest;                    /* rest: sitting this chord out */
 } bass;
-static float bass_vol;
+static float bass_vol, glide_k = 1.0f / (0.25f * EN_SR);      /* glide_k: 1 / the glide's time in samples */
 
 /* ----------------------------------------------------------------- bells --- */
 #define NBELL 6
@@ -533,13 +542,15 @@ static const float RATIO[5] = {1.0f, 2.0f, 3.0f, 3.5f, 4.77f};
 
 /* ----------------------------------------------------------------- pulse --- */
 typedef struct {
-    float ph, inc, inc_end, amp, adec, idx, x1, x2, att, mph[4];
+    float ph, inc, inc_end, amp, adec, idx, x1, x2, att, mph[4], pend;
+    int32_t wait;                               /* swing: samples until a hit that waits (pend: its velocity) */
     uint8_t on, note;
 } drum_t;
 static drum_t drum[EN_NDRUM];
 static uint8_t drum_pos[EN_NDRUM];
 static uint32_t drum_pat[EN_NDRUM];
-static float pulse_vol;
+static float pulse_vol, swing, hat_f = 0.9f, hat_open = 0.42f;
+static float step_len, pulse_left;               /* a sixteenth, in samples; to the next MIDI clock pulse */
 static uint32_t noise = 22222u;
 static const uint8_t DRUM_KMAX[EN_NDRUM] = {5, 7, 3};
 static const uint8_t DRUM_GM[EN_NDRUM] = {36, 42, 46};          /* kick, closed hat, open hat */
@@ -585,7 +596,7 @@ static void pad_retarget(void)                  /* the chord's tones to the four
 
 static void bass_to(int pc)
 {
-    int n = 36 + pc % 12;                       /* C2..B2 */
+    int n = 36 + pc % 12 + 12 * par[P_BASSOCT];     /* C2..B2, an octave down or up */
     bass.target = (float)n;
     if (en_playing && bass.midi_note != n) {
         midi(0x82, bass.midi_note, 0);
@@ -804,7 +815,7 @@ static void drums_evolve(void)                  /* a bar: a pattern turns, or ga
     drum_publish(d);
 }
 
-static void drum_hit(int d, float vel)
+static void drum_fire(int d, float vel)
 {
     drum_t *v = &drum[d];
     v->on = 1;
@@ -826,12 +837,43 @@ static void drum_hit(int d, float vel)
         break;
     default:                                    /* open hat: a long, soft "tss" */
         v->note = DRUM_GM[2];
-        v->adec = fm_expf(-6.9f / (0.42f * EN_SR));
+        v->adec = fm_expf(-6.9f / (hat_open * EN_SR));
         break;
     }
     en_drum_glow[d] = 1.0f;
     midi(0x99, v->note, (uint32_t)(vel * 100.0f));
     midi(0x89, v->note, 0);
+}
+
+static void drum_hit(int d, float vel, int off)  /* off: an off sixteenth, which Swing delays */
+{
+    int32_t w = off ? (int32_t)(swing * step_len) : 0;
+    if (w > 0) {
+        drum[d].wait = w;
+        drum[d].pend = vel;
+    } else {
+        drum_fire(d, vel);
+    }
+}
+
+static int32_t drums_wait(void)                 /* samples to the next hit that waits; 0: none */
+{
+    int32_t m = 0;
+    int d;
+    for (d = 0; d < EN_NDRUM; d++)
+        if (drum[d].wait > 0 && (!m || drum[d].wait < m))
+            m = drum[d].wait;
+    return m;
+}
+
+static void drums_wait_step(int32_t k)          /* k samples went by: hits whose wait is over */
+{
+    int d;
+    for (d = 0; d < EN_NDRUM; d++)
+        if (drum[d].wait > 0 && (drum[d].wait -= k) <= 0) {
+            drum[d].wait = 0;
+            drum_fire(d, drum[d].pend);
+        }
 }
 
 /* the grid: one call a sixteenth (MIDI clock: 6 ticks) */
@@ -851,7 +893,7 @@ static void tick(void)
     }
     for (d = 0; d < EN_NDRUM; d++) {
         if (drum_pat[d] >> drum_pos[d] & 1u && !pulse_rest)
-            drum_hit(d, ((drum_pos[d] == 0 ? 0.95f : 0.6f) + 0.25f * frand()) * pa);
+            drum_hit(d, ((drum_pos[d] == 0 ? 0.95f : 0.6f) + 0.25f * frand()) * pa, (int)(sixteenth & 1u));
         en_drum_pos[d] = drum_pos[d];
         if (++drum_pos[d] >= EN_DRUM_N[d])
             drum_pos[d] = 0;
@@ -1065,7 +1107,6 @@ static inline void echoes(float in, float *el, float *er, float *ex)
 }
 
 /* ------------------------------------------------------------ parameters --- */
-static float step_len, pulse_left;
 static int pulse;
 static uint32_t ext_age;
 
@@ -1085,6 +1126,16 @@ static void apply(int p, int v)
     case P_BASS: bass_vol = (float)(v * v) * 0.0001f; break;
     case P_PULSE: pulse_vol = (float)(v * v) * 0.0001f; break;
     case P_HITS: drums_pattern(); break;
+    case P_BASSOCT:
+        if (nsteps)
+            bass_to(bass.midi_note % 12);
+        break;
+    case P_GLIDE: glide_k = 1.0f / ((0.02f + 0.012f * (float)v) * EN_SR); break;   /* 20 ms .. 1.2 s */
+    case P_SWING: swing = (float)v * 0.005f; break;      /* the off sixteenths up to half a step late */
+    case P_HATS:
+        hat_f = 0.55f + 0.0070f * (float)v;               /* the high-pass: ~4 kHz dark .. ~10 kHz bright */
+        hat_open = 0.6f - 0.0035f * (float)v;             /* the open hat: long and soft .. short and crisp */
+        break;
     case P_DRIFT:
         if (drift_total > 0.0f) {                /* keep the progress, at the new pace */
             float frac = drift_left / drift_total;
@@ -1180,7 +1231,7 @@ static void quiet(void)
     for (i = 0; i < NBELL; i++)
         bell[i].on = 0;
     for (i = 0; i < EN_NDRUM; i++)
-        drum[i].on = 0;
+        drum[i].on = 0, drum[i].wait = 0;
     for (i = 0; i < EN_NPAD; i++)
         pad[i].amp = 0.0f;
     bass.amp = 0.0f;
@@ -1272,6 +1323,9 @@ static void play_start(int from_top)
 
 static void play_stop(void)
 {
+    int d;
+    for (d = 0; d < EN_NDRUM; d++)
+        drum[d].wait = 0;                        /* a swung hit still waiting stays unplayed */
     en_playing = 0;
     pad_gate = 0.0f;
     if (!en_ext)
@@ -1456,7 +1510,7 @@ static void render_bass(uint32_t n)
         en_bass_level = 0.0f;
         return;
     }
-    bass.note += (bass.target - bass.note) * fm_minf((float)n * (1.0f / (0.25f * EN_SR)), 1.0f);
+    bass.note += (bass.target - bass.note) * fm_minf((float)n * glide_k, 1.0f);   /* Glide */
     inc = mtof(bass.note) * (1.0f / EN_SR);
     for (j = 0; j < n; j++) {
         float x = sine(ph) * 0.75f + sine(ph * 0.5f + 0.25f) * 0.45f + sine(ph * 2.0f) * 0.12f;
@@ -1522,7 +1576,7 @@ static void render_bells(uint32_t n)
     }
 }
 
-/* a hat: the metal and noise, high-passed (Chamberlin SVF, ~7 kHz); no pitch, little echo */
+/* a hat: the metal and noise, high-passed (Chamberlin SVF, ~4 to 10 kHz by Hats); no pitch, little echo */
 static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr)
 {
     uint32_t j;
@@ -1542,8 +1596,8 @@ static void render_hat(drum_t *v, uint32_t n, float g, float pl, float pr)
         noise = noise * 1664525u + 1013904223u;
         in = 0.5f * in + 0.6f * (float)(int32_t)noise * (1.0f / 2147483648.0f);
         hp = in - x2 - 0.8f * x1;
-        x1 += 0.9f * hp;
-        x2 += 0.9f * x1;
+        x1 += hat_f * hp;
+        x2 += hat_f * x1;
         x = hp * amp * att * g;
         mixl[j] += x * pl;
         mixr[j] += x * pr;
@@ -1636,7 +1690,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
         drift_left -= (float)n;
         if (!fifth_done && drift_left < 0.5f * drift_total) {
             fifth_done = 1;                      /* halfway: the bass may lean on the fifth */
-            if (frand() < 0.35f && chord_nt >= 3)
+            if (frand() < (float)par[P_FIFTH] * 0.01f && chord_nt >= 3)
                 bass_to(chord_pcs[2]);
         }
         if (drift_left <= 0.0f)
@@ -1668,10 +1722,16 @@ void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
         }
         if (k > n)
             k = n;
+        {
+            int32_t w = drums_wait();            /* a swung hit lands on its sample */
+            if (w > 0 && (uint32_t)w < k)
+                k = (uint32_t)w;
+        }
         if (timed)
             pulse_left -= (float)k;
         control(k);
         render_chunk(out, k, gain);
+        drums_wait_step((int32_t)k);
         out += 2 * k;
         n -= k;
     }
