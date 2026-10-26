@@ -31,9 +31,12 @@
  * the marked step and OCT+ moves to the next. The mark starts on step 1.
  * SEQ opens every track that is on. SELECT moves through those tracks.
  * OCT- and OCT+ shift the selected track by an octave. SEL solos that
- * track, and SEL again brings the song back. The white keys are that
- * track's sixteen steps: lit where it plays, and a press turns the step.
- * The title shows that track's stored level, and knob 3 changes it.
+ * track, and SEL again brings the song back. ALGORITHM mutates that
+ * track, one step a detent, and the scale waits. Knob 1 is its sound
+ * or its kit, and the title names the one it is aiming at. Knob 2
+ * wobbles a synth and sweeps a drum. Knob 4 is that track's filter
+ * or tune. Knob 3 is its level. The white keys are that track's
+ * sixteen steps: lit where it plays, and a press turns the step.
  * SEQ, GLO, or HOME leaves that screen, and a solo leaves with it. HOME
  * leaves the chord where it is.
  * A hold without SEQ still lets go. A click of FX mutates
@@ -74,7 +77,8 @@
  * tempo, and the line mutates. OCT- is back, one move at a time.
  * Neither does that while SEQ's screen is up: SELECT moves the track, and
  * OCT shifts that track by an octave. SEL solos the selected track.
- * Knob 3 there is that track's level, not the phaser.
+ * ALGORITHM mutates it. Knob 1 is its sound or kit. Knobs 2 and 4 are
+ * its wobble, sweep, filter, or tune. Knob 3 is its level, not the phaser.
  * A drum still held, with that screen closed, keeps OCT on its steps.
  * SEL with that screen closed still walks the tips, and a held key still solos.
  * GLO opens the editor under the song. The arrangement keeps its bars there:
@@ -147,10 +151,10 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE TIPS", "1 OF 27", "TAP SEL FOR THE NEXT", "THE LAST IS THE SONG", "ANY BUTTON LEAVES", "HOLD SEL AND A KEY", "SOLO WHILE YOU HOLD"},
     {"A CLICK", "2 OF 27", "A SHORT TAP TOGGLES", "IT LANDS ON THE BAR", "HOLD ON TO READ IT", "LET GO, AND IT STAYS", "A TURN IS NOT A TAP"},
     {"THE ENGINES", "3 OF 27", "FOUR WHITE KEYS FIRST", "PAD, BASS, THEN ACID", "THE FOURTH IS THE VIBE", "DUST CHOP AIR HUSH WIND", "SEQ: THE LIVE ROWS"},
-    {"THE SOUNDS", "4 OF 27", "FIFTH TURNS OLDEST OFF", "PAD BASS ACID: THE SONG", "GLASS DARK DUB, STABS", "SUB REESE, HOOVER FM", "PLUCK TRANCE BLEEP SOFT"},
+    {"THE SOUNDS", "4 OF 27", "FIFTH TURNS OLDEST OFF", "SAMPLES ARE IN KNOB 1", "GLASS DARK DUB, STABS", "SUB REESE, HOOVER FM", "PLUCK TRANCE BLEEP SOFT"},
     {"THE DRUMS", "5 OF 27", "ELEVEN BLACK KEYS", "EACH KEY, ONE DRUM", "KICK OUT TO THE CRASH", "A TAP TURNS THAT DRUM", "AND ONLY THAT DRUM"},
     {"EACH DRUM", "6 OF 27", "THE BEAT STAYS LINKED", "A SONG, AND AUTO TOO", "FX OR STEPS UNLINK IT", "A TAP TURNS ONE DRUM", "EACH KEEPS ITS OWN KIT"},
-    {"THE KITS", "7 OF 27", "HYPNO, HOUSE, TECHNO", "ACID, BREAK, MINIMAL", "HARD, THEN 808, 909", "HOLD THE DRUM, KNOB 1", "YOU HEAR IT NEXT BAR"},
+    {"THE KITS", "7 OF 27", "HYPNO, HOUSE, TECHNO", "ACID, BREAK, MINIMAL", "HARD, 808, 909, DUSTY", "HOLD THE DRUM, KNOB 1", "YOU HEAR IT NEXT BAR"},
     {"HOLD A KEY", "8 OF 27", "KNOB 1: SOUND OR KIT", "2: WOBBLE, HEARD NOW", "A DRUM: KNOB 2 SWEEP", "DOES NOT TURN A KEY ON", "PAD COLOUR: WAITING"},
     {"LEVEL AND FILTER", "9 OF 27", "3 LEVEL. 4 THE FILTER", "A DRUM: KNOB 4 TUNES", "ONLY THE DRUM YOU HOLD", "NOT THE ONE BESIDE IT", "YOU HEAR IT AS YOU TURN"},
     {"FROM SILENT", "10 OF 27", "KNOB 3 UP WAKES LOW", "TURN MORE, GET LOUDER", "DOWN ON DARK: NO CHANGE", "KNOB 4, NO KEY HELD", "OPENS EVERY FILTER"},
@@ -160,7 +164,7 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE BREAK", "14 OF 27", "SAVE IS THE BREAK", "TWO LOUD PARTS STEP OUT", "TWO QUIET ONES STEP IN", "ONE NEW PAD NOTE", "CUE THROW STUTTER REV"},
     {"EXCITE", "15 OF 27", "EDIT IS EXCITE", "THE FILTERS OPEN", "A NEW PAD SOUND", "AND A NEW CHORD", "NO DRUMS. NEXT BAR"},
     {"OCT PLUS", "16 OF 27", "OCT+ IS EXCITE", "TWO QUIET DRUMS JOIN", "AGAIN: A TRACK, FASTER", "STEPS, AND IT MUTATES", "EACH ONE, NEXT BAR"},
-    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "OCT MOVES AN OCTAVE", "SEL SOLOS THE TRACK", "WHITE KEYS TURN STEPS", "SEQ GLO HOME, ARP BACK"},
+    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "ALGO MUTATES THAT ONE", "1 SOUND  2 AND 4 FX", "3 LEVEL  OCT SHIFTS", "SEL SOLO  WHITE STEPS"},
     {"A NEW SONG", "18 OF 27", "ENV IS A NEW SONG", "CUE, THROW, STUTTER", "OR REVERSE, AT RANDOM", "PRESETS CROSSES TOO", "BOTH ON THE NEXT BAR"},
     {"THE VIBES", "19 OF 27", "DNB, REGGAE, TRANCE", "STILL, DISCO, FUNK", "ELECTRO, HOUSE, HIPHOP", "GARAGE, DUBSTEP, WAVE", "THEN SLEEP, THEN DNB"},
     {"MORE BUTTONS", "20 OF 27", "LFO: LETS FIND OUT", "AN EFFECT, THEN A PLACE", "REC: HELD, OR MOVING", "HOME: NEXT CHORD, NOW", "HOLD PAD: AUTO WAITS"},
@@ -1210,14 +1214,50 @@ static int iam_roll(int n)
 {
     return (int)(iam_rng() % (uint32_t)n);
 }
+/* A new song draws the sampled instruments with the style's row. One slot each.
+ * Sleep stays on its oscillators: its flute and its chimes are the room. */
+static int iam_draw_snd(int (*roll)(int), const uint8_t *row, int nextra, int extra0)
+{
+    int n, i;
+    if (iam.style == 12 || nextra < 1)
+        nextra = 0;
+    n = IAM_NVISIT + nextra;
+    i = roll(n);
+    if (i < IAM_NVISIT)
+        return (int)row[i];
+    return extra0 + (i - IAM_NVISIT);
+}
+static int iam_draw_pad(int (*roll)(int), int style)
+{
+    int nextra = style == 12 ? 0 : 4;
+    int n = 12 + nextra;
+    int r = roll(n);
+    int snd, i, in;
+    if (r < 4)
+        snd = IAM_PAD_SND[style][r];
+    else if (r < 12)
+        snd = IAM_PAD_MORE[style][r - 4];
+    else
+        return EN_NSOUND + (r - 12); /* FM piano, vibes, kalimba, harp */
+    if (r >= 4 && iam_pad_gated(snd)) {
+        in = 0;
+        for (i = 0; i < 4; i++)
+            if (IAM_PAD_SND[style][i] == (uint8_t)snd)
+                in = 1;
+        if (!in)
+            snd = IAM_PAD_SND[style][r & 3];
+    }
+    return snd;
+}
 /* Sounds, kits, the beat, the noise, the acid line. The pad waits: the groove's
  * colour step would pull a wider pad back into the four. Electro keeps the line
- * you can follow. Sleep writes its own notes, and its own lanes. */
+ * you can follow. Sleep writes its own notes, and its own lanes. The upright,
+ * the four winds, and later the pad samples sit in this draw. */
 static void iam_visit_band(void)
 {
     int s = iam.style, b, i;
-    iam_set(P_DR_INST, IAM_VISIT_BASS[s][iam_roll(IAM_NVISIT)]);
-    iam_set(P_AC_WAVE, IAM_VISIT_ACID[s][iam_roll(IAM_NVISIT)]);
+    iam_set(P_DR_INST, iam_draw_snd(iam_roll, IAM_VISIT_BASS[s], 1, EN_NSOUND));
+    iam_set(P_AC_WAVE, iam_draw_snd(iam_roll, IAM_VISIT_ACID[s], 4, EN_NSOUND));
     iam_set(P_KIT_KICK, IAM_VISIT_KIT[s][iam_roll(IAM_NVISIT)]);
     iam_set(P_KIT_SNARE, IAM_VISIT_KIT[s][iam_roll(IAM_NVISIT)]);
     iam_set(P_KIT_HAT, IAM_VISIT_KIT[s][iam_roll(IAM_NVISIT)]);
@@ -1238,16 +1278,8 @@ static void iam_visit_band(void)
 static void iam_visit_open(void)
 {
     int s = iam.style;
-    int n = iam_roll(12);
-    int snd = n < 4 ? IAM_PAD_SND[s][n] : IAM_PAD_MORE[s][n - 4];
-    int c, i, in = 0;
-    if (n >= 4 && iam_pad_gated(snd)) {
-        for (i = 0; i < 4; i++)
-            if (IAM_PAD_SND[s][i] == (uint8_t)snd)
-                in = 1;
-        if (!in)
-            snd = IAM_PAD_SND[s][n & 3];
-    }
+    int snd = iam_draw_pad(iam_roll, s);
+    int c;
     iam_set(P_PADTONE, snd);
     c = IAM_PAD_CH[s][iam_roll(4)];
     iam.pat[0] = (uint8_t)c;
@@ -1690,7 +1722,7 @@ static int iam_pre_match(int part, int snd)
 static int iam_sound_free(int part, int snd)
 {
     int i;
-    if (iam_pre_match(part, snd) < 0 && snd >= 0 && snd < EN_NSOUND)
+    if (iam_pre_match(part, snd) < 0 && snd >= 0 && snd < en_bank_n(part))
         return snd;
     if (part == 0) {
         for (i = 0; i < 4; i++)
@@ -1771,19 +1803,10 @@ static void iam_cast_unstack(void)
  * same pools the dial uses, so a power-on is not the same four pad sounds. */
 static void iam_cast_dnb_sounds(void)
 {
-    int n = iam_cast_roll(12);
-    int snd = n < 4 ? IAM_PAD_SND[0][n] : IAM_PAD_MORE[0][n - 4];
-    int prev, col, i, in = 0;
-    if (n >= 4 && iam_pad_gated(snd)) {
-        for (i = 0; i < 4; i++)
-            if (IAM_PAD_SND[0][i] == (uint8_t)snd)
-                in = 1;
-        if (!in)
-            snd = IAM_PAD_SND[0][n & 3];
-    }
-    iam_set(P_PADTONE, snd);
-    iam_set(P_DR_INST, IAM_VISIT_BASS[0][iam_cast_roll(IAM_NVISIT)]);
-    iam_set(P_AC_WAVE, IAM_VISIT_ACID[0][iam_cast_roll(IAM_NVISIT)]);
+    int prev, col;
+    iam_set(P_PADTONE, iam_draw_pad(iam_cast_roll, 0));
+    iam_set(P_DR_INST, iam_draw_snd(iam_cast_roll, IAM_VISIT_BASS[0], 1, EN_NSOUND));
+    iam_set(P_AC_WAVE, iam_draw_snd(iam_cast_roll, IAM_VISIT_ACID[0], 4, EN_NSOUND));
     prev = proj.par[P_NZ_COLOR];
     col = IAM_VISIT_COL[0][iam_cast_roll(IAM_NVISIT)];
     iam_set(P_NZ_COLOR, col);
@@ -1796,7 +1819,7 @@ static void iam_cast_side(int d, int lvl)
 {
     iam.don = (uint16_t)(iam.don | (1u << d));
     iam.dpat[d] = (uint8_t)iam_cast_roll(IAM_NPAT);
-    iam.dkit[d] = (uint8_t)iam_cast_roll(EN_NKIT);
+    iam.dkit[d] = (uint8_t)iam_cast_roll(EN_NKIT); /* Dusty is in the draw with the synth kits */
     iam.dlvl[d] = (uint8_t)lvl;
     iam.pown = (uint16_t)(iam.pown | (1u << d)); /* its own pattern, not the drum beside it */
     iam.sown = (uint16_t)(iam.sown | (1u << d)); /* a later section leaves this key */
@@ -2740,8 +2763,8 @@ static void iam_find_enter(void)
         break;
     }
     if (part < 0) { /* the song is full: both lines move, and the filters open */
-        iam_set(P_DR_INST, (proj.par[P_DR_INST] + 8) % EN_NSOUND);
-        iam_set(P_AC_WAVE, (proj.par[P_AC_WAVE] + 5) % EN_NSOUND);
+        iam_set(P_DR_INST, (proj.par[P_DR_INST] + 8) % en_bank_n(1));
+        iam_set(P_AC_WAVE, (proj.par[P_AC_WAVE] + 5) % en_bank_n(2));
         iam_set(P_DR_CUT, proj.par[P_DR_CUT] + 22);
         if (iam.held != 2)
             iam_set(P_AC_CUT, proj.par[P_AC_CUT] + 18);
@@ -4020,7 +4043,7 @@ static void iam_mutate(int e)
             iam_vstep_set(0, iam_vstep_turn(iam.vstep[0], dir));
             tag = "MUTATE PAD";
         } else if (k == 3) {
-            int v = (proj.par[P_DR_INST] + (dir > 0 ? 3 : 5) + EN_NSOUND * 4) % EN_NSOUND;
+            int v = (proj.par[P_DR_INST] + (dir > 0 ? 3 : 5) + en_bank_n(1) * 4) % en_bank_n(1);
             iam_set(P_DR_INST, v);
             iam_vstep_set(1, iam_vstep_turn(iam.vstep[1], dir));
             tag = "MUTATE BASS";
@@ -4121,7 +4144,7 @@ static void iam_mutate_key(void)
         iam_pad_colour_go(1, 0);
         iam_vstep_set(0, iam_vstep_turn(iam.vstep[0], 1));
     } else if (part == 1) {
-        int v = (proj.par[P_DR_INST] + 3 + EN_NSOUND * 4) % EN_NSOUND;
+        int v = (proj.par[P_DR_INST] + 3 + en_bank_n(1) * 4) % en_bank_n(1);
         iam_set(P_DR_INST, v);
         iam_vstep_set(1, iam_vstep_turn(iam.vstep[1], 1));
     } else if (part == 2) {
@@ -4191,6 +4214,195 @@ static void iam_seq_level(int step)
     iam_seq_say_lvl(iam_seq_name(&t[iam.seq_at]), v);
     iam_apply();
 }
+/* The sound or the kit the selected row is aiming at, in capitals, before the bar. */
+static const char *iam_seq_sub(const struct iam_seq_tr *t);
+/* ALGORITHM on the sequence screen. One step of that row, each detent.
+ * A drum's pattern steps back when the encoder does. The pad, the bass,
+ * the acid and the air take the other mutate, and that is not the undo.
+ * The scale waits. Nothing here calls the song's rng, and nothing switches a row on. */
+static void iam_seq_mutate_one(const struct iam_seq_tr *t, int dir)
+{
+    int d = t->drum;
+    if (d >= 0 && d < IAM_NDRUMKEY) {
+        int step = dir < 0 ? -1 : 1;
+        iam.stepo = (uint16_t)(iam.stepo & ~(1u << d));
+        iam.pown = (uint16_t)(iam.pown | (1u << d)); /* this row leaves the linked beat */
+        if (iam_main_drum(d)) {
+            int p = IAM_DRUM_PART[d];
+            iam.pat[p] = (uint8_t)((iam.pat[p] + step + 8) & 7);
+        } else
+            iam.dpat[d] = (uint8_t)((iam.dpat[d] + step + 8) & 7);
+        iam_write_drum_pats();
+        say("MUTATE", 0);
+        return;
+    }
+    if (t->part < 0 || t->part > 3)
+        return;
+    if (t->part == 0) {
+        iam_pad_colour_go(1, 0); /* the colour walks forward. The sixteen follow the encoder */
+        iam_vstep_set(0, iam_vstep_turn(iam.vstep[0], dir));
+    } else if (t->part == 1) {
+        int add = dir < 0 ? 5 : 3;
+        int v = (proj.par[P_DR_INST] + add + en_bank_n(1) * 4) % en_bank_n(1);
+        iam_set(P_DR_INST, v);
+        iam_vstep_set(1, iam_vstep_turn(iam.vstep[1], dir));
+    } else if (t->part == 2) {
+        int add = dir < 0 ? 1 : 3;
+        iam.pat[2] = (uint8_t)((iam.pat[2] + add) & 7);
+        iam_write_drums();
+        iam_vstep_set(2, iam_vstep_turn(iam.vstep[2], dir));
+    } else {
+        int add = dir < 0 ? 3 : 1;
+        iam.pat[3] = (uint8_t)((iam.pat[3] + add) & 7);
+        iam_write_drums();
+        iam_vstep_set(3, iam_vstep_turn(iam.vstep[3], dir));
+    }
+    say("MUTATE", 0);
+}
+static void iam_seq_mutate(int e)
+{
+    struct iam_seq_tr t[15];
+    int n, i, dir, steps;
+    if (!e)
+        return;
+    n = iam_seq_clamp(t);
+    if (n <= 0)
+        return;
+    dir = e < 0 ? -1 : 1;
+    steps = e < 0 ? -e : e;
+    if (steps > 8)
+        steps = 8; /* a fast spin still moves. It does not walk the whole song */
+    for (i = 0; i < steps; i++)
+        iam_seq_mutate_one(&t[iam.seq_at], dir);
+}
+/* Knob 1. The same queue a held key uses, so the name moves now and the bar lands it.
+ * It does not wake a row, and it does not touch the ring. */
+static void iam_seq_sound(int step)
+{
+    struct iam_seq_tr t[15];
+    int n, d, part;
+    if (!step)
+        return;
+    n = iam_seq_clamp(t);
+    if (n <= 0)
+        return;
+    iam.turned = 1;
+    d = t[iam.seq_at].drum;
+    part = t[iam.seq_at].part;
+    if (d >= 0 && d < IAM_NDRUMKEY)
+        iam.q_dkit[d] = iam_sat((int)iam.q_dkit[d] + step);
+    else if (part >= 0 && part < 4)
+        iam.q_snd[part] = iam_sat((int)iam.q_snd[part] + step);
+    else
+        return;
+    say(iam_seq_sub(&t[iam.seq_at]), 0);
+}
+/* Knob 2. Heard now, on this row only. A synth wobbles. A drum's pitch sweeps.
+ * The wah stays shut, and a dark row stays dark. */
+static void iam_seq_shape(int e)
+{
+    struct iam_seq_tr t[15];
+    int n, v, d, part;
+    if (!e)
+        return;
+    n = iam_seq_clamp(t);
+    if (n <= 0)
+        return;
+    if (!iam.turned)
+        iam_push();
+    iam.turned = 1;
+    d = t[iam.seq_at].drum;
+    if (d >= 0 && d < IAM_NDRUMKEY) {
+        v = (int)iam.sweep[d] + e * 16;
+        if (v < 0)
+            v = 0;
+        if (v > 100)
+            v = 100;
+        iam.sweep[d] = (uint8_t)v;
+        en_snap(d, v);
+        iam_say_amt("SWEEP", v);
+        return;
+    }
+    part = t[iam.seq_at].part;
+    if (part < 0 || part > 3)
+        return;
+    v = (int)iam.wob[part] + e * 16;
+    if (v < 0)
+        v = 0;
+    if (v > 100)
+        v = 100;
+    iam.wob[part] = (uint8_t)v;
+    en_wobble(part, v);
+    iam_say_amt("WOBBLE", v);
+}
+static void iam_seq_say_num(const char *what, int v)
+{
+    char b[24], n[8], *d = b;
+    const char *p = what ? what : "CUTOFF";
+    int neg = v < 0;
+    if (neg)
+        v = -v;
+    if (v > 999)
+        v = 999;
+    while (*p && d - b < 12)
+        *d++ = *p++;
+    *d++ = ' ';
+    if (neg && d - b < 20)
+        *d++ = '-';
+    itoa_u((uint32_t)v, n);
+    p = n;
+    while (*p && d - b < 22)
+        *d++ = *p++;
+    *d = 0;
+    say(b, 0);
+}
+/* Knob 4. This row's filter, or this drum's tune. The other filters stay. */
+static void iam_seq_cut(int e)
+{
+    struct iam_seq_tr t[15];
+    int n, d, part, v;
+    if (!e)
+        return;
+    n = iam_seq_clamp(t);
+    if (n <= 0)
+        return;
+    if (!iam.turned)
+        iam_push();
+    iam.turned = 1;
+    d = t[iam.seq_at].drum;
+    if (d >= 0 && d < IAM_NDRUMKEY) {
+        if (iam_main_drum(d)) {
+            part = IAM_DRUM_PART[d];
+            iam_set(IAM_CUT[part], proj.par[IAM_CUT[part]] + e * 3);
+            iam_seq_say_num("TUNE", proj.par[IAM_CUT[part]]);
+            iam_apply();
+        } else if (d == 2 || d == 4) {
+            int p = P_LANE_TUNE(d);
+            iam_set(p, proj.par[p] + e * 3);
+            iam_seq_say_num("TUNE", proj.par[p]);
+            iam_apply();
+        } else {
+            int x = d - 6;
+            v = (int)iam.xtune[x] + e * 3;
+            if (v > 24)
+                v = 24;
+            if (v < -24)
+                v = -24;
+            iam.xtune[x] = (int8_t)v;
+            iam_xpublish();
+            iam_seq_say_num("TUNE", v);
+        }
+        return;
+    }
+    part = t[iam.seq_at].part;
+    if (part < 0 || part > 3)
+        return;
+    if (part == 0)
+        iam.pad_own = 8; /* the conductor leaves this filter for eight bars */
+    iam_set(IAM_CUT[part], proj.par[IAM_CUT[part]] + e * 4);
+    iam_seq_say_num("CUTOFF", proj.par[IAM_CUT[part]]);
+    iam_apply();
+}
 static void iam_knobs(uint32_t btn)
 {
     int role, fx = (btn >> B_FX) & 1, settle = iam_key_settling(plat_keys());
@@ -4212,6 +4424,22 @@ static void iam_knobs(uint32_t btn)
         }
         if (role == EN_K3 && iam.seq_on) {
             iam_seq_level(e); /* this row's level. The phaser waits until SEQ closes */
+            continue;
+        }
+        if (role == EN_ALGO && iam.seq_on) {
+            iam_seq_mutate(e); /* this row. The scale waits until SEQ closes */
+            continue;
+        }
+        if (role == EN_K1 && iam.seq_on) {
+            iam_seq_sound(e); /* this row's sound or kit. The ring waits */
+            continue;
+        }
+        if (role == EN_K2 && iam.seq_on) {
+            iam_seq_shape(e); /* wobble or sweep. The wah waits */
+            continue;
+        }
+        if (role == EN_K4 && iam.seq_on) {
+            iam_seq_cut(e); /* this row's filter or tune. The other filters wait */
             continue;
         }
         if (iam.held_drum >= 0 && role >= EN_K1 && role <= EN_K4) {
@@ -4631,17 +4859,29 @@ static const char *iam_snd_name(int part)
     static const char *const haze[8] = {"White", "Pink", "Brown", "Blue", "Violet", "Grey", "Vinyl", "Yellow"};
     int v = iam_snd_aim(part);
     if (part == 0)
-        return EN_PAD_SOUND[(unsigned)v < EN_NSOUND ? v : 0];
+        return EN_PAD_SOUND[(unsigned)v < EN_NPAD_SND ? v : 0];
     if (part == 1)
-        return EN_DRONE_SOUND[(unsigned)v < EN_NSOUND ? v : 0];
+        return EN_DRONE_SOUND[(unsigned)v < EN_NBASS_SND ? v : 0];
     if (part == 2)
-        return EN_ACID_SOUND[(unsigned)v < EN_NSOUND ? v : 0];
+        return EN_ACID_SOUND[(unsigned)v < EN_NACID_SND ? v : 0];
     if (part == 3) {
         if ((v & 7) == 2 && iam.style < IAM_NSTYPE && IAM_AIR[iam.style] == 1)
             return "Wood"; /* the knock. The same colour on a chop stays Brown */
         return haze[v & 7];
     }
     return EN_KIT_NAME[(unsigned)v < EN_NKIT ? v : 0];
+}
+static const char *iam_seq_sub(const struct iam_seq_tr *t)
+{
+    static char b[16];
+    const char *s = "";
+    if (t->drum >= 0 && t->drum < IAM_NDRUMKEY) {
+        int kit = iam_drum_kit_aim(t->drum);
+        s = EN_KIT_NAME[(unsigned)kit < EN_NKIT ? kit : 0];
+    } else if (t->part >= 0 && t->part < 4)
+        s = iam_snd_name(t->part);
+    caps(b, s, (int)sizeof b);
+    return b;
 }
 static void iam_put(char *b, int n, const char *s)
 {
@@ -4897,6 +5137,26 @@ static void iam_seq_title(const char *name)
     if (name && name[0])
         x = cv_text(x + 6, 0, &FONT_S, name, K_TEXT);
     n = iam_seq_clamp(t);
+    if (n > 0) {
+        char line[28];
+        const char *sub = iam_seq_sub(&t[iam.seq_at]);
+        const char *m = ui.msg[0];
+        int effect = plat_ms() < ui.msg_until && m[0] &&
+                     ((m[0] == 'W' && m[1] == 'O') || (m[0] == 'S' && m[1] == 'W') || (m[0] == 'C' && m[1] == 'U') ||
+                      (m[0] == 'T' && m[1] == 'U') || (m[0] == 'M' && m[1] == 'U'));
+        line[0] = 0;
+        /* Wobble, sweep, cutoff, tune, mutate. A landed sound keeps its name on this row. */
+        if (effect) {
+            iam_put(line, (int)sizeof line, m);
+            if (ui.msg[1][0]) {
+                iam_put(line, (int)sizeof line, " ");
+                iam_put(line, (int)sizeof line, ui.msg[1]);
+            }
+            sub = line;
+        }
+        if (sub && sub[0] && x + 6 + text_w(&FONT_S, sub) < 188)
+            x = cv_text(x + 6, 0, &FONT_S, sub, K_ACC);
+    }
     if (n > 0)
         lv = iam_seq_stored(&t[iam.seq_at]);
     if (lv >= 0) {
@@ -5629,7 +5889,7 @@ static void iam_jam_announce(int vc)
     if (vc < 0 || vc > 2)
         return;
     s = proj.par[SND[vc]];
-    if ((unsigned)s >= EN_NSOUND)
+    if ((unsigned)s >= (unsigned)en_bank_n(vc))
         s = 0;
     if (vc == said_vc && s == said_snd)
         return;

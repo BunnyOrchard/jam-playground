@@ -99,11 +99,11 @@ expect iammask 0x16
 key w12 down
 wait 80
 expect hold PLUCK
-expect hold2 ORGAN
+expect hold2 BELL
 key w12 up
 wait 2500
 expect iamlay 264
-expect par40 12
+expect par40 11
 expect par1 48
 expect iammask 0x16
 

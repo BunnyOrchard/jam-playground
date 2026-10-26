@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IAMM-1 sound check</title>
+<style>
+:root {
+  --paper: #f6eeb5; --green: #d0dc92; --river: #85c3c1; --ink: #1d1b02;
+  color-scheme: light;
+}
+body { margin: 0; background: var(--paper); color: var(--ink);
+  font: 15px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+header { position: sticky; top: 0; background: var(--paper); border-bottom: 1px solid var(--ink);
+  padding: 10px 16px 8px; z-index: 2; }
+h1 { font-weight: 400; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; margin: 0 0 4px; }
+#now { min-height: 1.3em; margin: 0 0 6px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+button, label { font: inherit; color: var(--ink); }
+button { background: var(--green); border: 1px solid var(--ink); padding: 3px 10px; cursor: pointer; }
+button.play { width: 4.6em; }
+button.play[aria-pressed="true"] { background: var(--river); }
+main { max-width: 920px; margin: 0 auto; padding: 12px 16px 48px; }
+.lead { margin: 0 0 12px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 14px; }
+nav a { color: var(--ink); }
+section { border: 1px solid var(--ink); margin: 0 0 14px; padding: 8px 10px 10px; }
+h2 { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 4px; }
+.hint { margin: 0 0 8px; }
+h3 { font-size: 14px; margin: 10px 0 4px; }
+.row { display: grid; grid-template-columns: 4.8em minmax(8em, 1.4fr) minmax(9em, 1fr) minmax(8em, 1fr);
+  gap: 4px 10px; align-items: center; padding: 3px 0; border-top: 1px solid rgba(29, 27, 2, .18); }
+.row .note { grid-column: 2 / -1; font-size: 13px; opacity: .85; margin-top: -2px; }
+.name { font-variant-numeric: tabular-nums; }
+.checks { display: flex; gap: 8px; align-items: center; }
+input[type="checkbox"] { accent-color: #549995; width: 16px; height: 16px; }
+.mark { background: #fff3c4; }
+@media (max-width: 720px) {
+  .row { grid-template-columns: 4.8em 1fr; }
+  .checks { grid-column: 1 / -1; }
+  .row .note { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>IAMM-1 sound check</h1>
+  <p id="now">Loading the list…</p>
+  <div class="tools">
+    <span id="counts">Can't hear: 0 · Change: 0</span>
+    <button id="save" type="button">Save my marks</button>
+    <button id="clear" type="button">Clear marks</button>
+    <label><input type="checkbox" id="only"> Only marked</label>
+    <button id="stop" type="button">Stop</button>
+  </div>
+</header>
+<main>
+  <p class="lead">Each Play is that one sound, dry, on its own, from the same engine the firmware runs. It plays here in the browser, not through a connected FM-1. Notes from a computer only edit the scale, and the remote mutes the unit, so this page cannot send the presets to the instrument.</p>
+  <p class="lead">The boxes stay in this browser. A low bass or an 808 kick can vanish on a small speaker. Tick “Can't hear it” when it is missing here and on the FM-1. FM piano, vibes, kalimba, harp, the upright, flute, tenor sax, muted trumpet, harmonica and Dusty are sampled and are in this list. A new song can choose them with the others. Knob 1 still walks the whole list, one step a turn. What does not fit is more notes sounding at the same time.</p>
+  <nav id="jump"></nav>
+  <div id="list"></div>
+</main>
+<script>
+const KEY = "iamm1-soundcheck";
+const hints = {
+  pad: "Twenty pad sounds. The last four are sampled: FM piano, vibes, kalimba, harp. A C major chord, held. Stabs, Dub, Pings, Hits and Rave are held here. In a song they also hit on the off-beats.",
+  bass: "Seventeen bass sounds. Upright is sampled. One note, C3, so a sub still has a pitch a small speaker might reach.",
+  acid: "Twenty acid sounds. Flute, tenor sax, muted trumpet and harmonica are sampled. The note plays again so a pluck does not die before you can hear it.",
+  air: "Air's colours. The knob walks Pink, Wood and Vinyl. The other five are in the engine and are not on the knob.",
+  drums: "Ten kits. Dusty is sampled. Each voice is at the same level, one hit on each beat. Clap, the open hat, rim, tom, cowbell, shaker and crash follow that kit.",
+  keys: "The twelve named keys. They sit on a pad, a bass or an acid. Glass, Dub and Stabs are turned down in the engine. A quiet sine sits under the pad keys so Glass and Dark have a breath to follow."
+};
+const titles = [
+  ["pad", "Pad"], ["bass", "Bass"], ["acid", "Acid"], ["air", "Air"], ["drums", "Drums"], ["keys", "Named keys"]
+];
+
+let marks = {};
+try { marks = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { marks = {}; }
+let ctx = null;
+let src = null;
+let playing = null;
+
+function idOf(kind, a, b) { return kind + ":" + a + ":" + (b || 0); }
+function save() { localStorage.setItem(KEY, JSON.stringify(marks)); count(); }
+function count() {
+  let s = 0, c = 0;
+  Object.values(marks).forEach(m => { if (m.silent) s++; if (m.change) c++; });
+  document.getElementById("counts").textContent = "Can't hear: " + s + " · Change: " + c;
+  return {s, c};
+}
+
+function row(kind, a, b, name, note) {
+  const id = idOf(kind, a, b);
+  const m = marks[id] || {};
+  const el = document.createElement("div");
+  el.className = "row" + (m.silent || m.change ? " mark" : "");
+  el.dataset.id = id;
+  const play = document.createElement("button");
+  play.type = "button";
+  play.className = "play";
+  play.textContent = "Play";
+  play.setAttribute("aria-pressed", "false");
+  play.addEventListener("click", () => playId(id, name, play));
+  const nm = document.createElement("div");
+  nm.className = "name";
+  nm.textContent = name;
+  el.append(play, nm);
+  [["silent", "Can't hear it"], ["change", "Change it"]].forEach(([k, label]) => {
+    const lab = document.createElement("label");
+    lab.className = "checks";
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = !!m[k];
+    box.addEventListener("change", () => {
+      const cur = marks[id] || {};
+      cur[k] = box.checked;
+      if (!cur.silent && !cur.change) delete marks[id];
+      else marks[id] = cur;
+      el.classList.toggle("mark", !!(cur.silent || cur.change));
+      save();
+      if (document.getElementById("only").checked) applyOnly();
+    });
+    lab.append(box, document.createTextNode(" " + label));
+    el.append(lab);
+  });
+  if (note) {
+    const n = document.createElement("div");
+    n.className = "note";
+    n.textContent = note;
+    el.append(n);
+  }
+  return el;
+}
+
+function section(id, title, hint) {
+  const s = document.createElement("section");
+  s.id = id;
+  const h = document.createElement("h2");
+  h.textContent = title;
+  const p = document.createElement("p");
+  p.className = "hint";
+  p.textContent = hint;
+  s.append(h, p);
+  return s;
+}
+
+function stop() {
+  if (src) { src.onended = null; try { src.stop(); } catch (e) {} src = null; }
+  if (playing) { playing.textContent = "Play"; playing.setAttribute("aria-pressed", "false"); playing = null; }
+  document.getElementById("now").textContent = "Stopped.";
+}
+
+async function playId(id, name, btn) {
+  if (playing === btn) { stop(); return; }
+  stop();
+  if (!ctx) ctx = new AudioContext();
+  const resume = ctx.resume();
+  playing = btn;
+  btn.textContent = "…";
+  btn.setAttribute("aria-pressed", "true");
+  document.getElementById("now").textContent = "Playing " + name;
+  const [kind, a, b] = id.split(":");
+  try {
+    await resume;
+    const r = await fetch("/hear?kind=" + encodeURIComponent(kind) + "&a=" + a + "&b=" + (b || 0));
+    if (!r.ok) throw new Error(await r.text());
+    const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+    if (playing !== btn) return;
+    src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.onended = () => { if (playing === btn) stop(); };
+    btn.textContent = "Stop";
+    src.start();
+  } catch (e) {
+    if (playing === btn) {
+      btn.textContent = "Play";
+      btn.setAttribute("aria-pressed", "false");
+      playing = null;
+      document.getElementById("now").textContent = "Could not play " + name + ". " + e.message;
+    }
+  }
+}
+
+function applyOnly() {
+  const on = document.getElementById("only").checked;
+  document.querySelectorAll(".row").forEach(el => {
+    const m = marks[el.dataset.id] || {};
+    el.hidden = on && !m.silent && !m.change;
+  });
+  document.querySelectorAll("h3").forEach(el => {
+    let n = el.nextElementSibling, any = false;
+    while (n && n.tagName !== "H3") {
+      if (n.classList && n.classList.contains("row") && !n.hidden) any = true;
+      n = n.nextElementSibling;
+    }
+    el.hidden = on && !any;
+  });
+  document.querySelectorAll("section").forEach(sec => {
+    sec.hidden = on && ![...sec.querySelectorAll(".row")].some(r => !r.hidden);
+  });
+}
+
+function build(cat) {
+  const list = document.getElementById("list");
+  const jump = document.getElementById("jump");
+  titles.forEach(([id, title]) => {
+    const a = document.createElement("a");
+    a.href = "#" + id;
+    a.textContent = title;
+    jump.append(a);
+  });
+  const sampled = "Sampled. A new song can choose this. Knob 1 walks the whole list.";
+  const pad = section("pad", "Pad", hints.pad);
+  cat.pad.forEach((name, i) => pad.append(row("pad", i, 0, name, i >= 16 ? sampled : "")));
+  const bass = section("bass", "Bass", hints.bass);
+  cat.bass.forEach((name, i) => bass.append(row("bass", i, 0, name, i >= 16 ? sampled : "")));
+  const acid = section("acid", "Acid", hints.acid);
+  cat.acid.forEach((name, i) => acid.append(row("acid", i, 0, name, i >= 16 ? sampled : "")));
+  const air = section("air", "Air", hints.air);
+  const airH = document.createElement("h3"); airH.textContent = "Air tone";
+  air.append(airH);
+  cat.air.forEach(r => air.append(row(r.kind, r.a, 0, r.name, r.note)));
+  const dustH = document.createElement("h3"); dustH.textContent = "Dust";
+  air.append(dustH);
+  cat.dust.forEach(r => air.append(row(r.kind, r.a, 0, r.name, r.note)));
+  const bedH = document.createElement("h3"); bedH.textContent = "Not on the knob";
+  air.append(bedH);
+  cat.bed.forEach(r => air.append(row(r.kind, r.a, 0, r.name, r.note)));
+  const drums = section("drums", "Drums", hints.drums);
+  cat.kits.forEach((kit, ki) => {
+    const h = document.createElement("h3");
+    h.textContent = kit;
+    drums.append(h);
+    const note = ki === cat.kits.length - 1 && kit === "Dusty" ? sampled : "";
+    cat.lanes.forEach((lane, li) => drums.append(row("lane", ki, li, lane, note)));
+    cat.extra.forEach((lane, li) => drums.append(row("xdrum", ki, li, lane, note)));
+  });
+  const keys = section("keys", "Named keys", hints.keys);
+  cat.keys.forEach((k, i) => keys.append(row("key", i, 0, k.name, k.engine)));
+  list.append(pad, bass, acid, air, drums, keys);
+  count();
+}
+
+document.getElementById("stop").addEventListener("click", stop);
+document.getElementById("only").addEventListener("change", applyOnly);
+document.getElementById("clear").addEventListener("click", () => {
+  if (!confirm("Clear every mark in this browser?")) return;
+  marks = {};
+  save();
+  document.querySelectorAll(".row").forEach(el => {
+    el.classList.remove("mark");
+    el.querySelectorAll("input").forEach(b => { b.checked = false; });
+  });
+  applyOnly();
+});
+document.getElementById("save").addEventListener("click", () => {
+  const lines = ["IAMM-1 sound check", ""];
+  const silent = [], change = [];
+  document.querySelectorAll(".row").forEach(el => {
+    const m = marks[el.dataset.id];
+    if (!m) return;
+    const sec = el.closest("section").querySelector("h2").textContent;
+    let kit = "";
+    let prev = el.previousElementSibling;
+    while (prev) {
+      if (prev.tagName === "H3") { kit = prev.textContent; break; }
+      prev = prev.previousElementSibling;
+    }
+    const name = el.querySelector(".name").textContent;
+    const label = kit && sec === "Drums" ? sec + " · " + kit + " · " + name : sec + " · " + name;
+    if (m.silent) silent.push(label);
+    if (m.change) change.push(label);
+  });
+  lines.push("Can't hear it");
+  silent.forEach(s => lines.push("- " + s));
+  if (!silent.length) lines.push("- none");
+  lines.push("", "Change it");
+  change.forEach(s => lines.push("- " + s));
+  if (!change.length) lines.push("- none");
+  lines.push("");
+  const blob = new Blob([lines.join("\n")], {type: "text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "iamm-sound-check.txt";
+  a.click();
+});
+
+fetch("/catalog.json").then(r => {
+  if (!r.ok) throw new Error("no catalog");
+  return r.json();
+}).then(cat => {
+  document.getElementById("now").textContent = "Pick a sound. One plays at a time.";
+  build(cat);
+}).catch(() => {
+  document.getElementById("now").textContent = "This page needs the local server. In the project folder, run: python3 web/sounds/serve.py";
+});
+</script>
+</body>
+</html>

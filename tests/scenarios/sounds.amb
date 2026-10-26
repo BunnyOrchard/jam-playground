@@ -14,14 +14,14 @@ turn K2 1
 expect par10 3
 wait 1500
 shot sound_pad.png
-# the drone: round past the first to the last; its Sound knob is KNOB 2
+# the drone: round past the first to the last, the upright; its Sound knob is KNOB 2
 tap LFO
 press SEL
 turn ALGO -1
 release SEL
-expect par84 15
+expect par84 16
 turn K2 -3
-expect par84 12
+expect par84 13
 wait 1500
 shot sound_drone.png
 # the acid: Sound is KNOB 2 on the first acid page
@@ -52,7 +52,7 @@ press SEL
 turn ALGO 1
 release SEL
 expect par10 3
-expect par84 12
+expect par84 13
 # keys on a voice's page still edit the scale while it plays with the music, as everywhere
 tap LFO
 tapkey w3

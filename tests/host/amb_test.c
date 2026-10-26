@@ -302,7 +302,7 @@ int main(void)
             }
             en_set(SP[v], en_param_info(SP[v])->def);
         }
-        for (k = 0; k < EN_NKIT; k++) {
+        for (k = 0; k < EN_NKIT_OSC; k++) {     /* Dusty is sampled. It is checked with the library below */
             en_set(P_KIT_KICK, k);
             en_set(P_KIT_SNARE, k);
             en_set(P_KIT_HAT, k);
@@ -323,6 +323,82 @@ int main(void)
             en_style_sounds(pp);
             CHECK(pp[P_STYLE] == 0 && pp[P_KIT_KICK] == 1 && pp[P_KIT_PERC] == 1 && pp[P_PADTONE] == 6 && pp[P_DR_INST] == 1,
                   "style to sounds: %d %d %d %d", pp[P_STYLE], pp[P_KIT_KICK], pp[P_PADTONE], pp[P_DR_INST]);
+        }
+        /* The sampled library, by hand, with the rest of the mix down. A new song can draw these too. */
+        {
+            static const int N[3] = {EN_NPAD_SND, EN_NBASS_SND, EN_NACID_SND};
+            static const int SP[3] = {P_PADTONE, P_DR_INST, P_AC_WAVE};
+            static const int MAN[3] = {P_PAD_MAN, P_DR_MAN, P_AC_MAN};
+            static const int LVL[3] = {P_PAD, P_BASS, P_ACID};
+            static const int LV[3] = {75, 78, 75};
+            en_set(P_ECHO, 0);
+            en_set(P_REVERB, 0);
+            en_set(P_PAD, 0);
+            en_set(P_BASS, 0);
+            en_set(P_ACID, 0);
+            en_set(P_NOISE, 0);
+            en_set(P_PULSE, 0);
+            en_set(P_PAD_MAN, 1);
+            en_set(P_DR_MAN, 1);
+            en_set(P_AC_MAN, 1);
+            run(1.5f);
+            for (v = 0; v < 3; v++) {
+                for (k = EN_NSOUND; k < N[v]; k++) {
+                    en_set(LVL[v], LV[v]);
+                    en_set(SP[v], k);
+                    if (v == 0) {
+                        en_note(EN_V_PAD, 60, 1);
+                        en_note(EN_V_PAD, 64, 1);
+                        en_note(EN_V_PAD, 67, 1);
+                    } else if (v == 1) {
+                        en_note(EN_V_DRONE, 48, 1);
+                    } else {
+                        en_note(EN_V_ACID, 67, 1);
+                    }
+                    peak = 0.0f;
+                    bad = 0;
+                    run(0.6f);
+                    CHECK(!bad && peak > 0.02f && peak < 0.95f, "sample voice %d sound %d: peak %f", v, k, (double)peak);
+                    if (v == 0) {
+                        en_note(EN_V_PAD, 60, 0);
+                        en_note(EN_V_PAD, 64, 0);
+                        en_note(EN_V_PAD, 67, 0);
+                    } else if (v == 1) {
+                        en_note(EN_V_DRONE, 48, 0);
+                    } else {
+                        en_note(EN_V_ACID, 67, 0);
+                    }
+                    en_set(LVL[v], 0);
+                    run(0.15f);
+                }
+                en_set(SP[v], en_param_info(SP[v])->def);
+                en_set(MAN[v], 0);
+            }
+            en_set(P_PULSE, 75);
+            en_set(P_KIT_KICK, EN_KIT_DUSTY);
+            en_set(P_KIT_SNARE, EN_KIT_DUSTY);
+            en_set(P_KIT_HAT, EN_KIT_DUSTY);
+            en_set(P_KIT_PERC, EN_KIT_DUSTY);
+            en_lane_kit(2, EN_KIT_DUSTY);
+            en_lane_kit(4, EN_KIT_DUSTY);
+            peak = 0.0f;
+            bad = 0;
+            run(2.0f);
+            CHECK(!bad && peak > 0.02f && peak < 0.9f, "dusty kit: peak %f", (double)peak);
+            en_lane_kit(2, 0);
+            en_lane_kit(4, 0);
+            for (k = 0; k < 4; k++)
+                en_set(P_KIT_KICK + k, 0);
+            en_set(P_PAD, en_param_info(P_PAD)->def);
+            en_set(P_BASS, en_param_info(P_BASS)->def);
+            en_set(P_ACID, en_param_info(P_ACID)->def);
+            en_set(P_PULSE, en_param_info(P_PULSE)->def);
+            en_set(P_NOISE, en_param_info(P_NOISE)->def);
+            en_set(P_ECHO, en_param_info(P_ECHO)->def);
+            en_set(P_REVERB, en_param_info(P_REVERB)->def);
+            en_set(P_PAD_MAN, 0);
+            en_set(P_DR_MAN, 0);
+            en_set(P_AC_MAN, 0);
         }
     }
 

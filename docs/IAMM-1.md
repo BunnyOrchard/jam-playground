@@ -3,7 +3,7 @@
 Infinite Automatic Music Machine.
 Instant music. Listen or play along.
 
-Five engines. Four synth keys at once. Eleven drums. Sixty sounds. One hundred and four variations.
+Five engines. Four synth keys at once. Eleven drums. Seventy sounds. One hundred and four variations.
 
 IAMM-1 is unofficial firmware for the M-VAVE FM-1. It is not affiliated with, endorsed by, or
 supported by M-VAVE. FM-1 is their instrument. Digitakt, Octatrack, and Digitone are Elektron
@@ -29,12 +29,14 @@ How to play it, key by key, is in [IAM-1.md](IAM-1.md). The screen and the USB n
 |---|---|
 | Engines | 5. Pad, bass, acid, air, drums |
 | Tracks | Sixteen synth slots and eleven drums on the screen. Four synth keys sound at once. A fifth turns the oldest off. The drums are not part of that count |
-| Sounds | 60. Sixteen pad, sixteen bass, sixteen acid, three air, nine kits |
+| Sounds | 70. Twenty pad, seventeen bass, twenty acid, three air, ten kits. FM piano, vibes, kalimba and harp, the upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit are sampled. A new song draws those with the others. Knob 1 walks the whole list, one step a turn. SEL with ALGORITHM wraps it. Sleep stays on its own oscillators |
 | Variations | 104. Eight inside each of thirteen. Turn again and the next one comes in |
 
 Hold a key and knob 2 wobbles that sound, on the eighth, from dry up to a full sweep. On a drum it
 sweeps the pitch, and the next hit shows it. A click of FX while the key is held mutates that key.
-A click with nothing held mutates the song.
+A click with nothing held mutates the song. On the sequence screen, ALGORITHM mutates the selected
+track. Knob 1 is that track's sound or kit. Knobs 2 and 4 change that track's wobble, sweep, filter,
+or tune.
 
 ## Install
 
@@ -137,8 +139,9 @@ by the number.
 | 1.0.0 | `FM-1_7010000` | The first release. `build/amb-1.0.0.fwsc` is 609657 bytes. The image is 271900 bytes. The screen and the USB name say IAMM-1 |
 | development | `FM-1_700` | What a plain `./build.sh` writes. The screen and the USB name say IAMM-1. The identity number does not change between development builds |
 
-1.0.0 is the firmware described above: five engines, four synth keys at once, eleven drums,
-sixty sounds, one hundred and four variations. Later versions get a row in this table when they exist.
+1.0.0 is that first release: five engines, four synth keys at once, eleven drums,
+sixty sounds, one hundred and four variations. The seventy sounds in the spec row include
+the sampled library added in the source after that package. Later versions get a row in this table when they exist.
 
 ## Credits
 

@@ -35,10 +35,24 @@
 #define EN_NTHEME 5                    /* the screen's colour themes (the UI's; kept with the settings) */
 #define EN_NSTYLE 5                    /* the old styles (before 1.0.27): a stored piece's is turned into sounds
                                         * and a kit (en_style_sounds); they were kits 0..4 */
-#define EN_NSOUND 16                   /* the sounds each of pad, drone and acid can play */
-#define EN_NKIT 9                      /* kits a drum can play. Kick, snare, hat and perc keep a parameter.
-                                        * Clap, the open hat, and the five extra drums pick a kit beside those */
+#define EN_NSOUND 16                   /* oscillator sounds. A new song draws from these */
+#define EN_NPAD_SND 20                 /* then FM piano, vibes, kalimba, harp */
+#define EN_NBASS_SND 17                /* then an upright bass */
+#define EN_NACID_SND 20                /* then flute, tenor sax, muted trumpet, harmonica */
+#define EN_NKIT_OSC 9                  /* synth kits. A new song draws from these */
+#define EN_NKIT 10                     /* then Dusty, the sampled kit. Kick, snare, hat and perc keep a
+                                        * parameter. Clap, the open hat, and the five extra drums pick a kit
+                                        * beside those */
+#define EN_KIT_DUSTY 9
 enum { EN_V_PAD, EN_V_DRONE, EN_V_ACID };   /* the voices the keys can play (en_note) */
+static inline int en_bank_n(int voice)     /* how far knob 1 walks on this voice */
+{
+    if (voice == EN_V_DRONE)
+        return EN_NBASS_SND;
+    if (voice == EN_V_ACID)
+        return EN_NACID_SND;
+    return EN_NPAD_SND;
+}
 
 /* modes: pools relative to the root (bit i: root + i semitones) */
 enum { MODE_IONIAN, MODE_DORIAN, MODE_PHRYGIAN, MODE_LYDIAN, MODE_MIXOLYDIAN, MODE_AEOLIAN, MODE_PENT_MAJ,
@@ -47,7 +61,7 @@ extern const char *const EN_MODE_NAME[EN_NMODES];
 extern const uint16_t EN_MODE_POOL[EN_NMODES];
 extern const char *const EN_NOTE_NAME[12];
 extern const char *const EN_LANE_NAME[EN_NLANE];
-extern const char *const EN_PAD_SOUND[EN_NSOUND], *const EN_DRONE_SOUND[EN_NSOUND], *const EN_ACID_SOUND[EN_NSOUND];
+extern const char *const EN_PAD_SOUND[EN_NPAD_SND], *const EN_DRONE_SOUND[EN_NBASS_SND], *const EN_ACID_SOUND[EN_NACID_SND];
 extern const char *const EN_KIT_NAME[EN_NKIT];
 void en_style_sounds(int16_t *par);             /* a piece stored with a style (before 1.0.27): its sounds and
                                                  * kit set as the style had them, the style cleared */

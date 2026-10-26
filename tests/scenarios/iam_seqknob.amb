@@ -1,0 +1,153 @@
+# SEQ owns ALGORITHM and knobs 1, 2 and 4. The scale, the ring, the wah and the other filters wait.
+# Seed 42 is pad and hat. The pad opens on Voices. The hat's pattern is slot 2.
+seed 42
+reboot
+wait 40
+expect par72 1
+expect par10 1
+expect par9 33
+expect par21 14
+expect par85 1
+expect lane0 256
+expect lane3 21845
+expect iamgate0 65535
+expect iamhel 0
+expect iamdly 0
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+expect seqsub VOICES
+
+# ALGORITHM mutates the pad. The scale stays dorian. The hat's row stays.
+spin ALGO 1
+wait 30
+expect toast MUTATE
+expect toast2
+expect par72 1
+expect par10 2
+expect iamgate0 17476
+expect lane0 256
+expect lane3 21845
+expect iamseqat 0
+expect seqsub STRINGS
+expect iamhel 0
+expect iamdly 0
+
+# Knob 1 aims at the next pad sound. It lands on the bar. The ring stays shut.
+spin K1 1
+wait 30
+expect toast GLASS
+expect toast2
+expect seqsub GLASS
+expect par10 2
+expect iamdly 0
+expect par72 1
+barwait
+expect par10 3
+expect seqsub GLASS
+expect par85 1
+expect par72 1
+
+# Knob 2 wobbles the pad. The wah stays shut, and the hat does not sweep.
+spin K2 1
+wait 30
+expect toast WOBBLE 16
+expect toast2
+expect iamwob0 16
+expect iamsweep3 0
+expect iamhel 0
+expect iamgate0 17476
+expect par10 3
+spin K2 -1
+wait 30
+expect toast WOBBLE OFF
+expect iamwob0 0
+expect iamhel 0
+
+# Knob 4 opens this filter only. The air's tone stays.
+spin K4 1
+wait 30
+expect toast CUTOFF 37
+expect toast2
+expect par9 37
+expect par21 14
+expect par10 3
+expect par72 1
+
+# The hat. A turn of ALGORITHM steps its pattern, and a turn back puts it where it was.
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast HAT
+spin ALGO 1
+wait 30
+expect toast MUTATE
+expect lane3 8738
+expect lane0 256
+expect par72 1
+expect par10 3
+expect iamgate0 17476
+spin ALGO -1
+wait 30
+expect toast MUTATE
+expect lane3 21845
+expect lane0 256
+expect par9 37
+
+# Knob 2 sweeps the hat. The pad stays dry, and the wah stays shut.
+spin K2 1
+wait 30
+expect toast SWEEP 16
+expect iamsweep3 16
+expect iamwob0 0
+expect iamhel 0
+expect lane3 21845
+
+# Knob 4 tunes the hat up to the top, then one step back. The pad filter stays.
+spin K4 40
+wait 30
+expect par59 50
+expect par9 37
+expect toast TUNE 50
+spin K4 -1
+wait 30
+expect par59 47
+expect par9 37
+expect par21 14
+expect par85 1
+
+# Knob 1 queues the hat's next kit. The kick's kit stays House.
+spin K1 1
+wait 30
+expect iamdly 0
+expect par85 1
+expect seqsub TECHNO
+expect par87 1
+barwait
+expect par85 1
+expect par87 2
+expect seqsub TECHNO
+expect toast2 KIT
+
+# Closed, the four knobs and the scale are the song's again.
+tap SEQ
+expect iamseq 0
+spin ALGO 1
+wait 30
+expect par72 2
+expect toast SCALE
+expect toast2 Phrygian
+spin K1 1
+wait 30
+expect toast RING 8
+expect iamdly 8
+expect par10 3
+spin K2 1
+wait 30
+expect toast WAH 8
+expect iamhel 8
+expect iamwob0 0
+spin K4 1
+wait 30
+expect par9 41
+expect par21 18

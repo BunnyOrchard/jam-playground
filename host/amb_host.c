@@ -23,6 +23,9 @@
  *                                holdlvl: that key's stored level, the percent on its row
  *                                hazeoct: dust, chop, air, hush, wind, in octaves
  *                                xtuneN: rim, tom, bell, shake, crash, in semitones
+ *                                seqsub: the sound or kit the sequence screen is aiming at
+ *                                iamwobN / iamsweepN: that row's wobble or pitch sweep
+ *                                iamdly / iamhel: the song ring and the song wah
  *                                isol: 1 while SEQ's SEL is holding one row alone
  *                                toaston: 1 while a toast still covers that line
  *                                handnote: the last note a hand played, after the voice folded it
@@ -558,6 +561,14 @@ static int expect(const char *what, const char *val)
         got = iam.seq_on;
     else if (!strcmp(what, "iamseqat"))       /* which live track the white keys edit */
         got = iam.seq_at;
+    else if (!strncmp(what, "iamwob", 6))     /* iamwobN: that engine's eighth-note wobble, 0..100 */
+        got = iam.wob[atoi(what + 6) % 4];
+    else if (!strncmp(what, "iamsweep", 8))   /* iamsweepN: that drum's pitch sweep, 0..100 */
+        got = iam.sweep[atoi(what + 8) % IAM_NDRUMKEY];
+    else if (!strcmp(what, "iamhel"))         /* the song wah. SEQ knob 2 must leave this shut */
+        got = iam.hel;
+    else if (!strcmp(what, "iamdly"))         /* the song ring. SEQ knob 1 must leave this shut */
+        got = iam.dly;
     else if (!strcmp(what, "iamseqn"))        /* how many tracks are on */
         got = iam.seq_n;
     else if (!strncmp(what, "iamkit", 6))     /* iamkitN: that black key's kit, beside the four kit parameters */
@@ -600,7 +611,17 @@ static int expect(const char *what, const char *val)
         got = iam.seq_isol;
     else if (!strcmp(what, "toaston")) /* 1 while the toast still covers the action line */
         got = plat_ms() < ui.msg_until;
-    else if (!strcmp(what, "hold") || !strcmp(what, "hold2")) {
+    else if (!strcmp(what, "seqsub")) { /* the sound or kit SEQ knob 1 is aiming at */
+        struct iam_seq_tr t[15];
+        int n = iam_seq_clamp(t);
+        const char *got_s = n > 0 ? iam_seq_sub(&t[iam.seq_at]) : "";
+        if (strcmp(got_s, val) != 0) {
+            printf("FAIL expect %s == %s, got %s\n", what, val, got_s);
+            return 1;
+        }
+        printf("  ok %s == %s\n", what, val[0] ? val : "\"\"");
+        return 0;
+    } else if (!strcmp(what, "hold") || !strcmp(what, "hold2")) {
         const char *got_s = what[4] ? iam_hold_sub() : iam_hold_title();
         if (strcmp(got_s, val) != 0) {
             printf("FAIL expect %s == %s, got %s\n", what, val, got_s);

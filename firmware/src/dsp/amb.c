@@ -2,6 +2,7 @@
 /* The instrument (amb.h). One compilation unit, -O2. */
 #include "amb.h"
 #include "fastmath.h"
+#include "iam_samples.h"
 
 #ifdef EN_HOST
 #define EN_POOL
@@ -25,7 +26,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     [P_PULSE] = {"Drums", 0, 100, 75},      [P_NOISE] = {"Noise", 0, 100, 20},
     [P_TEMPO] = {"Tempo", 48, 190, 128},   [P_EVOLVE] = {"Evolve", 0, 100, 40},   [P_MOTION] = {"Motion", 0, 100, 60}, /* 48: Sleep sits in the 50s. Dance songs stay above 70 */
     [P_DRIFT] = {"Drift", 0, 100, 60},
-    [P_BRIGHT] = {"Bright", 0, 100, 35},    [P_PADTONE] = {"Sound", 0, EN_NSOUND - 1, 1},     [P_DETUNE] = {"Detune", 0, 100, 30},
+    [P_BRIGHT] = {"Bright", 0, 100, 35},    [P_PADTONE] = {"Sound", 0, EN_NPAD_SND - 1, 1},   [P_DETUNE] = {"Detune", 0, 100, 30},
     [P_PE_ATK] = {"Attack", 0, 100, 45},    [P_PE_HOLD] = {"Hold", 0, 100, 35},    [P_PE_REL] = {"Release", 0, 100, 55},
     [P_PE_REST] = {"Rest", 0, 100, 20},
     [P_PL_RATE] = {"Rate", 0, 7, 4},        [P_PL_DEPTH] = {"Depth", 0, 100, 25},  [P_PL_SHAPE] = {"Shape", 0, 5, 0},
@@ -38,7 +39,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     [P_DL_DEST] = {"Target", 0, 3, 0},
     [P_AC_CUT] = {"Cutoff", 0, 100, 35},    [P_AC_RES] = {"Reso", 0, 100, 70},     [P_AC_ENV] = {"Env mod", 0, 100, 55},
     [P_AC_DEC] = {"Decay", 0, 100, 40},     [P_AC_ACC] = {"Accent", 0, 100, 50},   [P_AC_SLIDE] = {"Slide", 0, 100, 30},
-    [P_AC_WAVE] = {"Sound", 0, EN_NSOUND - 1, 0},
+    [P_AC_WAVE] = {"Sound", 0, EN_NACID_SND - 1, 0},
     [P_AC_DENS] = {"Density", 0, 100, 60},  [P_AC_LEN] = {"Length", 1, 16, 16},    [P_AC_RANGE] = {"Range", 1, 3, 1},
     [P_AC_MUT] = {"Mutate", 0, 100, 25},    [P_AC_OCT] = {"Acid oct", -3, 3, 0},
     [P_DRIVE] = {"Drive", 0, 100, 40},      [P_SWING] = {"Swing", 0, 100, 0},      [P_PATTERN] = {"Pattern", 0, EN_NPAT - 1, 0},
@@ -56,7 +57,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     [P_LINKS] = {"Links", 0, 1, 0},         [P_LK_KICK] = {"Kick", 0, 100, 50},    [P_LK_SNARE] = {"Snare", 0, 100, 40},
     [P_LK_HAT] = {"Hats", 0, 100, 50},      [P_LK_PERC] = {"Perc", 0, 1, 0},
     [P_OCT] = {"Song oct", -3, 3, 0},       [P_PAD_OCT] = {"Pad oct", -3, 3, 0},
-    [P_DR_INST] = {"Sound", 0, EN_NSOUND - 1, 0},
+    [P_DR_INST] = {"Sound", 0, EN_NBASS_SND - 1, 0},
     [P_KIT_KICK] = {"Kick", 0, EN_NKIT - 1, 0}, [P_KIT_SNARE] = {"Snare", 0, EN_NKIT - 1, 0},
     [P_KIT_HAT] = {"Hats", 0, EN_NKIT - 1, 0},  [P_KIT_PERC] = {"Perc", 0, EN_NKIT - 1, 0},
     [P_PAD_MAN] = {"Pad hand", 0, 1, 0},     [P_DR_MAN] = {"Drone hand", 0, 1, 0}, [P_AC_MAN] = {"Acid hand", 0, 1, 0},
@@ -150,14 +151,17 @@ static const char *const TRIG_NAME[6] = {"Chord", "1 bar", "2 bars", "4 bars", "
 static const char *const THEME_NAME[EN_NTHEME] = {"Synth", "Acid", "Ice", "Ember", "Phosphor"};
 /* the voice bank: what each voice can play (the sounds themselves: PAD_SOUND, DRONE_SOUND, ACID_SOUND, and
  * the kits: the old styles' drums) */
-const char *const EN_PAD_SOUND[EN_NSOUND] = {"Bloom", "Voices", "Strings", "Glass", "Organ", "Warm", "Stabs", "Dark",
-                                             "Dub", "Trance", "Poly", "Mist", "Pings", "Hits", "Rave", "Sine"};
-const char *const EN_DRONE_SOUND[EN_NSOUND] = {"Saws", "Warm", "Grit", "Dirty", "Reese", "Pulse", "FM", "Organ",
-                                               "Rumble", "Sub", "Square", "Hoover", "Fifths", "Metal", "Sync", "Bright"};
-const char *const EN_ACID_SOUND[EN_NSOUND] = {"Saw", "Square", "Driven", "Sync", "Pluck", "PWM", "Chip", "Sub",
-                                              "Trance", "Bleep", "Fifth", "Bell", "Organ", "Laser", "Fold", "Soft"};
+const char *const EN_PAD_SOUND[EN_NPAD_SND] = {"Bloom", "Voices", "Strings", "Glass", "Organ", "Warm", "Stabs", "Dark",
+                                              "Dub", "Trance", "Poly", "Mist", "Pings", "Hits", "Rave", "Sine",
+                                              "FM Piano", "Vibes", "Kalimba", "Harp"};
+const char *const EN_DRONE_SOUND[EN_NBASS_SND] = {"Saws", "Warm", "Grit", "Dirty", "Reese", "Pulse", "FM", "Organ",
+                                                  "Rumble", "Sub", "Square", "Hoover", "Fifths", "Metal", "Sync", "Bright",
+                                                  "Upright"};
+const char *const EN_ACID_SOUND[EN_NACID_SND] = {"Saw", "Square", "Driven", "Sync", "Pluck", "PWM", "Chip", "Sub",
+                                                 "Trance", "Bleep", "Fifth", "Bell", "Organ", "Laser", "Fold", "Soft",
+                                                 "Flute", "Tenor Sax", "Mute Tpt", "Harmonica"};
 const char *const EN_KIT_NAME[EN_NKIT] = {"Hypno", "House", "Techno", "Acid", "Break", "Minimal", "Hard", "808",
-                                          "909"};
+                                          "909", "Dusty"};
 
 /* the envelopes' times, from their knobs (0..100), in seconds */
 static float pe_atk_s(int v) { return 0.05f * fm_exp2f((float)v * 0.0764f); }        /* 0.05 .. 10 s */
@@ -214,8 +218,8 @@ void en_param_text(int i, int v, char *b)
     switch (i) {
     case P_ETIME: s = ETIME_NAME[(unsigned)v < 6u ? v : 0]; break;
     case P_MIDI: s = ONOFF[v ? 1 : 0]; break;
-    case P_PADTONE: s = EN_PAD_SOUND[(unsigned)v < EN_NSOUND ? v : 0]; break;
-    case P_DR_INST: s = EN_DRONE_SOUND[(unsigned)v < EN_NSOUND ? v : 0]; break;
+    case P_PADTONE: s = EN_PAD_SOUND[(unsigned)v < EN_NPAD_SND ? v : 0]; break;
+    case P_DR_INST: s = EN_DRONE_SOUND[(unsigned)v < EN_NBASS_SND ? v : 0]; break;
     case P_KIT_KICK: case P_KIT_SNARE: case P_KIT_HAT: case P_KIT_PERC: s = EN_KIT_NAME[(unsigned)v < EN_NKIT ? v : 0]; break;
     case P_MODE: s = EN_MODE_NAME[(unsigned)v < EN_NMODES ? v : 0]; break;
     case P_ROOT: s = EN_NOTE_NAME[(unsigned)v < 12u ? v : 0]; break;
@@ -225,7 +229,7 @@ void en_param_text(int i, int v, char *b)
     case P_DL_DEST: s = DRONE_DEST_NAME[v & 3]; break;
     case P_NZ_COLOR: s = NOISE_NAME[v & 7]; break;
     case P_DE_TRIG: s = TRIG_NAME[(unsigned)v < 6u ? v : 0]; break;
-    case P_AC_WAVE: s = EN_ACID_SOUND[(unsigned)v < EN_NSOUND ? v : 0]; break;
+    case P_AC_WAVE: s = EN_ACID_SOUND[(unsigned)v < EN_NACID_SND ? v : 0]; break;
     case P_THEME: s = THEME_NAME[(unsigned)v < EN_NTHEME ? v : 0]; break;
     case P_LINKS: s = ONOFF[v ? 1 : 0]; break;
     case P_LK_PERC: s = v ? "Clock" : "Off"; break;
@@ -603,7 +607,7 @@ typedef struct {
     float p_freq, p_ratio, p_idx;               /* perc: its note (Hz), the modulator's ratio, its index */
     float duck, chop, crush;                    /* the kick's: its duck; chops and crush (the drums all) */
 } kit_t;
-static const kit_t KITS[EN_NKIT] = {
+static const kit_t KITS[EN_NKIT_OSC] = {
     /* Hypno: as it always was */
     {5.0f, 0.0016f, 0.15f, 0.75f, 0.25f, 1.0f, 0.0f,
      185.0f, 330.0f, 1.1f, 0.7f, 1.0f, 353.0f, 1.0f,
@@ -644,29 +648,37 @@ static const kit_t KITS[EN_NKIT] = {
 static const kit_t *KK = &KITS[0], *KS = &KITS[0], *KH = &KITS[0], *KP = &KITS[0];   /* kick, snare,
                                                  * hats, perc */
 static const kit_t *KC, *KO;                    /* clap and the open hat. Null: the snare's kit, the hat's */
+static uint8_t kit_i[4], kit_c, kit_o, kit_c_set, kit_o_set;   /* the kit index, including Dusty */
+static const kit_t *kit_ptr(unsigned v)         /* Dusty borrows the house duck. Its hits are samples */
+{
+    if (v >= EN_NKIT_OSC)
+        v = 1;
+    return &KITS[v];
+}
 
 /* the pad's sounds: the oscillator, stabs (chords on the off-beats) or breaths, its bus filter and level */
 enum { PO_RHODES, PO_VOICES, PO_STRINGS, PO_GLASS, PO_ORGAN, PO_WARM, PO_SUPER, PO_PWM, PO_MIST, PO_SINE,
        PO_BLOOM };
 static const struct { uint8_t osc, stabs; float fc, g; } PAD_SOUND[EN_NSOUND] = {
     {PO_BLOOM, 0, 1.2f, 0.95f},                 /* Bloom: two sines, an octave that opens with the breath */
-    {PO_VOICES, 0, 1.0f, 1.0f}, {PO_STRINGS, 0, 1.25f, 0.75f}, {PO_GLASS, 0, 1.7f, 0.85f},
+    {PO_VOICES, 0, 1.0f, 1.0f}, {PO_STRINGS, 0, 1.25f, 0.75f}, {PO_GLASS, 0, 1.15f, 1.0f},
     {PO_ORGAN, 0, 1.1f, 0.8f}, {PO_WARM, 0, 0.85f, 1.0f}, {PO_RHODES, 1, 1.3f, 0.9f}, {PO_VOICES, 0, 0.6f, 0.8f},
     {PO_STRINGS, 1, 0.55f, 1.4f},               /* Dub: saw chords stabbed, dark, into the echo */
     {PO_SUPER, 0, 1.3f, 0.75f},                 /* Trance: a supersaw */
     {PO_PWM, 0, 1.1f, 1.1f},                   /* Poly: two detuned saws less each other, a pulse's width drifting */
     {PO_MIST, 0, 1.1f, 0.85f},                  /* Mist: a sine, its detuned pair, and a quiet fifth */
-    {PO_GLASS, 1, 1.6f, 1.2f},                  /* Pings: the bells, stabbed */
+    {PO_GLASS, 1, 1.6f, 1.05f},                 /* Pings: a mallet bar, stabbed */
     {PO_ORGAN, 1, 1.3f, 1.05f},                 /* Hits: a house organ, stabbed */
     {PO_SUPER, 1, 1.5f, 1.1f},                  /* Rave: supersaw stabs */
     {PO_SINE, 0, 1.0f, 0.65f},                   /* Sine: pure, for minimal */
 };
 /* the drone's: the oscillator; the saws and sub's levels, drive, cutoff (octaves) and level */
-enum { DO_SAWS, DO_REESE, DO_PULSE, DO_FM, DO_ORGAN, DO_SINE, DO_SQUARE, DO_HOOVER, DO_FIFTHS, DO_METAL, DO_SYNC };
+enum { DO_SAWS, DO_REESE, DO_PULSE, DO_FM, DO_ORGAN, DO_SINE, DO_SQUARE, DO_HOOVER, DO_FIFTHS, DO_METAL, DO_SYNC,
+       DO_DIRTY };
 typedef struct { uint8_t osc; float saw, sub, drive, cut, g; } drone_snd_t;
 static const drone_snd_t DRONE_SOUND[EN_NSOUND] = {
     {DO_SAWS, 0.4f, 0.55f, 1.0f, 0.0f, 1.0f},   {DO_SAWS, 0.3f, 0.75f, 0.8f, -0.4f, 1.0f},
-    {DO_SAWS, 0.45f, 0.5f, 2.2f, -0.3f, 1.0f},  {DO_SAWS, 0.3f, 0.8f, 3.0f, -0.6f, 0.9f},
+    {DO_SAWS, 0.45f, 0.5f, 2.2f, -0.3f, 1.0f},  {DO_DIRTY, 0.85f, 0.35f, 1.55f, 0.35f, 0.9f}, /* Dirty: a narrow pulse and its octave */
     {DO_REESE, 0.5f, 0.4f, 1.4f, 0.0f, 1.0f},   {DO_PULSE, 0.45f, 0.45f, 1.1f, 0.0f, 1.0f},
     {DO_FM, 0.55f, 0.35f, 1.2f, 0.4f, 1.0f},    {DO_ORGAN, 0.45f, 0.5f, 1.0f, 0.6f, 0.9f},
     {DO_SAWS, 0.12f, 1.0f, 2.6f, -1.0f, 0.95f}, /* Rumble: the sub driven, the saws far back: a techno rumble */
@@ -680,25 +692,191 @@ static const drone_snd_t DRONE_SOUND[EN_NSOUND] = {
 };
 /* the acid's: the oscillator, its drive and level */
 enum { AO_SAW, AO_SQUARE, AO_SYNC, AO_PLUCK, AO_PWM, AO_CHIP, AO_SUB, AO_TRANCE, AO_BLEEP, AO_FIFTH, AO_BELL, AO_ORGAN,
-       AO_LASER, AO_FOLD, AO_SOFT };
+       AO_LASER, AO_FOLD, AO_SOFT, AO_DRIVE };
 typedef struct { uint8_t osc; float drive, g; } acid_snd_t;
 static const acid_snd_t ACID_SOUND[EN_NSOUND] = {
-    {AO_SAW, 1.0f, 1.0f}, {AO_SQUARE, 1.0f, 1.0f}, {AO_SAW, 1.5f, 1.45f}, {AO_SYNC, 1.1f, 0.85f},
+    {AO_SAW, 1.0f, 1.0f}, {AO_SQUARE, 1.0f, 1.0f}, {AO_DRIVE, 1.15f, 1.05f}, {AO_SYNC, 1.1f, 0.85f},
     {AO_PLUCK, 1.0f, 1.15f}, {AO_PWM, 1.0f, 1.0f}, {AO_CHIP, 1.2f, 0.7f}, {AO_SUB, 1.1f, 0.95f},
     {AO_TRANCE, 1.0f, 0.9f},                   /* Trance: three saws detuned, a trance arp's */
     {AO_BLEEP, 0.9f, 0.85f},                     /* Bleep: a sine, the bleeps of early techno */
-    {AO_FIFTH, 1.1f, 0.85f},                    /* Fifth: a saw and its fifth, a rave stab */
-    {AO_BELL, 1.0f, 1.0f},                      /* Bell: FM at 3.5, the index falling */
-    {AO_ORGAN, 1.0f, 0.95f},                    /* Organ: drawbars, a house organ's riff */
+    {AO_FIFTH, 1.1f, 0.85f},                    /* Fifth: a square and a sine a fifth up */
+    {AO_BELL, 1.0f, 1.0f},                      /* Bell: a tube, brighter as the note starts */
+    {AO_ORGAN, 1.0f, 0.95f},                    /* Organ: the twelfth shouts, then an 8' and a 4' */
     {AO_LASER, 1.0f, 1.0f},                     /* Laser: a sine, its pitch falling with the envelope */
     {AO_FOLD, 1.1f, 1.0f},                      /* Fold: a sine folded over, more as the envelope opens */
     {AO_SOFT, 0.9f, 0.95f},                      /* Soft: a triangle, round, for quiet arps */
 };
 
-static int pad_snd(void) { return (unsigned)par[P_PADTONE] < EN_NSOUND ? par[P_PADTONE] : 0; }
+static int pad_tone(void)
+{
+    unsigned v = (unsigned)par[P_PADTONE];
+    return v < EN_NPAD_SND ? (int)v : 0;
+}
+static int pad_is_smp(void) { return pad_tone() >= EN_NSOUND; }
+static float pad_smp_gain(void)               /* dry chord peaks, brought near the oscillators */
+{
+    static const float G[4] = {1.50f, 0.95f, 2.05f, 1.35f}; /* FM piano, vibes, kalimba, harp */
+    int i = pad_tone() - EN_NSOUND;
+    if (i < 0)
+        i = 0;
+    if (i > 3)
+        i = 3;
+    return G[i];
+}
+static int pad_snd(void)
+{
+    int t = pad_tone();
+    return t < EN_NSOUND ? t : 0;               /* the oscillator table. A sample does not index it */
+}
 static int pad_stabs(void) { return PAD_SOUND[pad_snd()].stabs; }
 static int pad_osc(void) { return PAD_SOUND[pad_snd()].osc; }
 static uint8_t stabs_were;                      /* the pad was stabbing (to start the breaths again after) */
+
+/* ------------------------------------------------- sampled library --- */
+/* IMA ADPCM from iam_samples.h (CC0 Versilian). One reader per pad voice, one
+ * for the bass, one for the acid, and one per drum. The bytes stay in flash.
+ * A sample replaces that engine's oscillator. It does not play beside it. */
+static const int16_t ISTEP[89] = {
+    7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50, 55, 60, 66, 73, 80, 88, 97, 107,
+    118, 130, 143, 157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449, 494, 544, 598, 658, 724, 796, 876, 963,
+    1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066, 2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358, 5894,
+    6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899, 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794,
+    32767};
+static const int8_t IIDX[8] = {-1, -1, -1, -1, 2, 4, 6, 8};
+typedef struct {
+    const iam_zone_t *z;
+    uint32_t k;
+    float frac, step, s0, s1;
+    int32_t pred;
+    int16_t idx;
+    uint8_t done, live, note, set;
+    uint16_t tag;
+} iam_smp;
+static iam_smp pad_smp[EN_NPAD], bass_smp, acid_smp, drum_smp[EN_NDRUM], xdrum_smp[EN_XDRUM];
+static uint16_t pad_tag[EN_NPAD], acid_tag;
+
+static const iam_zone_t *iam_zone(int set, int note)
+{
+    const iam_set_t *st;
+    int k;
+    if ((unsigned)set >= IAM_SMP_NSETS)
+        set = 0;
+    st = &IAM_SET[set];
+    for (k = 0; k < st->nz; k++) {
+        const iam_zone_t *z = &IAM_ZONE[st->z0 + k];
+        if (note >= z->lo && note <= z->hi)
+            return z;
+    }
+    return &IAM_ZONE[st->z0];
+}
+static float iam_smp_next(iam_smp *s)
+{
+    const iam_zone_t *z = s->z;
+    uint32_t k = s->k;
+    int c, st, d;
+    if (!z || k >= z->n) {
+        if (z && z->looped) {
+            k = z->ls;
+            s->pred = z->pred;
+            s->idx = z->idx;
+        } else {
+            s->done = 1;
+            return 0.0f;
+        }
+    }
+    c = (IAM_SMP_DATA[z->off + (k >> 1)] >> ((k & 1u) * 4u)) & 15;
+    st = ISTEP[s->idx];
+    d = st >> 3;
+    if (c & 4)
+        d += st;
+    if (c & 2)
+        d += st >> 1;
+    if (c & 1)
+        d += st >> 2;
+    s->pred += c & 8 ? -d : d;
+    if (s->pred > 32767)
+        s->pred = 32767;
+    else if (s->pred < -32768)
+        s->pred = -32768;
+    s->idx = (int16_t)(s->idx + IIDX[c & 7]);
+    if (s->idx < 0)
+        s->idx = 0;
+    else if (s->idx > 88)
+        s->idx = 88;
+    s->k = k + 1;
+    return (float)s->pred * (1.0f / 32768.0f);
+}
+static void iam_smp_go(iam_smp *s, int set, int note, float ratio)
+{
+    const iam_zone_t *z;
+    float step;
+    if (note < 0)
+        note = 0;
+    if (note > 127)
+        note = 127;
+    if (ratio < 0.25f)
+        ratio = 0.25f;
+    if (ratio > 4.0f)
+        ratio = 4.0f;
+    z = iam_zone(set, note);
+    step = (float)z->rate * (1.0f / 65536.0f) * fm_exp2f(((float)note - z->root) * (1.0f / 12.0f)) * ratio;
+    if (step < 0.05f)
+        step = 0.05f;
+    if (step > 4.0f)
+        step = 4.0f;
+    s->z = z;
+    s->k = 0;
+    s->pred = 0;
+    s->idx = 0;
+    s->done = 0;
+    s->frac = 0.0f;
+    s->step = step;
+    s->s0 = 0.0f;
+    s->s1 = iam_smp_next(s);
+    s->live = 1;
+    s->note = (uint8_t)note;
+    s->set = (uint8_t)set;
+}
+static void iam_smp_at(iam_smp *s, int set, int note, float ratio, unsigned tag)
+{
+    if (s->live && s->set == (uint8_t)set && s->note == (uint8_t)note && s->tag == (uint16_t)tag)
+        return;
+    iam_smp_go(s, set, note, ratio);
+    s->tag = (uint16_t)tag;
+}
+static float iam_smp_read(iam_smp *s)
+{
+    float x;
+    if (!s->live || s->done || !s->z)
+        return 0.0f;
+    x = s->s0 + (s->s1 - s->s0) * s->frac;
+    s->frac += s->step;
+    while (s->frac >= 1.0f && !s->done) {
+        s->frac -= 1.0f;
+        s->s0 = s->s1;
+        s->s1 = iam_smp_next(s);
+    }
+    return s->done ? 0.0f : x;
+}
+/* Dusty: cajon, rope snare, clap, closed hat, open hat, woodblock.
+ * The extras: woodblock, rope tom, woodblock, shaker, open hat. */
+static const uint8_t DUSTY_LANE[EN_NDRUM] = {36, 38, 41, 42, 43, 40};
+static const uint8_t DUSTY_X[EN_XDRUM] = {40, 39, 40, 44, 43};
+static int lane_kit_now(int d)                 /* 0 kick, 1 snare, 2 clap, 3 hat, 4 open hat, 5 perc */
+{
+    if (d == 0)
+        return kit_i[0];
+    if (d == 1)
+        return kit_i[1];
+    if (d == 2)
+        return kit_c_set ? kit_c : kit_i[1];
+    if (d == 3)
+        return kit_i[2];
+    if (d == 4)
+        return kit_o_set ? kit_o : kit_i[2];
+    return kit_i[3];
+}
+static int lane_dusty(int d) { return lane_kit_now(d) == EN_KIT_DUSTY; }
 
 void en_style_sounds(int16_t *p)                /* a stored style (1..4): its kit and sounds, as it sounded */
 {
@@ -836,6 +1014,7 @@ static void pad_breathe(pad_t *v, int i)        /* a new breath: its length, its
     v->note = v->target;
     v->voices = (uint8_t)pad_osc();
     v->midi_note = (uint8_t)v->target;
+    pad_tag[i]++;
     if (en_playing && !par[P_PAD_MAN])
         midi(0x90, v->midi_note, (uint32_t)(50.0f + 40.0f * v->peak));
 }
@@ -1262,6 +1441,7 @@ static void acid_step(void)                     /* a sixteenth of the acid line 
                 midi(0x83, acid.note, 0);
             midi(0x93, (uint32_t)n, acid.acc > 0.0f ? 120u : 90u);
             acid.note = (uint8_t)n;
+            acid_tag++;
         }
         acid.sliding = (uint8_t)slid;
         if (sleep_on && !(ac_slide & m))
@@ -1435,6 +1615,20 @@ static float snap_rise(int d)
     return fm_exp2f((float)snap_amt[d] * 0.02f * (0.5f + 0.5f * wob_s));
 }
 
+/* Closed hats that vanished on a small speaker. House and Break already spoke.
+ * Hard did not. Open hats and shakers keep the kit row. This is the closed hat only. */
+static void hat_speak(unsigned kit, float *stretch, float *nzlift, float *gain)
+{
+    static const float S[9] = {1.9f, 1.0f, 2.5f, 1.75f, 1.0f, 2.9f, 2.4f, 2.0f, 3.1f};
+    static const float N[9] = {1.45f, 1.0f, 2.4f, 1.5f, 1.0f, 2.7f, 1.75f, 1.65f, 2.3f};
+    static const float G[9] = {1.9f, 1.0f, 2.3f, 1.75f, 1.0f, 2.5f, 1.55f, 1.85f, 2.4f};
+    if (kit >= 9u)
+        kit = 0;
+    *stretch = S[kit];
+    *nzlift = N[kit];
+    *gain = G[kit];
+}
+
 static void drum_fire(int d, float vel)
 {
     drum_t *v = &drum[d];
@@ -1445,6 +1639,15 @@ static void drum_fire(int d, float vel)
     v->att = 0.0f;
     v->t = 0.0f;
     v->note = DRUM_GM[d];
+    if (lane_dusty(d)) {                        /* the sampled kit, in place of this lane's oscillator */
+        iam_smp_go(&drum_smp[d], IAM_SMP_KIT, DUSTY_LANE[d], tf * rise * tunefac);
+        v->adec = fm_expf(-6.9f / (1.4f * EN_SR));
+        v->att = 1.0f;
+        if (d == L_HAT && lane_dusty(L_OHAT))
+            drum[L_OHAT].adec = fm_expf(-6.9f / (0.12f * EN_SR)); /* the closed hat chokes the open one */
+        if (d == L_KICK && lane_g[L_KICK] > 0.0f)
+            duck_env = 1.0f;
+    } else {
     switch (d) {
     case L_KICK: {                              /* a sine dropping fast from (five) times its note */
         float f = mtof((float)kick_note() + lane_tune[0]);
@@ -1476,17 +1679,25 @@ static void drum_fire(int d, float vel)
         v->hp = fm_clampf(0.18f * tf, 0.08f, 0.5f);
         break;
     }
-    case L_HAT:                                 /* closed: it chokes the open one */
-        v->adec = fm_expf(-6.9f / ((0.015f + 0.1f * dec) * KH->h_dec * EN_SR));
+    case L_HAT: {                               /* closed: it chokes the open one */
+        unsigned hk = kit_i[2] < 9u ? kit_i[2] : 0;
+        float stretch, nzlift, hgain, nz;
+        hat_speak(hk, &stretch, &nzlift, &hgain);
+        (void)hgain;
+        v->adec = fm_expf(-6.9f / ((0.015f + 0.1f * dec) * KH->h_dec * stretch * EN_SR));
         v->hp = fm_clampf(0.72f * tf, 0.4f, 1.1f);
         v->inc = KH->h_metal * rise;            /* the metal's pitch, for this hit */
-        v->idx = KH->h_noise;
+        nz = KH->h_noise * nzlift;
+        if (nz > 1.4f)
+            nz = 1.4f;
+        v->idx = nz;
         if (lane_g[L_HAT] > 0.0f) {             /* a hat that is out of the mix does not choke the open one */
             const kit_t *ko = KO ? KO : KH;
             float choke = 0.07f + 0.06f * ko->oh_dec; /* ~110..180 ms: cut, and the kit still speaks */
             drum[L_OHAT].adec = fm_expf(-6.9f / (choke * EN_SR));
         }
         break;
+    }
     case L_OHAT: {
         const kit_t *ko = KO ? KO : KH;
         float nz = ko->h_noise > 0.0f ? ko->h_noise : 0.6f;
@@ -1505,6 +1716,21 @@ static void drum_fire(int d, float vel)
         v->idx = KP->p_idx;
         v->ph = v->ph2 = 0.0f;
         v->adec = fm_expf(-6.9f / ((0.04f + 0.35f * dec) * EN_SR));
+        if (kit_i[3] == 0) {                    /* Hypno: a short clave. The tom keeps the old perc pitch */
+            float f = 880.0f * tf;
+            v->inc = f * 1.2f * rise * (1.0f / EN_SR);
+            v->inc_end = f * (1.0f / EN_SR);
+            v->inc2 = 2.03f;
+            v->idx = 0.28f;
+            v->adec = fm_expf(-6.9f / (0.07f * EN_SR));
+        } else if (kit_i[3] == 7) {             /* 808: a falling conga, not the same FM blip */
+            float f = 168.0f * tf;
+            v->inc = f * 2.6f * rise * (1.0f / EN_SR);
+            v->inc_end = f * 0.85f * (1.0f / EN_SR);
+            v->inc2 = 1.0f;
+            v->idx = 0.12f;
+            v->adec = fm_expf(-6.9f / (0.26f * EN_SR));
+        }
         break;
     }
     }
@@ -1522,6 +1748,7 @@ static void drum_fire(int d, float vel)
         v->idx = 1.0f;
         v->att = 1.0f;
         v->inc = 174.6f * rise / EN_SR;     /* F3, and the sweep if knob 2 is open */
+    }
     }
     if (links_on()) {                           /* the links: the hits into the voices */
         if (d == L_KICK)
@@ -1548,7 +1775,7 @@ static void xdrum_fire(int i, float vel)
 {
     drum_t *v = &xdrum[i];
     unsigned kit = xkit_i[i] < EN_NKIT ? xkit_i[i] : 0;
-    const kit_t *k = &KITS[kit];
+    const kit_t *k;
     float tf = fm_exp2f((float)xtune[i] * (1.0f / 12.0f));
     float scale, rise = snap_rise(6 + i);
     v->on = 1;
@@ -1560,12 +1787,28 @@ static void xdrum_fire(int i, float vel)
     v->wait = 0;
     /* 50 keeps the length these hits already had. 0 is a quarter of it. 100 is 1.75 times. */
     scale = xdecay[i] == 50 ? 1.0f : 0.25f + (float)xdecay[i] * 0.015f;
+    if (kit == EN_KIT_DUSTY) {
+        iam_smp_go(&xdrum_smp[i], IAM_SMP_KIT, DUSTY_X[i], tf * rise * tunefac);
+        v->adec = fm_expf(-6.9f / (1.4f * EN_SR));
+        v->att = 1.0f;
+        en_xdrum_glow[i] = 1.0f;
+        return;
+    }
+    k = &KITS[kit < EN_NKIT_OSC ? kit : 0];
     if (i == 0) {                               /* rim: a short, high snare */
         v->inc = k->sn_f1 * 2.35f * tf * rise * (1.0f / EN_SR);
         v->inc2 = k->sn_f2 * 1.8f * tf * rise * (1.0f / EN_SR);
         v->adec = fm_expf(-6.9f / (0.045f * scale * EN_SR));
         v->hp = fm_clampf(0.62f * tf, 0.2f, 0.95f);
         v->idx = 1.0f;
+    } else if (i == 1 && (kit == 3 || kit == 7)) {
+        /* Acid: a short hard tom. 808: a long pitch drop. Other kits keep the perc's tom. */
+        float f = (kit == 7 ? 128.0f : 250.0f) * tf;
+        v->inc = f * (kit == 7 ? 3.1f : 1.45f) * rise * (1.0f / EN_SR);
+        v->inc_end = f * (kit == 7 ? 0.62f : 1.0f) * (1.0f / EN_SR);
+        v->inc2 = kit == 7 ? 1.0f : 1.48f;
+        v->idx = kit == 7 ? 0.18f : 1.7f;
+        v->adec = fm_expf(-6.9f / ((kit == 7 ? 0.62f : 0.14f) * scale * EN_SR));
     } else if (i == 1) {                        /* tom: the perc, lower and longer */
         float f = k->p_freq * 0.55f * tf;
         v->inc = f * 1.6f * rise * (1.0f / EN_SR);
@@ -1573,6 +1816,17 @@ static void xdrum_fire(int i, float vel)
         v->inc2 = 1.0f;
         v->idx = k->p_idx * 0.8f;
         v->adec = fm_expf(-6.9f / (0.28f * scale * EN_SR));
+    } else if (i == 2 && (kit == 0 || kit == 3 || kit == 4)) {
+        /* Hypno: a low agogo. Acid: a short bright bell. Break: a noisy clip. */
+        float f = (kit == 0 ? 300.0f : kit == 3 ? 640.0f : 460.0f) * tf;
+        float secs = kit == 0 ? 0.32f : kit == 3 ? 0.09f : 0.11f;
+        v->inc = f * 1.04f * rise * (1.0f / EN_SR);
+        v->inc_end = f * (1.0f / EN_SR);
+        v->inc2 = kit == 4 ? 1.34f : 1.51f;
+        v->idx = kit == 4 ? 1.15f : kit == 3 ? 0.85f : 0.18f;
+        v->ph = 0.11f;
+        v->ph2 = 0.43f;
+        v->adec = fm_expf(-6.9f / (secs * scale * EN_SR));
     } else if (i == 2) {                        /* cowbell: two squares, a fifth and a bit apart.
                                                  * The perc's FM voice made this a tom. */
         float f = (340.0f + k->p_freq * 0.48f) * tf;
@@ -1611,10 +1865,11 @@ static void xdrum_fire(int i, float vel)
         v->mph[1] = 40.0f;
         v->mph[2] = v->mph[3] = 0.0f;
     } else {                                    /* crash: a different cymbal on each kit, not a long hat */
-        static const float hz[9] = {280.0f, 470.0f, 760.0f, 540.0f, 200.0f, 980.0f, 165.0f, 390.0f, 640.0f};
-        static const float rat[9] = {1.37f, 1.68f, 2.18f, 1.52f, 1.91f, 1.28f, 2.52f, 1.47f, 1.97f};
-        static const float nz[9] = {0.42f, 0.92f, 0.16f, 0.38f, 1.05f, 0.10f, 0.72f, 0.55f, 0.26f};
-        static const float len[9] = {1.15f, 1.7f, 0.85f, 1.45f, 0.48f, 0.28f, 1.35f, 2.05f, 0.62f};
+        /* House (1) and Break (4) stay. 808 is a low gong. 909 is a short splash. */
+        static const float hz[9] = {220.0f, 470.0f, 890.0f, 510.0f, 200.0f, 1100.0f, 190.0f, 155.0f, 1280.0f};
+        static const float rat[9] = {1.73f, 1.68f, 2.41f, 1.81f, 1.91f, 2.27f, 2.71f, 3.17f, 1.33f};
+        static const float nz[9] = {0.95f, 0.92f, 0.85f, 0.88f, 1.05f, 1.10f, 1.15f, 0.55f, 0.62f};
+        static const float len[9] = {1.80f, 1.7f, 0.42f, 1.10f, 0.48f, 0.55f, 1.60f, 2.15f, 0.26f};
         unsigned ki = kit < 9u ? kit : 0u;
         float metal = k->h_metal > 0.2f ? k->h_metal : 1.0f;
         float secs = len[ki] * (0.7f + 0.3f * k->oh_dec) * scale;
@@ -1687,16 +1942,19 @@ void en_xdrum(int i, int on, int kit, unsigned steps, int level, int tune, int d
 
 void en_lane_kit(int lane, int kit)
 {
-    const kit_t *k;
     if (kit < 0)
         kit = 0;
     if (kit >= EN_NKIT)
         kit = EN_NKIT - 1;
-    k = &KITS[kit];
-    if (lane == L_CLAP)
-        KC = k;
-    else if (lane == L_OHAT)
-        KO = k;
+    if (lane == L_CLAP) {
+        kit_c = (uint8_t)kit;
+        kit_c_set = 1;
+        KC = kit_ptr((unsigned)kit);
+    } else if (lane == L_OHAT) {
+        kit_o = (uint8_t)kit;
+        kit_o_set = 1;
+        KO = kit_ptr((unsigned)kit);
+    }
 }
 
 static int32_t drums_wait(void)                 /* samples to the next hit that waits; 0: none */
@@ -2285,12 +2543,13 @@ static void apply(int p, int v)
         if (!v && !bass.play)
             bass_to(chord_pcs[0]);
         break;
-    case P_KIT_KICK: KK = &KITS[(unsigned)v < EN_NKIT ? v : 0]; break;   /* the kit: at each drum's next hit */
-    case P_KIT_SNARE: KS = &KITS[(unsigned)v < EN_NKIT ? v : 0]; break;
-    case P_KIT_PERC: KP = &KITS[(unsigned)v < EN_NKIT ? v : 0]; break;
+    case P_KIT_KICK: kit_i[0] = (uint8_t)((unsigned)v < EN_NKIT ? v : 0); KK = kit_ptr(kit_i[0]); break;
+    case P_KIT_SNARE: kit_i[1] = (uint8_t)((unsigned)v < EN_NKIT ? v : 0); KS = kit_ptr(kit_i[1]); break;
+    case P_KIT_PERC: kit_i[3] = (uint8_t)((unsigned)v < EN_NKIT ? v : 0); KP = kit_ptr(kit_i[3]); break;
     case P_KIT_HAT: {
         int k;
-        KH = &KITS[(unsigned)v < EN_NKIT ? v : 0];
+        kit_i[2] = (uint8_t)((unsigned)v < EN_NKIT ? v : 0);
+        KH = kit_ptr(kit_i[2]);
         for (k = 0; k < 4; k++)
             hat_inc[k] = HAT_INC[k] * KH->h_metal;
         break;
@@ -2405,6 +2664,7 @@ static void pad_play(int key, int on)
         v->hf = 1.0f;
         v->voices = (uint8_t)pad_osc();
         v->midi_note = (uint8_t)v->note;
+        pad_tag[best]++;
         midi(0x90, v->midi_note, 100);
     }
 }
@@ -2465,6 +2725,7 @@ static void note_cmd(int voice, int key, int on)
             acid.acc = 0.6f;
             acid.edec = fm_expf(-6.9f * 32.0f / (dec * EN_SR));
             acid.sliding = 0;
+            acid_tag++;
         }
         if (acid.note)
             midi(0x83, acid.note, 0);
@@ -4589,7 +4850,7 @@ static float vgate_mul(int part)
 
 static void pad_bus(uint32_t n)
 {
-    const float fc = fm_clampf(700.0f * PAD_SOUND[pad_snd()].fc * fm_exp2f(bright * 0.03f + 0.6f * arcm + 1.5f * pad_filt +
+    const float fc = fm_clampf(700.0f * (pad_is_smp() ? 6.0f : PAD_SOUND[pad_snd()].fc) * fm_exp2f(bright * 0.03f + 0.6f * arcm + 1.5f * pad_filt +
                                                          wob_oct(0) + 3.0f * (float)par[P_LK_SNARE] * 0.01f * lk_snare), 200.0f, 12000.0f);
     const float c = 1.0f - fm_expf(-FM_TWO_PI * fc * (1.0f / EN_SR));
     uint32_t j;
@@ -4635,7 +4896,8 @@ static void render_pad(uint32_t n)
             return;
         }
     }
-    const float g = pad_vol * 0.5f * pad_lvl * (1.0f + 0.9f * fm_maxf(brk, 0.0f)) * PAD_SOUND[pad_snd()].g *   /* the pad rises in a breakdown */
+    const int smp = pad_is_smp();
+    const float g = pad_vol * 0.5f * pad_lvl * (1.0f + 0.9f * fm_maxf(brk, 0.0f)) * (smp ? pad_smp_gain() : PAD_SOUND[pad_snd()].g) *   /* the pad rises in a breakdown */
                     (1.0f + 0.35f * (float)par[P_LK_SNARE] * 0.01f * lk_snare);                  /* and swells with the links */
     uint32_t nb = (n + 31u) >> 5;
     pad_gain += (pad_gate - pad_gain) * fm_minf((float)n / ((pad_gate > 0.0f ? 2.0f : 5.0f) * EN_SR), 1.0f);
@@ -4730,11 +4992,15 @@ static void render_pad(uint32_t n)
                 }
                 /* Breath index, in turns. The stabs' Rhodes and Bloom open with it. */
                 idx = (0.04f + 0.1f * bright * 0.01f + 0.1f * br) * (1.0f + 0.4f * arcm);
+                if (smp)
+                    iam_smp_at(&pad_smp[i], IAM_SMP_FMPI + pad_tone() - EN_NSOUND, (int)(v->note + 0.5f), tunefac, pad_tag[i]);
             }
             amp += (tgt - amp) * ar;
             if (use_phrase)
                 heard += (ptgt - heard) * ar;
-            switch (v->voices) {
+            if (smp)
+                x = iam_smp_read(&pad_smp[i]);
+            else switch (v->voices) {
             case PO_RHODES: {                    /* FM, the modulator at the carrier's pitch: the stabs */
                 float m = sine(p0) * idx;
                 x = (sine(p0 + m + 1.0f) + 0.12f * sine(2.0f * p0)) * 1.2f;   /* one carrier: no beating */
@@ -4746,9 +5012,17 @@ static void render_pad(uint32_t n)
             case PO_STRINGS:                     /* two saws, detuned (Detune) */
                 x = 0.62f * (blep_saw(p0, v->inc[0]) + blep_saw(p1, v->inc[1]));
                 break;
-            case PO_GLASS: {                     /* FM at 3.5: a bell, glassy, brighter as it swells */
-                float m = sine(p1) * (0.25f + 4.0f * idx);
-                x = (sine_any(p0 + m) + 0.25f * sine(2.0f * p0)) * 1.1f;
+            case PO_GLASS: {
+                if (pad_stabs()) {               /* Pings: a mallet bar. Inharmonic partials, no FM */
+                    float b = p0 * 2.76f, c = p0 * 5.40f;
+                    b -= (float)(int)b;
+                    c -= (float)(int)c;
+                    x = (0.70f * sine(p0) + 0.40f * sine(b) + 0.16f * sine(c)) * 1.05f;
+                } else {                         /* Glass: a sung crystal. A fifth, a little octave, no FM shriek */
+                    float p5 = p0 * 1.498307f;
+                    p5 -= (float)(int)p5;
+                    x = (0.70f * sine(p0) + 0.26f * sine(p5) + 0.14f * sine(2.0f * p0)) * 1.2f;
+                }
                 break;
             }
             case PO_ORGAN:                       /* drawbars: 8', 4', 2 2/3', 2' */
@@ -4802,10 +5076,13 @@ static void render_pad(uint32_t n)
             p0 += v->inc[0];
             if (p0 >= 1.0f)
                 p0 -= 1.0f;
-            p1 += v->voices == PO_GLASS ? v->inc[0] * 3.5f : v->inc[1];
+            p1 += v->voices == PO_GLASS ? v->inc[0] * 2.0f : v->inc[1];
             if (p1 >= 1.0f)
                 p1 -= (float)(int)p1;
-            x *= use_phrase ? heard : amp;
+            if (smp && pad_smp[i].z && !pad_smp[i].z->looped && !pad_smp[i].done)
+                x *= v->play ? 0.85f : (pad_gain > 0.35f ? pad_gain : 0.35f); /* a pluck has its own decay */
+            else
+                x *= use_phrase ? heard : amp;
             padl[j] += x * gl;                   /* to the pad's bus: smoothed below */
             padr[j] += x * gr;
         }
@@ -4829,9 +5106,104 @@ static void render_pad(uint32_t n)
     pad_bus(n);
 }
 
+static int bass_is_smp(void)
+{
+    unsigned v = (unsigned)par[P_DR_INST];
+    return v >= EN_NSOUND && v < EN_NBASS_SND;
+}
+static int acid_is_smp(void)
+{
+    unsigned v = (unsigned)par[P_AC_WAVE];
+    return v >= EN_NSOUND && v < EN_NACID_SND;
+}
+static void render_bass_smp(uint32_t n)
+{
+    uint32_t j;
+    const float tgt = (en_playing && !par[P_DR_MAN]) || bass.play ? 1.0f : 0.0f;
+    const float rate = tgt > 0.0f ? 1.0f / ((bass.play ? 0.03f : 2.0f) * EN_SR) : 1.0f / ((par[P_DR_MAN] ? 0.3f : 4.0f) * EN_SR);
+    float amp = bass.amp, g = bass_vol * 2.1f; /* the pizz recording sits under the saws */
+    int note;
+    if (amp < 1e-5f && !en_playing && !bass.play) {
+        bass.amp = 0.0f;
+        en_bass_level = 0.0f;
+        return;
+    }
+    if (bass_vol <= 0.0f && !bass.play) {
+        bass.note += (bass.target - bass.note) * fm_minf((float)n * GLIDE_K, 1.0f);
+        en_bass_level = 0.0f;
+        return;
+    }
+    bass.note += (bass.target - bass.note) * fm_minf((float)n * (bass.play ? GLIDE_K * 12.0f : GLIDE_K), 1.0f);
+    note = bass.midi_note ? (int)bass.midi_note : (int)(bass.note + 0.5f);
+    if (bass.env_up || !bass_smp.live || bass_smp.set != IAM_SMP_UPBASS || bass_smp.note != (uint8_t)note) {
+        iam_smp_go(&bass_smp, IAM_SMP_UPBASS, note, tunefac);
+        bass.env_up = 0;
+        if (tgt > 0.0f)
+            amp = 1.0f;                         /* the pluck is the attack. A two-second swell would miss it */
+    }
+    for (j = 0; j < n; j++) {
+        float x = iam_smp_read(&bass_smp);
+        amp += (tgt - amp) * rate;
+        x *= amp * g * TG(TR_DRONE, j) * wob_wag(1);
+        if (vgate[1] != 0xFFFFu)
+            x *= vgate_mul(1);
+        if (bass.play && keys_amt < 1.0f)
+            x *= keys_amt;
+        mixl[j] += x;
+        mixr[j] += x;
+        rsend[j] += x * 0.06f;
+        esend[j] += x * 0.04f;
+    }
+    bass.amp = amp;
+    en_bass_level = amp;
+}
+static void render_acid_smp(uint32_t n)
+{
+    uint32_t j;
+    int idx = (int)par[P_AC_WAVE] - EN_NSOUND;
+    int set = IAM_SMP_FLUTE + (idx < 0 ? 0 : idx > 3 ? 3 : idx);
+    static const float AG[4] = {2.90f, 1.15f, 0.95f, 0.75f}; /* flute, tenor sax, muted trumpet, harmonica */
+    float amp = acid.amp, g = acid_vol * AG[idx < 0 ? 0 : idx > 3 ? 3 : idx], lvl = 0.0f;
+    int note = acid.note ? (int)acid.note : 67;
+    if (acid_vol <= 0.0f && !acid.play) {
+        en_acid_level = 0.0f;
+        return;
+    }
+    if (amp < 1e-5f && acid.amp_t <= 0.0f) {
+        acid.amp = 0.0f;
+        en_acid_level = 0.0f;
+        return;
+    }
+    iam_smp_at(&acid_smp, set, note, tunefac, acid_tag);
+    for (j = 0; j < n; j++) {
+        float y;
+        if (acid.gate_left > 0 && --acid.gate_left == 0)
+            acid.amp_t = 0.0f;
+        if (!(j & 31u))
+            acid.env *= acid.edec;
+        amp += (acid.amp_t - amp) * 0.006f;
+        y = iam_smp_read(&acid_smp) * amp * g * TG(TR_ACID, j) * wob_wag(2);
+        if (vgate[2] != 0xFFFFu)
+            y *= vgate_mul(2);
+        if (acid.play && keys_amt < 1.0f)
+            y *= keys_amt;
+        mixl[j] += y;
+        mixr[j] += y;
+        rsend[j] += y * 0.15f;
+        esend[j] += y * 0.35f;
+        if (amp > lvl)
+            lvl = amp;
+    }
+    acid.amp = amp;
+    en_acid_level = lvl * (0.6f + 0.4f * acid.env);
+}
 static void render_bass(uint32_t n)
 {
     uint32_t j;
+    if (bass_is_smp()) {
+        render_bass_smp(n);
+        return;
+    }
     const drone_snd_t *DS = &DRONE_SOUND[(unsigned)par[P_DR_INST] < EN_NSOUND ? par[P_DR_INST] : 0];
     const int dest = par[P_DL_DEST], osc = DS->osc;
     const float depth = (float)par[P_DL_DEPTH] * 0.01f, lv = dest == 2 ? 1.0f - 0.8f * depth * (0.5f - 0.5f * drone_lfo.v) : 1.0f,
@@ -4887,9 +5259,22 @@ static void render_bass(uint32_t n)
         case DO_FM:                             /* two-operator FM, the envelope opening the index */
             x = sine_any(p1 + fmi * sine(p0)) * dsaw * 2.2f;
             break;
-        case DO_ORGAN:
-            x = (sine(p1) + 0.5f * sine(2.0f * p1) + 0.33f * sine(3.0f * p1) + 0.2f * sine(4.0f * p1)) * dsaw * 1.5f;
+        case DO_ORGAN: {                        /* a stopped pipe: the twelfth, almost no octave */
+            float p3 = p1 * 3.0f, p5 = p1 * 5.0f;
+            p3 -= (float)(int)p3;
+            p5 -= (float)(int)p5;
+            x = (0.80f * sine(p1) + 0.62f * sine(p3) + 0.14f * sine(p5)) * dsaw * 1.6f;
             break;
+        }
+        case DO_DIRTY: {                        /* a narrow pulse and a sine an octave up. Not the three saws */
+            float q = p1 + 0.12f + 0.10f * bass.env, up = p1 + p1;
+            if (q >= 1.0f)
+                q -= 1.0f;
+            if (up >= 1.0f)
+                up -= 1.0f;
+            x = ((blep_saw(p1, i1) - blep_saw(q, i1)) * 0.85f + 0.40f * sine(up)) * dsaw * 1.2f;
+            break;
+        }
         case DO_SINE:
             x = (sine(p1) + 0.15f * sine(2.0f * p1)) * dsaw * 1.8f;
             break;
@@ -4982,6 +5367,10 @@ static void render_bass(uint32_t n)
 static void render_acid(uint32_t n)
 {
     uint32_t j;
+    if (acid_is_smp()) {
+        render_acid_smp(n);
+        return;
+    }
     const acid_snd_t *AS = &ACID_SOUND[(unsigned)par[P_AC_WAVE] < EN_NSOUND ? par[P_AC_WAVE] : 0];
     const int osc = AS->osc;
     const float g = acid_vol * 0.75f * AS->g, adrv = AS->drive, res = (float)par[P_AC_RES] * 0.01f, envmod = (float)par[P_AC_ENV] * 0.06f,
@@ -5023,11 +5412,17 @@ static void render_acid(uint32_t n)
             acid.amp_t = 0.0f;                  /* the gate closes */
         inc += (acid.inc_t - inc) * glide;      /* a slide: ~50 ms */
         switch (osc) {
-        case AO_SQUARE: case AO_PWM: {          /* a square (or a pulse): a saw less itself, part a turn on */
+        case AO_SQUARE: case AO_PWM: {          /* a square, or a pulse with a sub under it */
             float p2 = ph + (osc == AO_PWM ? pw : 0.5f);
             if (p2 >= 1.0f)
                 p2 -= 1.0f;
             x = 0.7f * (blep_saw(ph, inc) - blep_saw(p2, inc));
+            if (osc == AO_PWM) {                /* the width still drifts. The sub keeps it off the thin buzz */
+                x = 0.62f * (blep_saw(ph, inc) - blep_saw(p2, inc)) + 0.40f * (ps < 0.5f ? 1.0f : -1.0f);
+                ps += inc * 0.5f;
+                if (ps >= 1.0f)
+                    ps -= 1.0f;
+            }
             break;
         }
         case AO_SYNC:                           /* a saw hard-synced to the note, swept up by the envelope */
@@ -5060,21 +5455,26 @@ static void render_acid(uint32_t n)
         case AO_BLEEP:
             x = sine(ph) * 1.3f;
             break;
-        case AO_FIFTH:                          /* the saw and its fifth */
-            x = 0.75f * (blep_saw(ph, inc) + 0.75f * blep_saw(ps, inc * 1.49831f));
+        case AO_FIFTH: {                        /* a square and a sine a fifth up, a little octave */
+            x = (0.55f * (ph < 0.5f ? 1.0f : -1.0f) + 0.42f * sine(ps) + 0.16f * sine(ph + ph)) * 0.95f;
             ps += inc * 1.49831f;
             if (ps >= 1.0f)
                 ps -= (float)(int)ps;
             break;
-        case AO_BELL:                           /* FM, the modulator at 3.5 */
-            x = sine_any(ph + (0.15f + 1.8f * acid.env) * sine(ps)) * 1.2f;
-            ps += inc * 3.5f;
-            if (ps >= 1.0f)
-                ps -= (float)(int)ps;
+        }
+        case AO_BELL: {                         /* a tube: the octave and the twelfth, brighter as it starts */
+            float p2 = ph + ph, p3h = ph * 3.0f, br = 0.15f + 0.85f * acid.env;
+            if (p2 >= 1.0f)
+                p2 -= 1.0f;
+            p3h -= (float)(int)p3h;
+            x = (0.62f * sine(ph) + br * 0.40f * sine(p2) + br * 0.28f * sine(p3h)) * 1.2f;
             break;
-        case AO_ORGAN:
-            x = (sine(ph) + 0.5f * sine(2.0f * ph) + 0.3f * sine(3.0f * ph) + 0.2f * sine(4.0f * ph)) * 0.95f;
+        }
+        case AO_ORGAN: {                        /* the twelfth shouts at the start, then an 8' and a 4' */
+            float perc = acid.env * acid.env;
+            x = (0.70f * sine(ph) + 0.42f * sine(ph + ph) + (0.12f + 0.70f * perc) * sine(ph * 3.0f)) * 0.95f;
             break;
+        }
         case AO_LASER:                          /* a sine, up to three octaves above the note as it starts, falling */
             x = sine(ps) * 1.25f;
             ps += inc * lz;
@@ -5087,6 +5487,14 @@ static void render_acid(uint32_t n)
         case AO_SOFT:                           /* a triangle */
             x = (ph < 0.5f ? 4.0f * ph - 1.0f : 3.0f - 4.0f * ph) * 1.2f;
             break;
+        case AO_DRIVE: {                        /* a saw and its octave, folded. Not a hotter copy of Saw */
+            float up = blep_saw(ps, inc * 2.0f);
+            ps += inc * 2.0f;
+            if (ps >= 1.0f)
+                ps -= (float)(int)ps;
+            x = sine_any(1.35f * (0.62f * blep_saw(ph, inc) + 0.48f * up)) * 1.15f;
+            break;
+        }
         default:
             x = blep_saw(ph, inc);
             break;
@@ -5385,7 +5793,7 @@ static void render_noise(uint32_t n)            /* into its own buffer: the pump
             bright = 0.0f;
         if (bright > 1.0f)
             bright = 1.0f;
-        if (nz_color == 6) {                    /* black: the fundamental only. It used to be crackle */
+        if (nz_color == 6) {                    /* vinyl on hush stays the fundamental. Air warps the disc below */
             fifth_g = 0.0f;
             oct_g = 0.0f;
         } else if (nz_color == 2) {
@@ -5421,8 +5829,41 @@ static void render_noise(uint32_t n)            /* into its own buffer: the pump
             octv = fm_sin_turns(nz_hum_ph[3]);
             tg = TG(TR_PAD, j) * g;
             env = nz_gate(shape, (int)((sixteenth - 1u) & 15u), pos);
-            ol = (fm_sin_turns(nz_hum_ph[0]) + fifth * fifth_g + octv * oct_g) * scale * tg * env;
-            orr = (fm_sin_turns(nz_hum_ph[1]) + fifth * fifth_g * 0.75f + octv * oct_g * 0.5f) * scale * tg * env;
+            if (shape == 3 && nz_color == 6) {  /* vinyl: a warped disc. A deep drift, sparse pops */
+                float w0 = nz_white(&nz[0]), w1 = nz_white(&nz[1]);
+                float tri, drift, flutter, wow0, wow1;
+                nz_ph += 0.37f / EN_SR;         /* one warp every few seconds, not a chorus */
+                if (nz_ph >= 1.0f)
+                    nz_ph -= 1.0f;
+                tri = nz_ph < 0.5f ? 4.0f * nz_ph - 1.0f : 3.0f - 4.0f * nz_ph;
+                drift = 0.028f * tri;
+                flutter = 0.006f * sine(nz_ph * 6.0f);
+                wow0 = 1.0f + drift + flutter;
+                wow1 = 1.0f + drift - flutter;
+                nz_hum_ph[0] += inc0 * (wow0 - 1.0f);
+                nz_hum_ph[1] += inc1 * (wow1 - 1.0f);
+                if (nz_hum_ph[0] >= 1.0f)
+                    nz_hum_ph[0] -= 1.0f;
+                if (nz_hum_ph[1] >= 1.0f)
+                    nz_hum_ph[1] -= 1.0f;
+                if (nz_hum_ph[0] < 0.0f)
+                    nz_hum_ph[0] += 1.0f;
+                if (nz_hum_ph[1] < 0.0f)
+                    nz_hum_ph[1] += 1.0f;
+                if (w0 > 0.992f || w0 < -0.992f)
+                    nz[0].crack = w0 > 0.0f ? 0.85f : -0.85f;
+                if (w1 > 0.992f || w1 < -0.992f)
+                    nz[1].crack = w1 > 0.0f ? 0.85f : -0.85f;
+                nz[0].crack *= 0.70f;
+                nz[1].crack *= 0.70f;
+                ol = (0.78f * fm_sin_turns(nz_hum_ph[0]) + 0.05f * w0 + 0.42f * nz[0].crack) *
+                     scale * tg * env * 1.15f;
+                orr = (0.78f * fm_sin_turns(nz_hum_ph[1]) + 0.05f * w1 + 0.42f * nz[1].crack) *
+                      scale * tg * env * 1.15f;
+            } else {
+                ol = (fm_sin_turns(nz_hum_ph[0]) + fifth * fifth_g + octv * oct_g) * scale * tg * env;
+                orr = (fm_sin_turns(nz_hum_ph[1]) + fifth * fifth_g * 0.75f + octv * oct_g * 0.5f) * scale * tg * env;
+            }
             nzl[j] = ol;
             nzr[j] = orr;
             lvl = fm_maxf(lvl, fm_fabsf(ol));
@@ -6050,11 +6491,34 @@ static void render_perc(drum_t *v, uint32_t n, float g)
     v->on = amp > 0.0005f;
 }
 
+static void render_dsmp(iam_smp *s, drum_t *v, uint32_t n, float g, float gl, float gr)
+{
+    uint32_t j;
+    float amp;
+    if (!v->on)
+        return;
+    amp = v->amp;
+    for (j = 0; j < n; j++) {
+        float x = iam_smp_read(s) * amp * g;
+        mixl[j] += x * gl;
+        mixr[j] += x * gr;
+        amp *= v->adec;
+    }
+    v->amp = amp;
+    v->on = !s->done && amp > 0.0008f;
+}
 static void render_drums(uint32_t n)
 {
     uint32_t j;
     const float g = pulse_vol * 1.1f;
     drum_t *v;
+    /* The cajon and the clap are already as loud as the synth kit. The rope, the hat,
+     * the woodblock and the shaker are quiet in the recording. */
+    static const float DUSTY_G[EN_NDRUM] = {0.90f, 7.5f, 0.70f, 6.4f, 2.5f, 3.6f};
+    static const float DUSTY_XG[EN_XDRUM] = {4.2f, 2.2f, 3.0f, 32.0f, 2.5f};
+    if (lane_dusty(L_KICK))
+        render_dsmp(&drum_smp[L_KICK], &drum[L_KICK], n, g * lane_g[L_KICK] * DUSTY_G[L_KICK], 1.0f, 1.0f);
+    else {
     v = &drum[L_KICK];                           /* kick: a sine falling fast to its note, a click, driven */
     if (v->on) {
         float ph = v->ph, inc = v->inc, amp = v->amp, att = v->att, ck = v->idx, gk = g * lane_g[L_KICK] * 1.15f;
@@ -6099,20 +6563,51 @@ static void render_drums(uint32_t n)
         v->ph2 = rp;
         v->on = amp > 0.0005f || r1 - r2 > 0.002f;
     }
-    render_snare(&drum[L_SNARE], n, g * 0.38f * lane_g[L_SNARE], KS);
-    render_clap(&drum[L_CLAP], n, g * 0.42f * lane_g[L_CLAP]);
-    render_hat(&drum[L_HAT], n, g * 0.22f * lane_g[L_HAT], 0.75f, 1.0f);    /* a little right */
-    render_ohat(&drum[L_OHAT], n, g * 0.22f * lane_g[L_OHAT], 1.0f, 0.75f); /* a little left, a little more present */
-    render_perc(&drum[L_PERC], n, g * 0.3f * lane_g[L_PERC]);
-    if (xdrum[0].on)
-        render_snare(&xdrum[0], n, g * 0.32f * xg[0], &KITS[xkit_i[0] < EN_NKIT ? xkit_i[0] : 0]);
-    if (xdrum[1].on)
+    }
+    if (lane_dusty(L_SNARE))
+        render_dsmp(&drum_smp[L_SNARE], &drum[L_SNARE], n, g * lane_g[L_SNARE] * DUSTY_G[L_SNARE], 0.9f, 1.05f);
+    else
+        render_snare(&drum[L_SNARE], n, g * 0.38f * lane_g[L_SNARE], KS);
+    if (lane_dusty(L_CLAP))
+        render_dsmp(&drum_smp[L_CLAP], &drum[L_CLAP], n, g * lane_g[L_CLAP] * DUSTY_G[L_CLAP], 1.0f, 1.0f);
+    else
+        render_clap(&drum[L_CLAP], n, g * 0.42f * lane_g[L_CLAP]);
+    if (lane_dusty(L_HAT))
+        render_dsmp(&drum_smp[L_HAT], &drum[L_HAT], n, g * lane_g[L_HAT] * DUSTY_G[L_HAT], 0.75f, 1.0f);
+    else
+        {
+            unsigned hk = kit_i[2] < 9u ? kit_i[2] : 0;
+            float stretch, nzlift, hg;
+            hat_speak(hk, &stretch, &nzlift, &hg);
+            render_hat(&drum[L_HAT], n, g * 0.22f * hg * lane_g[L_HAT], 0.75f, 1.0f); /* a little right */
+        }
+    if (lane_dusty(L_OHAT))
+        render_dsmp(&drum_smp[L_OHAT], &drum[L_OHAT], n, g * lane_g[L_OHAT] * DUSTY_G[L_OHAT], 1.0f, 0.75f);
+    else
+        render_ohat(&drum[L_OHAT], n, g * 0.22f * lane_g[L_OHAT], 1.0f, 0.75f); /* a little left, a little more present */
+    if (lane_dusty(L_PERC))
+        render_dsmp(&drum_smp[L_PERC], &drum[L_PERC], n, g * lane_g[L_PERC] * DUSTY_G[L_PERC], 1.0f, 1.0f);
+    else
+        render_perc(&drum[L_PERC], n, g * 0.3f * lane_g[L_PERC]);
+    if (xkit_i[0] == EN_KIT_DUSTY)
+        render_dsmp(&xdrum_smp[0], &xdrum[0], n, g * xg[0] * DUSTY_XG[0], 1.0f, 1.0f);
+    else if (xdrum[0].on)
+        render_snare(&xdrum[0], n, g * 0.32f * xg[0], kit_ptr(xkit_i[0]));
+    if (xkit_i[1] == EN_KIT_DUSTY)
+        render_dsmp(&xdrum_smp[1], &xdrum[1], n, g * xg[1] * DUSTY_XG[1], 1.0f, 1.0f);
+    else if (xdrum[1].on)
         render_perc(&xdrum[1], n, g * 0.34f * xg[1]);
-    if (xdrum[2].on)
+    if (xkit_i[2] == EN_KIT_DUSTY)
+        render_dsmp(&xdrum_smp[2], &xdrum[2], n, g * xg[2] * DUSTY_XG[2], 1.0f, 1.0f);
+    else if (xdrum[2].on)
         render_bell(&xdrum[2], n, g * 0.34f * xg[2]);
-    if (xdrum[3].on)
+    if (xkit_i[3] == EN_KIT_DUSTY)
+        render_dsmp(&xdrum_smp[3], &xdrum[3], n, g * xg[3] * DUSTY_XG[3], 0.85f, 1.0f);
+    else if (xdrum[3].on)
         render_shaker(&xdrum[3], n, g * 0.32f * xg[3], 0.85f, 1.0f);
-    if (xdrum[4].on)
+    if (xkit_i[4] == EN_KIT_DUSTY)
+        render_dsmp(&xdrum_smp[4], &xdrum[4], n, g * xg[4] * DUSTY_XG[4], 1.0f, 0.8f);
+    else if (xdrum[4].on)
         render_crash(&xdrum[4], n, g * 0.24f * xg[4], 1.0f, 0.8f);
 }
 
@@ -6203,14 +6698,24 @@ static float lay_osc(int id, lay_t *v, float inc, float env)
         p1 = lay_wrap(p1 + inc * 1.0087f);
         p2 = lay_wrap(p2 + inc * 0.9913f);
         break;
-    case 10: /* Bleep */
-        x = sine(p0) * 1.3f;
+    case 10: { /* Bleep: a narrow pulse and a sine under it. A game blip, not FM */
+        float q = p0 + 0.18f;
+        if (q >= 1.0f)
+            q -= 1.0f;
+        x = 0.55f * (blep_saw(p0, inc) - blep_saw(q, inc)) + 0.40f * sine(p1);
         p0 = lay_wrap(p0 + inc);
+        p1 = lay_wrap(p1 + inc * 0.5f);
         break;
-    default: /* Soft */
-        x = (p0 < 0.5f ? 4.0f * p0 - 1.0f : 3.0f - 4.0f * p0) * 1.2f;
-        p0 = lay_wrap(p0 + inc);
+    }
+    default: { /* Soft: a flute. A sine, a quiet fifth, a slow vibrato */
+        float p5 = p0 * 1.498307f;
+        p5 -= (float)(int)p5;
+        x = (0.78f * sine(p0) + 0.22f * sine(p5)) * (0.92f + 0.08f * sine(p1)) * 1.2f;
+        p2 = lay_wrap(p2 + 4.5f / EN_SR);
+        p0 = lay_wrap(p0 + inc * (1.0f + 0.004f * sine(p2)));
+        p1 = lay_wrap(p1 + 2.2f / EN_SR);
         break;
+    }
     }
     v->ph[0] = p0;
     v->ph[1] = p1;

@@ -99,14 +99,14 @@ was. Hold the key and tap SEQ and the step screen edits that row. A click of FX 
 break the hat is a wind chime and the perc is a singing bowl. OCT+ on Sleep does not add drums or
 open the filters. Knob 1 walks pink, wood and vinyl. Wood is a short knock on the chord,
 an octave under the pink shaker. Knob 2 wobbles it, on the eighth, heard as you turn.
-Knob 4 is the tone, heard at once. On Dust a higher tone opens the grain and shortens the shake. On wood it opens the fifth and shortens the knock. There are sixteen
-sounds each for the pad, the bass and the acid, and nine drum kits. Each engine plays one
+Knob 4 is the tone, heard at once. On Dust a higher tone opens the grain and shortens the shake. On wood it opens the fifth and shortens the knock. There are twenty
+sounds for the pad, seventeen for the bass, twenty for the acid, and ten drum kits. FM piano, vibes, kalimba and harp are sampled pads. The upright is a sampled bass. Flute, tenor sax, muted trumpet and harmonica are sampled acid sounds. Dusty is a sampled kit. A new song draws those with the others. Knob 1 walks the whole list, one step a turn, and SEL with ALGORITHM wraps it. Sleep stays on its own oscillators. Each engine plays one
 sound. Each named key is a further voice on that engine's note. Four of the engines
 and those sounds can be on at once. A fifth turns the oldest of them off, and the new
 one stays. The drums are not part of that count. Each drum has its own kit. A song opens with the clap on when the snare is,
 and the open hat on when the hat is. Auto brings an untouched clap back with the snare, and an
 untouched open hat back with the hat. A key still moves only its own drum. ALGORITHM turns
-the scale. The keys do not.
+the scale. On the sequence screen it mutates the selected track, and the scale waits. The keys do not.
 
 ## The panel
 
@@ -134,7 +134,7 @@ and that middle line is the key's name, with the sound or the kit under it.
 Black keys, low to high: **kick, snare, clap, hat, open hat, perc, rim, tom, cowbell, shaker,
 crash**. Each key is its own kit. A click turns that drum on or off, and only that drum. A white
 key turns only that synth. Hold a drum and knob 1 walks its kit: Hypno, House, Techno, Acid,
-Break, Minimal, Hard, 808, 909. The clap does not walk the snare's kit. The open hat does not
+Break, Minimal, Hard, 808, 909, Dusty. The clap does not walk the snare's kit. The open hat does not
 walk the hat's. The steps stay in one beat until that drum is mutated or its steps are written: the clap and the rim with
 the snare, the open hat and the shaker with the hat, the tom and the cowbell with the perc, the
 crash with the kick. A song starts there, and auto leads an untouched drum back into it. A click of FX
@@ -159,8 +159,12 @@ on that drum takes its steps. A key you have already pressed stays on or off thr
   step starts at step 1. While the drum key is held, OCT− turns that step on or off, and OCT+ moves
   the mark to the next step. You hear it as you edit. SEQ opens every track that is on.
   SELECT moves through those tracks. OCT− and OCT+ shift the selected track by an octave.
-  SEL solos that track, and SEL again brings the rest of the song back. The title shows
-  the stored level, and knob 3 changes it. The white keys are that track's steps, lit where it plays.
+  SEL solos that track, and SEL again brings the rest of the song back. ALGORITHM mutates
+  that track, one step a turn, and the scale waits until the screen closes. Knob 1 rotates
+  its sound, or its kit when the row is a drum. The title names the one it is aiming at, and
+  that sound lands on the next bar. Knob 2 wobbles a synth and sweeps a drum, heard as you
+  turn, and only on that track. Knob 4 is that track's filter, or that drum's tune. Knob 3
+  is its level. The title shows the stored level. The white keys are that track's steps, lit where it plays.
   A press turns the step. SEQ, GLO, or HOME leaves, and a solo leaves with it. HOME leaves the chord where it is.
   A hold on its own still lets go. Let go without SEQ, and OCT− and OCT+ are back and excite again.
   A written pattern stays through a section, a pump, and
@@ -170,7 +174,7 @@ on that drum takes its steps. A key you have already pressed stays on or off thr
   On a dark key, turn knob 3 up and that part switches on from silence: how far you turn is how
   loud it comes in. Turn knob 3 down and the key stays dark. On a drum, knob 3 is that drum's
   level, and turning it up wakes only that drum. Knob 4 tunes only the drum you hold.
-  With no key held, the four knobs are live. Knob 1 is a ring: the song
+  With the sequence screen closed and no key held, the four knobs are live. Knob 1 is a ring: the song
   already playing is multiplied by a tone, so it grows metallic. Further
   up, that tone is faster and the dry song steps back. At zero the ring
   is shut, and the song keeps the room it baked. Knob 2 is a wah: a
@@ -196,7 +200,7 @@ on that drum takes its steps. A key you have already pressed stays on or off thr
   The last tap returns to the song, and so does any other button.
 - A twist of sound or cutoff wakes a sleeping part at its level. Level, turned up, is the quiet way in.
 - Hold SEL with a part key and that part solos until you let go.
-- SELECT is tempo. ALGORITHM is the scale. PRESETS is the vibe dial: dark drum and bass, reggae,
+- SELECT is tempo. ALGORITHM is the scale. While the sequence screen is up, SELECT walks the tracks and ALGORITHM mutates the selected one. PRESETS is the vibe dial: dark drum and bass, reggae,
   study trance, still, then disco, funk, electro, house, hip hop, garage, dubstep, wave and sleep,
   and around again. Turn it the other way to go back. It lands on the next bar, and the way across
   is a cue, a throw, a stutter, or a reverse, a different one each turn. A new song does not land
@@ -212,7 +216,7 @@ The other buttons, while the machine has the screen:
 | SEL | Tips. One tap, one page, twenty-seven of them. Any other button returns to the song. Held with a part key, that part solos. While the sequence screen is up, SEL solos the selected track, and SEL again brings the song back. |
 | SAVE | Break. Two sounding parts step out and two quiet parts step in. The way in is a cue, a throw, a stutter, or a reverse. |
 | EDIT | Excite. The filters open. |
-| SEQ | Every track that is on. SELECT moves through them. OCT− and OCT+ shift the selected track by an octave. SEL solos that track. Knob 3 is its level, and the title shows the stored percent. White keys show that track's steps and turn them. SEQ, GLO, or HOME leaves, and a solo leaves with it. The form still drops a part for one bar on its own. |
+| SEQ | Every track that is on. SELECT moves through them. OCT− and OCT+ shift the selected track by an octave. SEL solos that track. ALGORITHM mutates that track, and the scale waits. Knob 1 is its sound or its kit. Knob 2 wobbles a synth and sweeps a drum. Knob 4 is that track's filter or tune. Knob 3 is its level. The title shows the level and the sound. White keys show that track's steps and turn them. SEQ, GLO, or HOME leaves, and a solo leaves with it. The form still drops a part for one bar on its own. |
 | ARP | Back. Up to four moves can be undone, and the music comes back with them. |
 | ENV | A new song, on the next bar. The crossing is a cue loop, a delay throw, a stutter, or a reverse, and each press picks one. |
 | LFO | Lets Find Out. The last beat is thrown across the song at once, darkened and tossed from side to side, and the song stays loud. Sleep adds a blur instead of a beat. On the next bar this song moves, to a new chord, a new part brought up, a busier beat, or the air brought forward. Sleep steps into the next room. Back returns the song. |

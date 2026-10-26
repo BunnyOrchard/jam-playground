@@ -2,7 +2,7 @@
 
 Infinite Automatic Music Machine. Unofficial firmware for the M-VAVE FM-1.
 
-Power on and it is already playing. A new boot is a new song. Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them.
+Power on and it is already playing. A new boot is a new song. Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. Seventy sounds are in the machine. Knob 1 walks every one of them, including the sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit.
 
 The screen and the USB name say IAMM-1. How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
 
