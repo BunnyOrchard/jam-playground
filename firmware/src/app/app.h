@@ -27,6 +27,7 @@ typedef struct {
 } project_t;
 
 extern project_t proj;
+extern uint32_t project_seed;            /* 0..31: the HYP-1 panel (the tests). 32 and up: IAM-1, a new song */
 
 /* Power-on: each piece as it was saved (Global, SAVE), or its recipe if never saved; a piece at
  * random, nudged a little if it was never saved. Nothing changes the flash but SAVE (and the theme,

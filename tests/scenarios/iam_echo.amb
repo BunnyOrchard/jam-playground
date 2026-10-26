@@ -1,0 +1,33 @@
+# Knob 2, with nothing held, is a wah. It does not write the song's echo
+# or its plate, and it does not move a drum pattern or the arrangement.
+seed 42
+reboot
+expect par67 40
+expect par69 48
+expect lane0 256
+expect lane1 256
+expect lane2 0
+expect lane3 21845
+expect lane4 4369
+expect lane5 2570
+expect iammask 65
+expect iamsec 0
+wait 40
+spin K2 6
+wait 400
+expect par67 40
+expect par69 48
+expect lane0 256
+expect lane1 256
+expect lane2 0
+expect lane3 21845
+expect lane4 4369
+expect lane5 2570
+expect iammask 65
+expect iamsec 0
+spin K2 -6
+wait 80
+expect par67 40
+expect par69 48
+expect iammask 65
+expect iamsec 0

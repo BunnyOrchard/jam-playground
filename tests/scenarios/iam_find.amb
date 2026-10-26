@@ -1,0 +1,61 @@
+# Lets Find Out. The effect starts on the press. The place lands on the next bar.
+# Seed 42, reboot at 0 ms: the private roll's first place is the air, vinyl,
+# and the kick was the silent drum, so the next press brings the kick in.
+# Back returns the intro. Sleep, dialled, steps from the groove into the chord room.
+seed 42
+reboot
+wait 200
+expect iammask 65
+expect par10 1
+expect par20 2
+expect par6 35
+expect par4 0
+peakreset
+tap LFO
+expect litbtn 1032
+wait 1600
+expect iammask 0x49
+expect par20 6
+expect par4 52
+expect par10 1
+expect par6 35
+expect par92 3
+expect iamsec 0
+expect litbtn 1024
+expect peak_db_max -0.5
+tap ARP
+wait 1600
+expect iammask 65
+expect par10 1
+expect par20 2
+expect par21 14
+expect par4 0
+expect par6 35
+expect iamsec 0
+tap LFO
+wait 1600
+expect iammask 0x51
+expect par20 2
+expect par10 1
+expect par4 0
+expect iamsec 0
+tap ARP
+wait 1600
+expect iammask 65
+
+# Sleep is a room, not a beat loop. The groove's next room is the chord.
+seed 42
+reboot
+wait 200
+spin PRESET 12
+wait 1600
+expect iamstyle 12
+expect iamsec 1
+expect iammask 0x4E
+tap LFO
+expect litbtn 1032
+wait 5200
+expect iamstyle 12
+expect iamsec 2
+expect iammask 0x4B
+expect litbtn 1040

@@ -1,0 +1,30 @@
+# Glass is its own voice. The pad stays Voices, at its stored level.
+# The 32% trim is inside the voice, so the pad parameter is not pulled down.
+seed 42
+reboot
+wait 80
+expect par10 1
+expect par0 62
+expect iamlvl0 62
+expect iamlay 0
+tapkey w4
+wait 1600
+expect iamlay 1
+expect par10 1
+expect par0 62
+expect iamlvl0 62
+tapkey w4
+wait 1600
+expect iamlay 0
+expect par10 1
+expect par0 62
+# The knob still moves the stored level. The toast names the key. The pad follows that level.
+key w4 down
+wait 80
+spin K3 1
+wait 30
+expect iamlvl0 66
+expect par0 66
+expect toast GLASS 66%
+key w4 up
+wait 40

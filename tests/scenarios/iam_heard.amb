@@ -1,0 +1,44 @@
+# An intro change must not publish every lit part at zero.
+# Seed 42's intro mutes the acid. The pad and the hat are the song.
+# Leave the acid and Pluck, both on that muted part, and the open hat off
+# so it cannot tick through the hole. Break, then back into that intro.
+# The two keys are still on. The acid has to keep playing.
+seed 42
+reboot
+wait 80
+expect iamsec 0
+expect iammask 65
+expect iamlay 0
+expect iamdon 16
+key w0 down
+wait 40
+key w0 up
+key b3 down
+wait 40
+key b3 up
+key b4 down
+wait 40
+key b4 up
+key w2 down
+wait 40
+key w2 up
+key w12 down
+wait 40
+key w12 up
+wait 1600
+expect iamsec 0
+expect iammask 4
+expect iamlay 256
+expect iamdon 0
+expect par0 0
+expect par1 48
+tap SAVE
+wait 1600
+expect iamsec 3
+tap ARP
+wait 1600
+expect iamsec 0
+expect iammask 4
+expect iamlay 256
+expect par0 0
+expect par1 48

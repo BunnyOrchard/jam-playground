@@ -1,0 +1,36 @@
+# GLO white keys open a tenth under the voice. Tempo knob 3 is that level.
+# Motion stays. On another page, knob 3 is that page again.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect view 0
+expect iamkvol 90
+expect par7 40
+spin K3 -2
+wait 30
+expect iamkvol 88
+expect toast KEYS
+expect toast2 88
+expect par7 40
+spin K3 -100
+wait 30
+expect iamkvol 0
+expect toast2 OFF
+expect par7 40
+spin K3 200
+wait 30
+expect iamkvol 100
+expect toast2 FULL
+tap ENV
+wait 40
+expect view 1
+spin K3 1
+wait 30
+expect iamkvol 100
+expect par9 34
+turn SELECT -1
+wait 40
+expect view 0
+expect iamkvol 100

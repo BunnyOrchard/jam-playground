@@ -31,6 +31,9 @@ int32_t plat_enc(int role);            /* detents since the last call, + = clock
 uint32_t plat_master(void);            /* MASTER pot, 0..4096 gain Q12 */
 uint32_t plat_seed(void);              /* at power-on: a seed, different each time (0 on the host: no chance) */
 void plat_leds(uint32_t buttons, uint32_t keys);   /* lit: bit B_*, bit key */
+void plat_key_flash(uint32_t keys);    /* call just before plat_leds. These keys light full. Keys in that
+                                        * mask stay dim between hits. With no call, a key in the mask
+                                        * lights full, as the editor, GLO and the runner always did */
 void plat_glow(int on);                /* the unlit buttons glow dimly, readable in the dark (call before plat_leds) */
 void plat_play_red(int red);           /* PLAY lights green; red (its other LED) while recording (before plat_leds) */
 

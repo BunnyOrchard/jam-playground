@@ -231,7 +231,7 @@ what it was playing: its notes, envelope, LFO and filter carry over to the new s
 ![The Kit page](img/hyp-screen-kit.png)
 
 **The kit:** press **SEQ** three times for the Kit page. Each knob picks one drum's sound: the kick,
-the snare (and the clap with it), the hats (closed and open) and the perc, each from the same eight:
+the snare (and the clap with it), the hats (closed and open) and the perc, each from the same nine:
 
 | Kit | The kick | The rest |
 |---|---|---|
@@ -243,6 +243,7 @@ the snare (and the clap with it), the hats (closed and open) and the perc, each 
 | Minimal | Short and clicky | A rim for the snare, tight hats, a woodblock |
 | Hard | Industrial: distorted, a long rumble | A noisy snare, a metal clank; the Hard kick crushes the drums a little |
 | 808 | A long boom | A snappy snare, a wide clap, a cowbell |
+| 909 | Punchy and short | A noisy snare, a tight clap, bright hats, a low tom |
 
 On any of the drums' pages, **SEL** + **ALGORITHM** turns all four to the next kit at once. Mix them
 freely: a Techno kick under House hats is fine.

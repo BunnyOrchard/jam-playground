@@ -1,0 +1,90 @@
+# Hold a drum and the sixteen steps are yours. OCT- turns the marked step on or off.
+# OCT+ moves to the next step. With no drum held, OCT- is still back and OCT+ is still excite.
+# The bass is not a step row, so OCT- while it is held is still back.
+seed 42
+reboot
+wait 200
+expect lane0 256
+expect lane1 256
+expect lane2 0
+expect lane3 21845
+expect lane4 4369
+expect lane5 2570
+expect iamsec 0
+expect iammask 65
+expect iamdon 16
+expect litkeys 1281
+# The hat is held. OCT+ moves the mark off step 1. It does not excite.
+key b3 down
+wait 40
+tap OCT+
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect lane3 21845
+# Step 2 was a rest. OCT- turns it on. The open hat keeps its own steps.
+tap OCT-
+expect lane3 21847
+expect lane4 4369
+expect iamsec 0
+expect lane0 256
+key b3 up
+wait 40
+expect iammask 65
+expect litkeys 1281
+# The key again. The mark is back on step 1, which was on, so it goes off.
+key b3 down
+wait 40
+tap OCT-
+expect lane3 21846
+key b3 up
+wait 40
+expect iammask 65
+# Excite writes patterns again. The steps that were written stay.
+tap EDIT
+wait 1600
+expect iamsec 2
+expect lane3 21846
+# Nothing held: OCT- is back. The lift returns. The steps stay.
+tap OCT-
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect lane3 21846
+# Back undoes the last writing, then the one before it, and the hat is the preset again.
+tap OCT-
+wait 1600
+expect lane3 21847
+tap OCT-
+wait 1600
+expect lane3 21845
+expect lane4 4369
+expect lane1 256
+expect lane2 0
+# The clap is written on its own. The snare stays, and letting go does not turn the clap on.
+key b2 down
+wait 40
+tap OCT-
+expect lane2 1
+expect lane1 256
+key b2 up
+wait 40
+expect iamdon 16
+expect iammask 65
+expect litkeys 1281
+# Bass has no steps. OCT- while it is held undoes the clap.
+key w1 down
+wait 40
+tap OCT-
+wait 800
+key w1 up
+wait 1600
+expect lane2 0
+expect lane1 256
+expect iammask 65
+expect iamsec 0
+# And with nothing held, OCT+ is excite again.
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0x71

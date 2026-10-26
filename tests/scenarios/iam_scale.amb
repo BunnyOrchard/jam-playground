@@ -1,0 +1,36 @@
+# The drone an octave down used to fold the top half of GLO back onto the bottom.
+# One shared lift keeps key 8 above key 1, and the last key above that.
+# Seed 42 is Ab dorian. LFO is the drone. OCT- there is its octave.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+tap LFO
+wait 40
+expect view 6
+expect par23 0
+tap OCT-
+wait 40
+expect par23 -1
+expect par71 8
+expect par72 1
+key w0 down
+wait 40
+expect held 1
+expect handnote 32
+key w0 up
+wait 40
+key w7 down
+wait 40
+expect held 1
+expect handnote 44
+key w7 up
+wait 40
+key w15 down
+wait 40
+expect held 1
+expect handnote 58
+key w15 up
+wait 40
+expect held 0

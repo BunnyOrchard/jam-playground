@@ -1,0 +1,25 @@
+# The PRESETS dial crosses like ENV: cue, throw, stutter, or reverse.
+# A boot at simulated time 0 rolls stutter, then reverse. The vibe underneath
+# is the one the dial landed on. Back returns that song and leaves the roll.
+seed 42
+reboot
+wait 40
+expect iamhop 255
+expect iamstyle 0
+expect iamsec 0
+turn PRESET 1
+wait 1800
+expect iamstyle 1
+expect iamsec 1
+expect playing 1
+expect iamhop 2
+turn PRESET 1
+wait 4000
+expect iamstyle 2
+expect iamsec 1
+expect iamhop 3
+tap ARP
+wait 4000
+expect iamstyle 1
+expect iamsec 1
+expect iamhop 3

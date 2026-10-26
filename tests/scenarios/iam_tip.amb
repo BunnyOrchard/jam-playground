@@ -1,0 +1,88 @@
+# Tips stay off until SEL. A tap walks the twenty-seven pages, then the song. A solo hold does not.
+seed 42
+reboot
+wait 200
+expect litbtn 1024
+expect iamauto 1
+tap SEL
+wait 40
+expect litbtn 1026
+shot tip.png
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+tap SEL
+wait 40
+expect litbtn 1024
+expect iamauto 1
+tap SEL
+wait 40
+expect litbtn 1026
+tap PLAY
+wait 40
+expect iamauto 0
+expect playing 1
+expect litbtn 0
+# Hold SEL and play a part: solo, and the song stays up.
+tap PLAY
+wait 40
+expect iamauto 1
+press SEL
+wait 30
+key w0 down
+wait 40
+release SEL
+wait 40
+key w0 up
+wait 40
+expect litbtn 1024
+expect iammask 65

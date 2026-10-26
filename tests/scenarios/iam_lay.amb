@@ -1,0 +1,53 @@
+# Named keys add a voice on the next bar. They do not replace the engine.
+# Two clicks in one bar cancel. Four synth keys can be on. A fifth turns the oldest off.
+seed 42
+reboot
+wait 80
+expect par10 1
+expect par0 62
+expect iamlay 0
+expect litkeys 1281
+tapkey w4
+wait 40
+expect toast BAR: GLASS
+tapkey w4
+wait 40
+expect toast STAYS
+wait 1600
+expect iamlay 0
+expect par10 1
+expect par0 62
+expect litkeys 1281
+tapkey w4
+wait 1600
+expect iamlay 1
+expect par10 1
+expect par0 62
+expect iamlvl0 62
+expect litkeys 1409
+tapkey w4
+wait 1600
+expect iamlay 0
+expect litkeys 1281
+# Twelve named keys, in order. Four stay: Pluck, Trance, Bleep, Soft.
+# The pad was the oldest, so it is off. The hat stays.
+tapkey w4
+tapkey w5
+tapkey w6
+tapkey w7
+tapkey w8
+tapkey w9
+tapkey w10
+tapkey w11
+tapkey w12
+tapkey w13
+tapkey w14
+tapkey w15
+wait 2800
+expect iamlay 3840
+expect par10 1
+expect iammask 64
+peakreset
+wait 2000
+expect peak_db_max -0.5
+expect peak_db_min -36

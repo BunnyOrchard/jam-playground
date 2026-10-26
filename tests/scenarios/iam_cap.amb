@@ -1,0 +1,88 @@
+# Four synth keys. The fifth turns the oldest off, on the same bar.
+# Drums are not in the count. Full voices: a key that stays on is not thinned.
+# Seed 42's intro is pad and hat. Pad is the oldest synth key.
+seed 42
+reboot
+wait 80
+expect iammask 65
+expect iamlay 0
+expect iamdon 16
+# Kick and rim, then bass, acid, the fourth, Glass, Dark and Dub, inside this bar.
+# Seven synth keys. Pad, bass and acid are the oldest, so they turn off.
+# Air, Glass, Dark and Dub stay.
+key b0 down
+wait 40
+key b0 up
+key b6 down
+wait 40
+key b6 up
+key w1 down
+wait 40
+key w1 up
+key w2 down
+wait 40
+key w2 up
+key w3 down
+wait 40
+key w3 up
+key w4 down
+wait 40
+key w4 up
+key w5 down
+wait 40
+key w5 up
+key w6 down
+wait 40
+key w6 up
+wait 1500
+expect iammask 88
+expect iamlay 7
+expect iamdon 80
+expect iamsec 0
+# Stabs comes on. Air is now the oldest, so Air turns off. Stabs stays.
+key w7 down
+wait 40
+key w7 up
+wait 1500
+expect iammask 80
+expect iamlay 15
+expect iamdon 80
+# Dub turns off and bass comes on, in one bar. Four keys, so nothing is stolen.
+key w6 down
+wait 40
+key w6 up
+key w1 down
+wait 40
+key w1 up
+wait 1500
+expect iammask 82
+expect iamlay 11
+expect iamdon 80
+# A drum turning off does not free a synth key.
+key b0 down
+wait 40
+key b0 up
+wait 1500
+expect iammask 66
+expect iamlay 11
+expect iamdon 80
+# Soft comes on. Glass is the oldest still sounding, so Glass turns off. Soft stays.
+key w15 down
+wait 40
+key w15 up
+wait 1500
+expect iammask 66
+expect iamlay 2058
+expect iamdon 80
+# The kick coming back does not steal a synth key, and does not turn one on.
+key b0 down
+wait 40
+key b0 up
+wait 1500
+expect iammask 82
+expect iamlay 2058
+expect iamdon 80
+expect iamsec 1
+peakreset
+wait 1500
+expect peak_db_max -0.5

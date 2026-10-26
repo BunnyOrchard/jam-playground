@@ -1,0 +1,83 @@
+# GLO REC records the white keys and loops the last four bars.
+# It does not freeze, and it does not stack a second pass.
+# A black key is not recorded. Leaving GLO keeps a finished loop.
+# REC on the song screen stops it, and does not freeze.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect iam 0
+expect frozen 0
+expect looprec 0
+expect loopplay 0
+tap REC
+wait 40
+expect frozen 0
+expect looprec 1
+expect loopplay 0
+key b0 down
+wait 60
+key b0 up
+wait 40
+expect loopn 0
+key w0 down
+wait 700
+key w0 up
+wait 40
+expect held 0
+expect loopn 4
+expect loopat 56
+tap REC
+wait 50
+expect looprec 0
+expect loopplay 1
+expect frozen 0
+expect looplen 16
+wait 800
+expect loopsound >0
+expect held >0
+tap REC
+wait 80
+expect looprec 0
+expect loopplay 0
+expect loopsound 0
+expect held 0
+tap REC
+wait 20
+key w0 down
+wait 200
+key w0 up
+wait 6400
+key w4 down
+wait 250
+key w4 up
+wait 40
+tap REC
+wait 50
+expect looprec 0
+expect loopplay 1
+expect looplen 64
+expect loopn 4
+expect loopat 51
+tap GLO
+wait 80
+expect iam 1
+expect looprec 0
+expect loopplay 1
+expect looplen 64
+expect loopn 4
+expect loopat 51
+wait 5000
+expect loopsound >0
+expect loopplay 1
+expect loopn 4
+tap REC
+wait 80
+expect looprec 0
+expect loopplay 0
+expect loopn 0
+expect frozen 0
+expect toast LOOP
+expect toast2 OFF
+expect held 0

@@ -1,0 +1,31 @@
+# GLO's seventh black key holds a flanger. It drops on release, and it does not
+# edit the song, the echo, or the scale. The crusher stays off this key.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect iam 0
+expect fxmask 0
+expect pool 0x6AD
+key b6 down
+wait 40
+expect fxmask 268435456
+expect litkeys 32768
+expect pool 0x6AD
+expect iammask 65
+expect par67 40
+expect par92 3
+expect iamstyle 0
+expect iamsec 0
+peakreset
+wait 700
+expect peak_db_max -0.5
+key b6 up
+wait 80
+expect fxmask 0
+expect litkeys 0
+expect iammask 65
+expect par67 40
+expect iamstyle 0
+expect iamsec 0

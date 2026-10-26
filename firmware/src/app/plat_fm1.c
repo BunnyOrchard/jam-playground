@@ -58,7 +58,10 @@ static void led_pos_init(void)
 /* Glow: every button not lit is lit dim, on one scan frame in GLOW_DIV (the HAL's fm1_led_dim) */
 #define GLOW_DIV 4u
 static uint8_t glow_on = 1;
+static uint8_t key_dim;                          /* plat_key_flash: the song's keys are dim unless they flash */
+static uint32_t key_flash;
 void plat_glow(int on) { glow_on = (uint8_t)(on != 0); }
+void plat_key_flash(uint32_t keys) { key_flash = keys; key_dim = 1; }
 /* PLAY has two LEDs: its red at the button's own position, a green at the keyless matrix position
  * column 8, row PA5 (found on the device). Green, unless recording. */
 static uint8_t play_red;
@@ -66,19 +69,23 @@ void plat_play_red(int red) { play_red = (uint8_t)(red != 0); }
 void plat_leds(uint32_t buttons, uint32_t keys)
 {
     uint8_t nl[FM1_NCOL] = {0}, dl[FM1_NCOL] = {0};
-    uint32_t i, c;
+    uint32_t i, c, flash = key_flash;
+    int dim = key_dim;
+    key_flash = 0;                               /* one frame: the song sets it again, the editor does not */
+    key_dim = 0;
     for (i = 0; i < NB + NKEYS; i++) {
         uint32_t id = i < NB ? panel.btn[i] : 14u + (i - NB);
         int on = i < NB ? (buttons >> i) & 1u : (keys >> (i - NB)) & 1u;
+        int hot = i >= NB && ((flash >> (i - NB)) & 1u);
         uint8_t q = led_pos[id];
         if (i == B_PLAY && !play_red)            /* PLAY's green LED instead (keyless position col 8, row PA5) */
             q = (uint8_t)((8u << 3) | 1u);
         if (q == 0xFF)
             continue;
-        if (on)
-            nl[q >> 3] |= (uint8_t)(1u << (q & 7u));
-        else if (i < NB && glow_on)
-            dl[q >> 3] |= (uint8_t)(1u << (q & 7u));
+        if (hot || (on && !(dim && i >= NB)))
+            nl[q >> 3] |= (uint8_t)(1u << (q & 7u)); /* a sounding key, a lit button, or an editor key */
+        else if (glow_on && (on || i < NB))
+            dl[q >> 3] |= (uint8_t)(1u << (q & 7u)); /* a part that is on, between its notes; every other button */
     }
     for (c = 0; c < FM1_NCOL; c++) {
         fm1_led[c] = nl[c];

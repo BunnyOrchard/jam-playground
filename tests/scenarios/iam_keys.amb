@@ -1,0 +1,127 @@
+# GLO white keys follow the track. On the song the pad leads, so a key is a chord.
+# LFO picks the drone. A drone sitting out is raised while the key is down, then put back.
+# PRESETS is a piece. Piece 02's drone is the loud voice, so the key is one note on it.
+# ENV is the pad again. SELECT reaches the acid, and knob 2 there is its sound.
+# ARP toggles the arpeggiator. It does not change the page.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect iam 0
+expect view 0
+expect piece 2
+expect par2 0
+key 2 down
+wait 40
+expect held 4
+expect padrel 0x2D
+expect litkeys 4
+expect par2 0
+key 2 up
+wait 40
+expect held 0
+expect litkeys 0
+tap LFO
+wait 40
+expect view 6
+key 2 down
+wait 40
+expect held 1
+expect par2 52
+key 2 up
+wait 40
+expect held 0
+expect par2 0
+turn SELECT -6
+wait 40
+expect view 0
+turn PRESET -1
+wait 40
+expect piece 1
+expect par2 80
+expect par0 30
+expect par1 45
+expect tempo 124
+key 2 down
+wait 40
+expect held 1
+expect par2 80
+key 2 up
+wait 40
+expect held 0
+expect par2 80
+tap ENV
+wait 40
+expect view 1
+key 2 down
+wait 40
+expect held 4
+expect par0 30
+key 2 up
+wait 40
+expect held 0
+turn SELECT 8
+wait 40
+expect view 9
+key 2 down
+wait 40
+expect held 1
+expect par1 45
+key 2 up
+wait 40
+expect held 0
+expect par40 0
+spin K2 1
+wait 40
+expect par40 1
+key 2 down
+wait 40
+expect held 1
+key 2 up
+wait 40
+expect held 0
+expect par40 1
+# Two acid keys, one note, through several sixteenths. Letting go leaves nothing held.
+tap ARP
+wait 40
+expect view 9
+expect iamarp 1
+expect toast ARP
+expect toast2 ON
+key 2 down
+wait 40
+expect held 1
+key 4 down
+wait 40
+expect held 1
+wait 400
+expect held 1
+key 4 up
+key 2 up
+wait 40
+expect held 0
+tap ARP
+wait 40
+expect iamarp 0
+expect toast ARP
+expect toast2 OFF
+expect view 9
+# A pad chord is four notes. With ARP on it is one, and off again it is the chord.
+turn SELECT -8
+wait 40
+expect view 1
+tap ARP
+wait 40
+expect iamarp 1
+expect view 1
+key 2 down
+wait 40
+expect held 1
+tap ARP
+wait 40
+expect iamarp 0
+expect held 4
+key 2 up
+wait 40
+expect held 0

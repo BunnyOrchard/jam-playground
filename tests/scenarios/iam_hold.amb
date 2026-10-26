@@ -1,0 +1,236 @@
+# Hold a key: its name, and the sound or kit knob 1 is aiming at.
+# The name moves before the bar. Knob 1 does not cover it with a toast.
+seed 42
+reboot
+wait 1500
+expect toaston 0
+key w0 down
+wait 80
+expect hold PAD
+expect hold2 VOICES
+expect holdlvl 62
+spin K1 1
+wait 30
+expect hold PAD
+expect hold2 STRINGS
+expect toaston 0
+expect par10 1
+spin K1 -1
+wait 30
+expect hold2 VOICES
+key w0 up
+wait 40
+expect hold
+expect hold2
+
+# Knob 2 wobbles the pad, heard now. It does not step the row, the pattern, or the detune.
+key w0 down
+wait 80
+spin K2 1
+wait 30
+expect toast WOBBLE 16
+expect toaston 1
+expect par11 30
+expect par10 1
+expect iamgate0 65535
+expect iammask 65
+expect hold PAD
+spin K2 -1
+wait 30
+expect toast WOBBLE OFF
+expect par11 30
+key w0 up
+wait 1400
+expect toaston 0
+
+# The kick's kit. Seed 42 opens on House. One step aims at Techno.
+key b0 down
+wait 80
+expect hold KICK
+expect hold2 HOUSE
+spin K1 1
+wait 30
+expect hold KICK
+expect hold2 TECHNO
+expect toaston 0
+spin K1 -1
+wait 30
+expect hold2 HOUSE
+key b0 up
+wait 40
+
+# Glass is the key's name. Knob 1 still walks the pad's sound.
+key w4 down
+wait 80
+expect hold GLASS
+expect hold2 VOICES
+expect holdlvl 62
+spin K1 3
+wait 30
+expect hold GLASS
+expect hold2 ORGAN
+expect toaston 0
+spin K1 -3
+wait 30
+expect hold2 VOICES
+key w4 up
+wait 40
+
+# The fourth key. Knob 1 is the noise colour. Seed 42 is wood, then vinyl.
+key w3 down
+wait 80
+expect hold DUST
+expect hold2 WOOD
+spin K1 1
+wait 30
+expect hold2 VINYL
+expect toaston 0
+spin K1 -1
+wait 30
+expect hold2 WOOD
+key w3 up
+wait 40
+
+# House. Holding Pluck names the acid that is in the song. Letting go adds Pluck beside it.
+spin PRESET 7
+wait 4000
+expect iamstyle 7
+expect iammask 0x16
+key w12 down
+wait 80
+expect hold PLUCK
+expect hold2 ORGAN
+key w12 up
+wait 2500
+expect iamlay 264
+expect par40 12
+expect par1 48
+expect iammask 0x16
+
+# The boot song again. Shape and a held FX click, after the house song has had its own clock.
+seed 42
+reboot
+wait 1500
+expect toaston 0
+expect iammask 65
+expect par11 30
+expect par22 22
+expect par25 53
+expect par51 50
+expect lane0 256
+expect iamgate0 65535
+
+# Bass is dark. Knob 2 is its wobble, and the turn does not wake it.
+key w1 down
+wait 80
+spin K2 1
+wait 30
+expect toast WOBBLE 16
+expect par25 53
+expect iammask 65
+spin K2 -1
+wait 30
+expect toast WOBBLE OFF
+expect par25 53
+key w1 up
+wait 1500
+expect iammask 65
+
+# The fourth key. Knob 2 is the wobble. Tone and the duck stay where the song left them.
+key w3 down
+wait 80
+spin K2 1
+wait 30
+expect toast WOBBLE 16
+expect par22 22
+expect par21 14
+spin K2 -1
+wait 30
+expect toast WOBBLE OFF
+expect par22 22
+key w3 up
+wait 40
+
+# The kick. Knob 2 sweeps the pitch. The pattern and the decay stay.
+key b0 down
+wait 80
+spin K2 1
+wait 30
+expect toast SWEEP 16
+expect par51 50
+expect lane0 256
+spin K2 -1
+wait 30
+expect toast SWEEP OFF
+expect par51 50
+expect lane0 256
+key b0 up
+wait 40
+
+# FX on the pad mutates the pad. The other rows stay, and letting go is not also a tap.
+key w0 down
+wait 80
+tap FX
+wait 40
+expect toast PAD
+expect toast2 MUTATE
+expect iamgate0 17476
+expect iamgate1 65535
+expect iamgate2 65535
+expect iamgate3 43690
+expect par10 2
+expect iammask 65
+expect tempo 173
+key w0 up
+wait 1500
+expect iammask 65
+expect iamlay 0
+
+# FX on the kick steps that pattern. The groove has already stepped it once.
+# The kick stays off, and the pad row stays.
+key b0 down
+wait 80
+tap FX
+wait 40
+expect toast KICK
+expect toast2 MUTATE
+expect lane0 65
+expect iamgate0 17476
+expect par51 50
+expect iammask 65
+key b0 up
+wait 1500
+expect iammask 65
+
+# A named key mutates the engine it plays, and the toast says the key.
+key w4 down
+wait 80
+tap FX
+wait 40
+expect toast GLASS
+expect toast2 MUTATE
+expect iamgate0 43690
+expect iamgate1 65535
+expect iammask 65
+key w4 up
+wait 1500
+expect iammask 65
+expect iamlay 0
+
+# The stored level stays on the name row. Knob 3 moves it, and it is still there
+# once the toast has gone.
+key w0 down
+wait 80
+expect hold PAD
+expect holdlvl 62
+spin K3 1
+wait 30
+expect toast PAD 66%
+expect holdlvl 66
+wait 1400
+expect toaston 0
+expect hold PAD
+expect holdlvl 66
+expect iamlvl0 66
+key w0 up
+wait 40

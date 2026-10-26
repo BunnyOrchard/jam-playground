@@ -1,0 +1,18 @@
+# Knob 3, nothing held, is a phaser. It stays on the song and does not clip.
+seed 42
+reboot
+wait 40
+spin K3 6
+wait 30
+expect toast PHASER 48
+peakreset
+wait 600
+expect peak_db_max -0.5
+expect peak_db_min -36
+spin K3 7
+wait 30
+expect toast PHASER FULL
+peakreset
+wait 600
+expect peak_db_max -0.5
+expect peak_db_min -36

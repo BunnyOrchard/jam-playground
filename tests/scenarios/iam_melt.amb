@@ -1,0 +1,11 @@
+# ENV queues a new song. It lands on the bar, and the screen is that song.
+seed 42
+reboot
+wait 300
+tap ENV
+wait 1600
+shot song.png
+expect iam 1
+expect iamauto 1
+expect iamsec 0
+expect playing 1

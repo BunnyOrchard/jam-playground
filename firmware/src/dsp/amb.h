@@ -3,7 +3,7 @@
  * modular: generative voices you shape over time, over drums you sequence. The voices draw on one pool
  * of notes (a scale) and one chord that drifts slowly through it:
  *
- *   PAD     four breathing voices (Rhodes or Voices), each breath its own envelope (attack, hold, release,
+ *   PAD     four breathing voices, each breath its own envelope (attack, hold, release,
  *           rest) and the chord forming and dissolving through them; an LFO on its filter, level, pan or pitch.
  *   NOISE   a bed of noise in eight colours (white to black), filtered, pumping with the kick.
  *   DRONE   three detuned saws and a sub-octave through a 24 dB low-pass, on the chord's root; an envelope
@@ -27,6 +27,8 @@
 #define EN_SR 44100.0f
 #define EN_NDRUM 6                     /* the drum lanes: kick, snare, clap, closed hat, open hat, perc */
 #define EN_NLANE EN_NDRUM
+#define EN_XDRUM 5                     /* rim, tom, cowbell, shaker, crash. Not parameters: the lane
+                                        * block would shift every par above the drums */
 #define EN_NPAT 6                      /* drum patterns */
 #define EN_NSTEP 16
 #define EN_NPAD 4                      /* pad voices */
@@ -34,7 +36,8 @@
 #define EN_NSTYLE 5                    /* the old styles (before 1.0.27): a stored piece's is turned into sounds
                                         * and a kit (en_style_sounds); they were kits 0..4 */
 #define EN_NSOUND 16                   /* the sounds each of pad, drone and acid can play */
-#define EN_NKIT 8                      /* the sounds each drum (kick, snare + clap, hats, perc) can play */
+#define EN_NKIT 9                      /* kits a drum can play. Kick, snare, hat and perc keep a parameter.
+                                        * Clap, the open hat, and the five extra drums pick a kit beside those */
 enum { EN_V_PAD, EN_V_DRONE, EN_V_ACID };   /* the voices the keys can play (en_note) */
 
 /* modes: pools relative to the root (bit i: root + i semitones) */
@@ -77,8 +80,8 @@ enum {
                                                            * the drone's is P_BASSOCT, the acid's P_AC_OCT) */
     P_DR_INST,                                            /* the drone's sound (the pad's: P_PADTONE, the acid's:
                                                            * P_AC_WAVE) */
-    P_KIT_KICK, P_KIT_SNARE, P_KIT_HAT, P_KIT_PERC,       /* the kit: each drum's sound (snare: and the clap;
-                                                           * hats: closed and open) */
+    P_KIT_KICK, P_KIT_SNARE, P_KIT_HAT, P_KIT_PERC,       /* the kit for kick, snare, closed hat, perc.
+                                                           * Clap and the open hat pick their own (en_lane_kit) */
     P_PAD_MAN, P_DR_MAN, P_AC_MAN,                        /* a voice off the algorithm (SEL + ENV on its page):
                                                            * silent but for the keys (en_note) */
     P_CHORD, P_VOICING,                                   /* the pad's chords: their kind (EN_CH_*), close or
@@ -105,13 +108,17 @@ void en_set(int param, int value);
 void en_pool(uint32_t pool);                   /* the scale, relative to the root (bit 0 always set) */
 void en_play(int on);                          /* play / stop (the tails ring on) */
 void en_next(void);                            /* the next chord: on the next bar (now while resting) */
+void en_next_now(void);                        /* the next chord on this bar, for a place that just landed */
 void en_freeze(int on);
 void en_seed(uint32_t s);                      /* stir some entropy into the generators */
 void en_note(int voice, int note, int on);      /* a key played on the page of a voice off the algorithm (P_*_MAN):
                                                  * EN_V_*, MIDI note, on / off */
+void en_hands_off(void);                       /* the keys are up: the line goes back to the song */
 void en_mute(int on);                          /* remote: silent, no MIDI out (1) or back (0), in turn */
 void en_hush(int on);                          /* a store while playing: fade out (1), back in (0) */
 extern volatile uint8_t en_hushed;             /* faded right out (the flash can be written) */
+void en_shed(int out);                         /* a new piece: fade pad, bass, acid, and air out (1), then back (0) */
+extern volatile uint8_t en_shed_done;          /* the four are down: the new piece can come in */
 void en_panic(void);                           /* everything quiet, now */
 void en_regrow(void);                          /* a new piece: fresh loops, the home chord */
 
@@ -120,6 +127,28 @@ void en_regrow(void);                          /* a new piece: fresh loops, the 
 enum { EN_SEC_GROOVE, EN_SEC_BREAK, EN_SEC_BUILD };
 enum { EN_CMD_BREAK, EN_CMD_BUILD, EN_CMD_DROP };
 void en_section(int cmd);
+void en_haze(int shape);                       /* the noise's part: 0 the bed, 1 dust, 2 chop, 3 air, 4 hush, 5 wind */
+void en_haze_oct(int oct);                     /* that part, in octaves. 0 is the part as written */
+void en_vstep(int part, unsigned mask);        /* pad, bass, acid, fourth: 16 steps. Until the fourth is named, dust and chop keep their own rhythm */
+void en_sleep(int on);                         /* 1: throat, flute, a singing bowl, chimes, and birds in the wind */
+void en_sleep_cue(int which);                  /* bit 0 a chime, bit 1 a bell, on the next downbeat */
+void en_pad_lock(int on);                      /* 1: the pad's four voices breathe one phrase together */
+void en_cloud(int delay, int helix, int loops); /* ping-pong, helix, and micro-loops. 0 is dry */
+void en_echo(int amt);                         /* tape and Echoplex, over the song's own. 0 leaves them as baked */
+void en_verb(int amt);                         /* more of the plate, over the room the song baked. 0 leaves it */
+void en_shimmer(int amt);                      /* an octave up in that plate. 0 is dry */
+void en_ring(int amt);                         /* knob 1: the mix times a tone. 0 is dry */
+void en_wah(int amt);                          /* knob 2: a resonant band through the mix. 0 is dry */
+void en_phase(int amt);                        /* a phaser on the master. 0 is dry */
+void en_wobble(int part, int amt);             /* pad, bass, acid, air: an eighth-note sweep. 0 is the song */
+void en_snap(int drum, int amt);               /* a drum's pitch sweep. 0 is the hit the kit already has */
+void en_keys(int amt);                         /* white keys in GLO, 0 silent .. 100 the voice. 90 is a tenth down */
+void en_layers(unsigned mask);                 /* twelve named keys, one bit each. They join the engines */
+void en_layer_house(int on);                   /* House: the pluck layer sits forty lower */
+void en_layer_level(int part, int lvl);        /* pad, bass, acid: 0..100, the stored level. A dark part stays */
+extern volatile uint16_t en_layer_hot;         /* which of those twelve are in the air (UI) */
+void en_hop(int kind);                         /* a crossing: 0 off, 1 cue, 2 throw, 3 stutter, 4 reverse */
+void en_find(int mode);                        /* Lets Find Out: 0 lets go, 1 loops one beat, 2 a distant blur */
 extern volatile uint8_t en_sec;                /* the section now: EN_SEC_* (UI) */
 extern volatile uint8_t en_sec_req;            /* a command waiting for the bar: EN_CMD_* + 1, or 0 (UI) */
 
@@ -134,11 +163,14 @@ enum {
     FX_GATE16, FX_GATE8,                                      /* a trance gate on the synths */
     FX_THROW, FX_CRUSH, FX_FILL,                              /* an echo throw; a bit crusher; a drum fill */
     FX_SOLO0, FX_SOLO1, FX_SOLO2, FX_SOLO3, FX_SOLO4, FX_SOLO5,
+    FX_FLANGE,                                                /* a jet: a short delay sweeping across the master */
+    FX_FLANGER,                                               /* a slow wide flanger: the two sides sweep against each other */
     EN_NFX
 };
 #define EN_NTRACK 6
 extern const char *const EN_FX_NAME[EN_NFX];   /* short names, for the screen */
 void en_fx(uint32_t mask);
+void en_dj(unsigned mask);                     /* GLO crowd keys: 14 bits, held. Zero is the mix alone */
 /* MIDI clock in (as FoMni): ticks drive the 1/16 grid (6 a step) while they keep coming */
 enum { EN_CLK_TICK, EN_CLK_START, EN_CLK_CONTINUE, EN_CLK_STOP };
 void en_clock(int msg);
@@ -155,7 +187,7 @@ extern volatile uint8_t en_chord[EN_NPAD];     /* the chord's notes (MIDI), pad 
 extern volatile uint8_t en_chord_root;         /* the chord's root, MIDI pitch class 0..11 */
 extern volatile uint8_t en_chord_n;            /* its distinct tones: 3 or 4 */
 extern volatile float en_drift;                /* 0..1: how far to the next chord */
-extern volatile float en_pad_level, en_bass_level;
+extern volatile float en_pad_level, en_bass_level, en_bass_env;
 extern volatile float en_noise_level, en_acid_level;
 extern volatile uint8_t en_acid_len, en_acid_pos;    /* the acid loop's length and step */
 extern volatile uint16_t en_acid_gate, en_acid_acc;  /* its steps that play; those accented */
@@ -163,6 +195,9 @@ extern volatile float en_acid_glow;
 extern volatile uint8_t en_held;              /* keys held playing the voices (en_note) */
 extern volatile uint8_t en_drum_pos;           /* the step playing (0..15) */
 extern volatile float en_drum_glow[EN_NDRUM];
+extern volatile float en_xdrum_glow[EN_XDRUM]; /* rim, tom, cowbell, shaker, crash */
+void en_xdrum(int i, int on, int kit, unsigned steps, int level, int tune, int decay);
+void en_lane_kit(int lane, int kit);           /* lane 2 clap, lane 4 open hat. 0 kit: follow the parent */
 extern volatile uint8_t en_pat_now, en_pat_next;
 extern volatile int8_t en_dd_left;             /* drum drift: bars to the change (1: the fill bar), -1 none */
 extern volatile uint32_t en_dd_changes, en_dd_mutations;   /* changes made and mutations since start */      /* the pattern playing; the one waiting for the bar */
@@ -171,6 +206,7 @@ extern volatile uint32_t en_bars;              /* sixteenths played since start 
 extern volatile float en_arc;                  /* the arc, -1 sparse .. +1 full (times Motion) */
 extern volatile uint8_t en_pulse_rest;         /* the pulse is out (a breakdown) */
 extern volatile uint8_t en_pad_note[EN_NPAD];  /* the note each voice sings now (MIDI) */
+extern volatile uint8_t en_hand_note;          /* the last note a hand played, after that voice folded it */
 extern volatile float en_pad_amp[EN_NPAD];     /* and how loud */
 
 /* the pure parts, for the tests and the screen */

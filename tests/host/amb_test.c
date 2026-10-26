@@ -452,6 +452,51 @@ int main(void)
         en_play(1);
     }
 
+    /* Hush brown and vinyl stay in the hush's register. An extra octave down
+     * does not come through the speaker. Pink is the colour beside them. */
+    {
+        float zc[3];
+        double e0 = 0.0;
+        int k;
+        for (k = 0; k < 3; k++) {
+            int b2, j;
+            long z = 0;
+            float prev = 0.0f;
+            static const int col[3] = {1, 2, 6}; /* pink, brown, vinyl */
+            en_init();
+            en_haze(4);
+            en_set(P_PAD, 0);
+            en_set(P_BASS, 0);
+            en_set(P_PULSE, 0);
+            en_set(P_ACID, 0);
+            en_set(P_ECHO, 0);
+            en_set(P_REVERB, 0);
+            en_set(P_NZ_PUMP, 0);
+            en_set(P_NZ_TONE, 40);
+            en_set(P_NOISE, 80);
+            en_set(P_NZ_COLOR, col[k]);
+            en_set(P_ROOT, 0);
+            en_set(P_TEMPO, 120);
+            en_play(1);
+            for (b2 = 0; b2 < 2 * 44100 / 256; b2++) {
+                en_render(buf, 256, 2048);
+                for (j = 0; j < 256; j++) {
+                    float x = (float)buf[2 * j] * (1.0f / 8388608.0f);
+                    z += (x > 0.0f) != (prev > 0.0f);
+                    if (k == 0)
+                        e0 += (double)(x * x);
+                    prev = x;
+                }
+            }
+            zc[k] = (float)z;
+        }
+        CHECK(e0 > 1.0, "hush pink silent: energy %.4f", e0);
+        CHECK(zc[1] > 0.7f * zc[0], "hush brown an octave under pink: %.0f vs %.0f", (double)zc[1], (double)zc[0]);
+        CHECK(zc[2] > 0.7f * zc[0], "hush vinyl an octave under pink: %.0f vs %.0f", (double)zc[2], (double)zc[0]);
+        en_init();
+        en_play(1);
+    }
+
     /* stop: the tails die away */
     for (i = 0; i < P_NPARAMS; i++)
         en_set(i, en_param_info(i)->def);

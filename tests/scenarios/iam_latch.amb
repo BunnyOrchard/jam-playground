@@ -1,0 +1,480 @@
+# SEQ shows every track that is on. SELECT moves the track. OCT shifts it
+# by an octave. The white keys turn that track's steps, and they light where
+# it plays. SEQ, GLO, or HOME leaves. HOME leaves the chord. A hold with no
+# SEQ still lets go. With the screen closed, OCT+ is still excite.
+seed 42
+reboot
+wait 200
+expect chordroot 8
+expect lane3 21845
+expect iammask 65
+expect iamsec 0
+expect iamdrum -1
+expect iamstep 0
+expect iamseq 0
+expect iamseqn 3
+# Under two seconds the screen leaves, and the hat does not toggle. SELECT stays tempo.
+key b3 down
+wait 900
+spin SELECT 1
+wait 30
+expect iamstep 0
+expect tempo 173
+key b3 up
+wait 40
+expect iamdrum -1
+expect iamstep 0
+expect iammask 65
+expect lane3 21845
+# HOME from the sequence screen leaves the chord. One bar later it has not moved.
+tap SEQ
+expect iamseq 1
+tap HOME
+wait 40
+expect iamseq 0
+expect toast SONG
+wait 1600
+expect chordroot 8
+expect iamsec 0
+# SEQ while the hat is down selects that row. Letting go is not a click.
+key b3 down
+tap SEQ
+expect toast SEQ
+expect toast2 HAT
+expect iamseq 1
+expect iamseqn 3
+expect iamseqat 1
+expect iamdrum 3
+expect iamsec 0
+expect litkeys 19156369
+expect litbtn 1536
+key b3 up
+wait 40
+expect iamdrum -1
+expect iamseq 1
+expect iammask 65
+expect lane3 21845
+expect iamsec 0
+# A second SEQ leaves. It does not drop on the next bar.
+tap SEQ
+expect toast SONG
+expect toast2
+expect iamseq 0
+expect iamsec 0
+wait 1600
+expect iamsec 0
+expect chordroot 8
+# Open again on the pad. SELECT walks the rows and wraps.
+tap SEQ
+expect iamseq 1
+expect iamseqn 3
+expect iamseqat 0
+expect toast SEQ
+expect toast2 PAD
+expect litkeys 95248341
+tapkey w0
+expect iamgate0 65534
+expect litkeys 95248340
+expect toast PAD
+expect toast2 REST
+expect iammask 65
+tapkey w0
+expect iamgate0 65535
+expect litkeys 95248341
+expect toast2 STEP
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast HAT
+expect toast2
+expect litkeys 19156369
+expect iamsec 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamseqat 2
+expect toast OPEN
+expect toast2
+spin SELECT 1
+wait 30
+expect iamseqat 0
+expect toast PAD
+expect toast2
+spin SELECT -1
+wait 30
+expect iamseqat 2
+expect toast OPEN
+expect toast2
+spin SELECT -1
+wait 30
+expect iamseqat 1
+expect toast HAT
+expect toast2
+expect litkeys 19156369
+# The hat's first step goes out. The intro ends on this bar, so the screen says the groove.
+# A spin is shorter than the octave tap this walk used to be. The wait puts the press back on that bar.
+# A black key does not turn a drum on.
+wait 245
+tapkey w0
+expect lane3 21844
+expect litkeys 19156368
+expect toast GROOVE
+expect toast2 AUTO
+tapkey b0
+expect iammask 65
+expect iamseqn 3
+expect lane3 21844
+expect iamseq 1
+# Back returns the hat's row. The screen stays up.
+tap ARP
+wait 1800
+expect lane3 21845
+expect iamgate0 65535
+expect iamseq 1
+expect iamsec 0
+# HOME leaves, and the chord stays.
+tap HOME
+wait 40
+expect iamseq 0
+expect toast SONG
+expect toast2
+expect iamheld -1
+expect iamdrum -1
+expect iamsec 0
+expect lane3 21845
+expect iammask 65
+# With the screen gone, OCT+ is excite again.
+tap OCT+
+wait 1600
+expect iamsec 2
+# A long hold of the bass, with no SEQ, lets go. SELECT stays tempo.
+key w1 down
+wait 2100
+expect iamheld 1
+expect iamdrum -1
+expect iamseq 0
+expect iamstep 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamstep 0
+expect tempo 173
+key w1 up
+wait 40
+expect iamheld -1
+expect iamdrum -1
+# A fresh song. Two seconds alone lets go. GLO leaves the screen for the editor,
+# and GLO again returns with the sequence screen still closed.
+seed 42
+reboot
+wait 200
+expect chordroot 8
+expect lane3 21845
+expect iammask 65
+expect iamsec 0
+expect iamseqn 3
+key b3 down
+wait 2100
+expect hold HAT
+expect toast INTRO
+expect toast2 AUTO
+expect iamdrum 3
+expect iamstep 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamstep 0
+expect tempo 173
+key b3 up
+wait 40
+expect iamdrum -1
+expect iamstep 0
+expect iammask 65
+expect lane3 21845
+tap SEQ
+expect iamseq 1
+expect iam 1
+tap GLO
+wait 80
+expect iam 0
+expect iamseq 0
+tap GLO
+wait 80
+expect iam 1
+expect iamseq 0
+expect iamsec 0
+expect chordroot 8
+# SELECT walks. OCT shifts the row and leaves the tempo, and the track, where they are.
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+expect tempo 173
+expect par83 0
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect tempo 173
+expect toast HAT
+spin SELECT -1
+wait 30
+expect iamseqat 0
+expect toast PAD
+tap OCT+
+expect par83 1
+expect iamseqat 0
+expect tempo 173
+expect toast PAD
+expect toast2 +1
+tap OCT-
+expect par83 0
+expect toast2 0
+spin SELECT 1
+wait 30
+expect iamseqat 1
+tap OCT+
+expect par59 50
+expect toast HAT
+expect toast2 +1
+tap OCT+
+expect par59 50
+expect toast2 TOP
+tap OCT-
+expect par59 0
+expect toast2 0
+spin SELECT 1
+wait 30
+expect iamseqat 2
+tap OCT+
+expect par62 50
+expect toast OPEN
+expect toast2 +1
+tap OCT-
+expect par62 0
+expect toast2 0
+tap SEQ
+expect iamseq 0
+expect tempo 173
+# A fresh intro, so the rim is the only drum this press adds.
+seed 42
+reboot
+wait 40
+tapkey b6
+wait 1400
+expect iamsec 0
+tap SEQ
+expect iamseqn 4
+expect iamseqat 0
+spin SELECT 3
+wait 30
+expect toast RIM
+expect xtune0 0
+expect tempo 173
+tap OCT+
+expect xtune0 12
+expect iamseqat 3
+expect toast RIM
+expect toast2 +1
+tap OCT+
+expect xtune0 24
+expect toast2 +2
+tap OCT+
+expect xtune0 24
+expect toast2 TOP
+tap OCT-
+expect xtune0 12
+expect toast2 +1
+tap SEQ
+expect iamseq 0
+expect tempo 173
+# SEL solos the row SELECT is on. The next SEL, or leaving, brings the song back.
+# The selection itself does not move, and the tempo does not move.
+seed 42
+reboot
+wait 40
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+expect isol 0
+expect par0 62
+expect par58 >0
+expect par61 >0
+expect tempo 173
+tap SEL
+expect toast PAD
+expect toast2 SOLO
+expect isol 1
+expect iamseqat 0
+expect par0 62
+expect par58 0
+expect par61 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast HAT
+expect toast2 SOLO
+expect isol 1
+expect par0 0
+expect par58 >0
+expect par61 0
+spin SELECT 1
+wait 30
+expect iamseqat 2
+expect toast OPEN
+expect toast2 SOLO
+expect par0 0
+expect par58 0
+expect par61 >0
+tap SEL
+expect toast OPEN
+expect toast2 SONG
+expect isol 0
+expect iamseqat 2
+expect par0 62
+expect par58 >0
+expect par61 >0
+expect tempo 173
+tap SEL
+expect isol 1
+expect toast2 SOLO
+expect par0 0
+expect par58 0
+expect par61 >0
+tap SEQ
+expect iamseq 0
+expect isol 0
+expect par0 62
+expect par58 >0
+expect par61 >0
+expect tempo 173
+tap SEQ
+expect iamseq 1
+expect isol 0
+expect iamseqat 0
+spin SELECT 1
+wait 30
+expect iamseqat 1
+tap SEL
+expect toast HAT
+expect toast2 SOLO
+expect isol 1
+expect par0 0
+tap GLO
+wait 80
+expect iam 0
+expect iamseq 0
+expect isol 0
+expect par0 62
+tap GLO
+wait 80
+expect iam 1
+expect iamseq 0
+expect isol 0
+expect par0 62
+tap SEQ
+expect iamseq 1
+tap SEL
+expect isol 1
+expect par58 0
+expect chordroot 8
+tap HOME
+expect iamseq 0
+expect isol 0
+expect par0 62
+expect par58 >0
+expect par61 >0
+expect chordroot 8
+expect iamsec 0
+expect tempo 173
+# Knob 3 on this screen is the selected track's stored level. Closed, it is the phaser.
+seed 42
+reboot
+wait 40
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+expect iamlvl0 62
+expect par0 62
+expect tempo 173
+spin K3 1
+wait 30
+expect toast PAD 66%
+expect toast2
+expect iamlvl0 66
+expect par0 66
+expect iamseqat 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast HAT
+expect iamlvl0 66
+expect par0 66
+expect iamlvl6 82
+spin K3 1
+wait 30
+expect toast HAT 86%
+expect toast2
+expect iamlvl6 86
+expect iamlvl0 66
+expect par0 66
+expect par58 38
+expect iamseqat 1
+expect tempo 173
+tap SEQ
+expect iamseq 0
+expect iamlvl0 66
+expect par0 66
+spin K3 1
+wait 30
+expect toast PHASER 8
+expect toast2
+expect iamlvl0 66
+expect par0 66
+expect tempo 173
+# Reggae's intro publishes the snare at 0. The draw leaves the clap off, and
+# excite does not light it. A hold still shows the stored share, not silence.
+seed 114
+reboot
+wait 40
+expect iamstyle 1
+expect iamsec 0
+expect par52 0
+expect par55 0
+key b2 down
+wait 1000
+expect hold CLAP
+expect holdlvl >40
+key b2 up
+wait 40
+expect par55 0
+tap OCT+
+wait 4000
+expect iamsec 2
+expect par52 >0
+expect par55 0
+expect lane2 >0
+# A dialled reggae stays a one-drop. Tapping the clap gives it the floor, and SEQ shows it.
+seed 42
+reboot
+wait 40
+turn PRESET 1
+wait 4000
+expect iamstyle 1
+expect iamsec 1
+expect par52 0
+expect par55 0
+expect tempo >78
+expect tempo <86
+tapkey b2
+wait 4000
+expect par52 0
+expect par55 >0
+expect lane2 0x1010
+expect iamdon 708
+tap SEQ
+spin SELECT 4
+wait 30
+expect toast TOM
+expect iamseqat 4
+expect litkeys 21137456

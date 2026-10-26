@@ -1,0 +1,73 @@
+# Knob 3 on a held key shows the stored level as a percent.
+seed 42
+reboot
+wait 200
+expect iammask 65
+expect par1 0
+# Dark acid, one detent up: the number, and FROM SILENT on the second line.
+key w2 down
+wait 80
+spin K3 1
+wait 30
+expect toast ACID 4%
+expect toast2 FROM SILENT
+expect par1 4
+expect iammask 69
+# Already on. The next detent replaces the line.
+spin K3 1
+wait 30
+expect toast ACID 8%
+expect toast2
+# The ends still read as percents.
+spin K3 -20
+wait 30
+expect toast ACID 0%
+expect toast2
+spin K3 40
+wait 30
+expect toast ACID 100%
+expect toast2
+expect par1 100
+key w2 up
+wait 40
+expect iammask 69
+# The Pluck key names itself. Ten detents down from 100 is 60.
+key w12 down
+wait 80
+spin K3 -10
+wait 30
+expect toast PLUCK 60%
+expect toast2
+expect par1 60
+key w12 up
+wait 40
+# Kick was dark. Knob 3 names the drum.
+key b0 down
+wait 80
+spin K3 1
+wait 30
+expect toast KICK 4%
+expect toast2 FROM SILENT
+key b0 up
+wait 40
+# Clap is its own level, not the snare's.
+key b2 down
+wait 80
+spin K3 1
+wait 30
+expect toast CLAP 4%
+expect toast2 FROM SILENT
+expect par55 4
+expect par52 0
+key b2 up
+wait 40
+# Open hat, already playing with the hat, names both words.
+key b4 down
+wait 80
+spin K3 30
+wait 30
+expect toast OPEN HAT 100%
+expect toast2
+expect par61 100
+key b4 up
+wait 40

@@ -1,0 +1,49 @@
+# A GLO piece turns its engines on through their levels. Named keys stay on top.
+# Under four synth keys, the piece changes nothing that was already on.
+# At four, the oldest named key goes off so the piece fits. The engines stay.
+# Seed 42 opens on piece 2. One detent is piece 3, and that piece sounds all four.
+seed 42
+reboot
+wait 80
+expect piece 2
+expect iammask 65
+expect iamlay 0
+tap GLO
+wait 40
+turn PRESET 1
+wait 40
+expect piece 3
+expect iammask 65
+expect iamlay 0
+tap EDIT
+wait 40
+expect toast MUTATE BEAT
+expect toast2
+tap HOME
+wait 80
+expect iam 1
+seed 42
+reboot
+wait 80
+key w1 down
+wait 40
+key w1 up
+key w2 down
+wait 40
+key w2 up
+key w3 down
+wait 40
+key w3 up
+key w4 down
+wait 40
+key w4 up
+wait 1500
+expect iammask 78
+expect iamlay 1
+tap GLO
+wait 40
+turn PRESET 1
+wait 40
+expect piece 3
+expect iamlay 0
+expect iammask 78

@@ -18,6 +18,14 @@
  *   shot FILE.png                save the screen
  *   leds                         print the lit buttons and keys
  *   expect WHAT VALUE            check state: exit 1 on mismatch; VALUE "<N" / ">N" is a bound
+ *                                toast / toast2: the two lines on the screen (a third word joins VALUE)
+ *                                hold / hold2: the held key's name, and the sound or kit under it
+ *                                holdlvl: that key's stored level, the percent on its row
+ *                                hazeoct: dust, chop, air, hush, wind, in octaves
+ *                                xtuneN: rim, tom, bell, shake, crash, in semitones
+ *                                isol: 1 while SEQ's SEL is holding one row alone
+ *                                toaston: 1 while a toast still covers that line
+ *                                handnote: the last note a hand played, after the voice folded it
  *   reboot                       re-run boot (power off and on)
  *   seed N                       the seed the next boot uses (0: the first piece, exact)
  *   storefuzz SEED               fill the project object with random damage (for the sanitizer runs)
@@ -60,7 +68,7 @@ static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint1
 /* ---------------------------------------------------------- platform --- */
 #include "../firmware/src/app/plat.h"
 
-static uint32_t now_ms, held_btn, held_keys, master = 2048;
+static uint32_t now_ms, held_btn, held_keys, master = 2048, mark_ms;
 static int32_t enc_acc[NE];
 static uint32_t lit_btn, lit_keys;
 
@@ -81,6 +89,7 @@ void plat_leds(uint32_t b, uint32_t k)
 }
 static int glow_on = 1;                 /* the device's button glow (plat_glow); the lights printed are the bright ones */
 void plat_glow(int on) { glow_on = on; }
+void plat_key_flash(uint32_t keys) { (void)keys; } /* the device: full while the sound plays, dim while it is only on */
 void plat_play_red(int red) { (void)red; }      /* the device's PLAY colour: green, red while recording */
 
 #define MQ 256
@@ -469,6 +478,12 @@ static int expect(const char *what, const char *val)
         got = (int)midi_out_count;
     else if (!strcmp(what, "pad_level"))
         got = (int)(en_pad_level * 100.0f);
+    else if (!strcmp(what, "padrel")) {           /* the notes sounding, as intervals over the song's root */
+        int k;
+        got = 0;
+        for (k = 0; k < EN_NPAD; k++)
+            got |= 1 << ((en_pad_note[k] - proj.par[P_ROOT] + 120) % 12);
+    }
     else if (!strcmp(what, "bass_level"))
         got = (int)(en_bass_level * 100.0f);
     else if (!strcmp(what, "chordroot"))
@@ -485,6 +500,8 @@ static int expect(const char *what, const char *val)
         got = en_sec;
     else if (!strcmp(what, "fxmask"))             /* the effects held (FX menu) */
         got = (int)ui.fx_mask;
+    else if (!strcmp(what, "djmask"))             /* GLO crowd keys held (and locked) */
+        got = (int)ui.dj_mask;
     else if (!strcmp(what, "tempo"))
         got = proj.par[P_TEMPO];
     else if (!strcmp(what, "pat"))                /* the drum pattern playing (0..5) */
@@ -501,6 +518,8 @@ static int expect(const char *what, const char *val)
         got = ui.fx_menu;
     else if (!strcmp(what, "held"))               /* keys held playing a voice */
         got = en_held;
+    else if (!strcmp(what, "handnote"))           /* last hand note, after the voice's fold */
+        got = en_hand_note;
     else if (!strcmp(what, "remote"))             /* remote (SEL + GLO) on; the browser answering */
         got = rm.on;
     else if (!strcmp(what, "remotelink"))
@@ -515,11 +534,89 @@ static int expect(const char *what, const char *val)
         got = ui.lane;
     else if (!strcmp(what, "acidnotes"))          /* the acid loop's steps that play */
         got = __builtin_popcount(en_acid_gate);
+    else if (!strcmp(what, "iam"))            /* IAM-1 has the panel */
+        got = iam.on;
+    else if (!strcmp(what, "iamstyle"))       /* 0 dnb, then reggae, trance, still, and the decades */
+        got = iam.style;
+    else if (!strcmp(what, "iamhop"))         /* 255 none yet, else 0 cue, 1 throw, 2 stutter, 3 reverse */
+        got = iam.hop_last;
+    else if (!strcmp(what, "iamauto"))
+        got = iam.auto_on;
+    else if (!strcmp(what, "iammask"))        /* parts switched on (bit 0 = pad) */
+        got = iam.mask;
+    else if (!strcmp(what, "iamdon"))         /* clap, open hat, and the five above: bit per black key */
+        got = (int)iam.don;
+    else if (!strcmp(what, "iamdrum"))        /* black key on the step screen, or -1 */
+        got = iam.held_drum;
+    else if (!strcmp(what, "iamheld"))        /* engine under the finger, or still on its step screen */
+        got = iam.held;
+    else if (!strncmp(what, "iamgate", 7))    /* iamgateN: that engine's 16 steps */
+        got = (int)iam.vstep[atoi(what + 7) % 4];
+    else if (!strcmp(what, "iamstep"))        /* the marked step, 0 is step 1 */
+        got = iam.step_i;
+    else if (!strcmp(what, "iamseq"))         /* the sequence screen is up */
+        got = iam.seq_on;
+    else if (!strcmp(what, "iamseqat"))       /* which live track the white keys edit */
+        got = iam.seq_at;
+    else if (!strcmp(what, "iamseqn"))        /* how many tracks are on */
+        got = iam.seq_n;
+    else if (!strncmp(what, "iamkit", 6))     /* iamkitN: that black key's kit, beside the four kit parameters */
+        got = iam.dkit[atoi(what + 6) % IAM_NDRUMKEY];
+    else if (!strncmp(what, "iamlvl", 6))     /* iamlvlN: the stored level, before the section's gain */
+        got = iam.lvl[atoi(what + 6) % IAM_NPART];
+    else if (!strcmp(what, "iamkvol"))        /* GLO white keys, 0 silent .. 100 the voice */
+        got = iam.kvol;
+    else if (!strcmp(what, "iamarp"))         /* GLO arpeggiator latch */
+        got = iam.arp;
+    else if (!strcmp(what, "iamlay"))         /* named keys on: bit 0 Glass ... bit 11 Soft */
+        got = (int)iam.lay;
+    else if (!strcmp(what, "iamsec"))         /* IAM_INTRO .. IAM_GLIDE */
+        got = iam.sec;
+    else if (!strcmp(what, "looprec"))        /* GLO REC: capturing the white keys */
+        got = iam_loop_rec;
+    else if (!strcmp(what, "loopplay"))       /* the last bars are looping */
+        got = iam_loop_play;
+    else if (!strcmp(what, "looplen"))        /* sixteenths in that loop */
+        got = iam_loop_len;
+    else if (!strcmp(what, "loopn"))          /* notes stored */
+        got = iam_loop_n;
+    else if (!strcmp(what, "loopat"))         /* the first stored pitch */
+        got = iam_loop_n ? iam_loop_ev[0].note : -1;
+    else if (!strcmp(what, "loopsound"))      /* notes the loop wants at this step */
+        got = iam_loop_sounding();
     else if (!strcmp(what, "theme"))
         got = proj.par[P_THEME];
     else if (!strncmp(what, "par", 3))          /* parN: parameter N (amb.h P_*) */
         got = proj.par[atoi(what + 3)];
-    else if (!strcmp(what, "peak_db_max") || !strcmp(what, "peak_db_min")) {
+    else if (!strcmp(what, "holdlvl")) /* the percent on the held key's row, or -1 */
+        got = iam_hold_lvl();
+    else if (!strcmp(what, "hazeoct")) /* the fourth key, in octaves */
+        got = iam.haze_oct;
+    else if (!strncmp(what, "xtune", 5)) { /* xtune0 is the rim */
+        int i = atoi(what + 5);
+        got = (i >= 0 && i < EN_XDRUM) ? iam.xtune[i] : 0;
+    }
+    else if (!strcmp(what, "isol")) /* SEQ SEL: 1 while only the selected row is heard */
+        got = iam.seq_isol;
+    else if (!strcmp(what, "toaston")) /* 1 while the toast still covers the action line */
+        got = plat_ms() < ui.msg_until;
+    else if (!strcmp(what, "hold") || !strcmp(what, "hold2")) {
+        const char *got_s = what[4] ? iam_hold_sub() : iam_hold_title();
+        if (strcmp(got_s, val) != 0) {
+            printf("FAIL expect %s == %s, got %s\n", what, val, got_s);
+            return 1;
+        }
+        printf("  ok %s == %s\n", what, val[0] ? val : "\"\"");
+        return 0;
+    } else if (!strcmp(what, "toast") || !strcmp(what, "toast2")) {
+        const char *got_s = what[5] ? ui.msg[1] : ui.msg[0];
+        if (strcmp(got_s, val) != 0) {
+            printf("FAIL expect %s == %s, got %s\n", what, val, got_s);
+            return 1;
+        }
+        printf("  ok %s == %s\n", what, val[0] ? val : "\"\"");
+        return 0;
+    } else if (!strcmp(what, "peak_db_max") || !strcmp(what, "peak_db_min")) {
         double db = 20.0 * log10(peak_out > 1e-9f ? peak_out : 1e-9f);
         int bad = what[8] == 'm' && what[9] == 'a' ? db > atof(val) : db < atof(val);
         printf("%s peak %.1f dBFS (%s %s)\n", bad ? "FAIL" : "  ok", db, what + 8, val);
@@ -566,12 +663,30 @@ int main(int argc, char **argv)
     ui_splash_ms = 0u;                           /* the tests start at the UI (script: splash MS) */
     boot();
     while (fgets(line, sizeof line, sc)) {
-        char cmd[32] = {0}, a[256] = {0}, b[64] = {0}, c[64] = {0};
+        char cmd[32] = {0}, a[256] = {0}, b[64] = {0}, c[64] = {0}, d[64] = {0};
         lineno++;
-        if (line[0] == '#' || sscanf(line, "%31s %255s %63s %63s", cmd, a, b, c) < 1)
+        if (line[0] == '#' || sscanf(line, "%31s %255s %63s %63s %63s", cmd, a, b, c, d) < 1)
             continue;
         if (!strcmp(cmd, "wait"))
             run_ms((uint32_t)atoi(a));
+        else if (!strcmp(cmd, "mark"))
+            mark_ms = now_ms;
+        else if (!strcmp(cmd, "waitmark")) { /* run until mark + MS, so a later cue lands when it used to */
+            uint32_t t = mark_ms + (uint32_t)atoi(a);
+            if (t > now_ms)
+                run_ms(t - now_ms);
+        }
+        else if (!strcmp(cmd, "barwait")) { /* the next bar, a little way in, so a scene has landed */
+            uint32_t start = en_bars, guard = 0;
+            if (!((start & 15u) < 4u && iam.sec == 4)) {
+                uint32_t target = (start & ~15u) + 16u;
+                while (en_bars < target && guard < 20000u) {
+                    run_ms(16);
+                    guard += 16u;
+                }
+            }
+            run_ms(48);
+        }
         else if (!strcmp(cmd, "press") || !strcmp(cmd, "release") || !strcmp(cmd, "tap")) {
             int i = find_name(BTN_N, NB, a);
             if (i < 0) {
@@ -681,8 +796,21 @@ int main(int argc, char **argv)
             for (i = 0; i < 11; i++)
                 printf("%c", (lit_keys >> BLACK_K[i] & 1u) ? '#' : '.');
             printf("\n");
-        } else if (!strcmp(cmd, "expect"))
-            fails += expect(a, b);
+        } else if (!strcmp(cmd, "expect")) {
+            int bad;
+            if (c[0]) {
+                char both[160];
+                if (d[0])
+                    snprintf(both, sizeof both, "%s %s %s", b, c, d);
+                else
+                    snprintf(both, sizeof both, "%s %s", b, c);
+                bad = expect(a, both);
+            } else
+                bad = expect(a, b);
+            if (bad)
+                printf("  line %d\n", lineno);
+            fails += bad;
+        }
         else if (!strcmp(cmd, "storefuzz")) {         /* storefuzz SEED: the project object filled with damage:
                                                          * random bytes behind a header that is now valid, now not */
             static uint8_t bk[PLAT_STORE_MAX];

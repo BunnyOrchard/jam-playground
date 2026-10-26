@@ -145,16 +145,26 @@ def render(ttf, px, scale, pixel, first, last):
         font.set_variation_by_axes([float(axes.get(n.lower()[:4], axes.get(n, 0)) or a["default"])
                                     for n, a in zip(names, font.get_variation_axes())])
     feats = None if pixel else ["tnum"]
+    # macOS Pillow wheels ship without libraqm, so the tnum feature raises KeyError.
+    # Fall back to the same face with proportional digits. The glyphs are still the font.
+    def feat(fn):
+        if feats:
+            try:
+                return fn(feats)
+            except (KeyError, TypeError, ValueError):
+                pass
+        return fn(None)
+
     asc, desc = font.getmetrics()
-    top = max(0, font.getbbox("A8|(", features=feats)[1] - 1)
+    top = max(0, feat(lambda f: font.getbbox("A8|(", features=f)[1]) - 1)
     h = asc + desc - top
     glyphs = []
     for c in range(first, last + 1):
         ch = chr(c)
-        adv = int(round(font.getlength(ch, features=feats)))
+        adv = int(round(feat(lambda f: font.getlength(ch, features=f))))
         bw = adv + 2 * PAD
         img = Image.new("L", (bw, asc + desc), 0)
-        ImageDraw.Draw(img).text((PAD, 0), ch, font=font, fill=255, features=feats)
+        feat(lambda f: ImageDraw.Draw(img).text((PAD, 0), ch, font=font, fill=255, features=f))
         img = img.crop((0, top, bw, top + h))
         px_ = [(15 if v >= 128 else 0) if pixel else min(15, (v + 8) // 17) for v in img.tobytes()]
         glyphs.append((adv * scale, bw * scale, upscale(px_, bw, h, scale)))

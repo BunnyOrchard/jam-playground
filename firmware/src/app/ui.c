@@ -6,7 +6,7 @@
  *   HOME           Tempo (tempo, evolve, motion, drift)
  *   ENV            Pad, then Pad env, Pad LFO (each press the next)
  *   LFO            Drone, then Drone env, Drone LFO
- *   ARP            Acid, then Acid env, Acid line
+ *   ARP            Acid, then Acid env, Acid line. In IAM's GLO a tap turns the arpeggiator on or off
  *   SEQ            Drums, then Links; held, the sequencer (six lanes, sixteen steps); with SEL held, the
  *                  links (the drums into the voices) on and off
  *   GLO            Global (root, theme, tune, MIDI out); Noise and Space are on the SELECT dial only.
@@ -27,7 +27,7 @@
  *   SEL            shift, held: white keys 1-6 the pattern (on the bar); PRESETS the piece, on the next
  *                  bar; ALGORITHM the sound of the voice on screen (pad, drone, acid; on the drums' pages the kit); in the sequencer, black keys 1-6 copy the pattern there, OCT- clears the drum's
  *                  lane, OCT+ puts back the piece's own
- *   PLAY           play / stop         REC  FREEZE       EDIT  the next chord
+ *   PLAY           play / stop         REC  FREEZE (in IAM's GLO: loop the white keys)  EDIT  the next chord
  *   ALGORITHM      the mode            PRESETS  the piece (01 .. 10)
  *
  * Each piece has its own settings and six drum patterns. Power-on starts on a piece at random, as it was
@@ -43,10 +43,10 @@ static const char *const VIEW_NAME[NVIEWS] = {"Tempo", "Pad", "Pad env", "Pad LF
                                               "Drone LFO", "Acid", "Acid env", "Acid line", "Drums", "Links", "Kit", "Drum drift", "Space", "Global",
                                               "Sequencer"};
 /* the knobs of each page: a parameter, or one of these (the sequencer's: the lane's) */
-enum { K_LVL = 200, K_TUNE, K_DEC, K_NONE };
+enum { K_LVL = 200, K_TUNE, K_DEC, K_KEYS, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_TEMPO, P_EVOLVE, P_MOTION, P_DRIFT},
-    {P_PAD, P_BRIGHT, P_PADTONE, P_DETUNE},
+    {P_PAD, P_PADTONE, P_BRIGHT, P_DETUNE},
     {P_PE_ATK, P_PE_HOLD, P_PE_REL, P_PE_REST},
     {P_PL_RATE, P_PL_DEPTH, P_PL_SHAPE, P_PL_DEST},
     {P_CHORD, P_VOICING, P_DRIFT, P_ROOT},         /* the harmony together (Drift is also on Tempo, Root on Global) */
@@ -54,8 +54,8 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_BASS, P_DR_INST, P_DR_CUT, P_DR_RES},
     {P_DE_TRIG, P_DE_ATK, P_DE_DEC, P_DE_AMT},
     {P_DL_RATE, P_DL_DEPTH, P_DL_SHAPE, P_DL_DEST},
-    {P_ACID, P_AC_CUT, P_AC_RES, P_AC_ENV},
-    {P_AC_DEC, P_AC_ACC, P_AC_SLIDE, P_AC_WAVE},
+    {P_ACID, P_AC_WAVE, P_AC_CUT, P_AC_RES},
+    {P_AC_DEC, P_AC_ACC, P_AC_SLIDE, P_AC_ENV},
     {P_AC_DENS, P_AC_LEN, P_AC_RANGE, P_AC_MUT},
     {P_PULSE, P_DRIVE, P_SWING, P_PATTERN},
     {P_LK_KICK, P_LK_SNARE, P_LK_HAT, P_LK_PERC},
@@ -67,7 +67,7 @@ static const uint8_t VIEW_KNOB[NVIEWS][4] = {
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Tempo", "Evolve", "Motion", "Drift"},
-    {"Level", "Bright", "Sound", "Detune"},
+    {"Level", "Sound", "Bright", "Detune"},
     {"Attack", "Hold", "Release", "Rest"},
     {"Rate", "Depth", "Shape", "Target"},
     {"Chord", "Voicing", "Drift", "Root"},
@@ -75,8 +75,8 @@ static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Level", "Sound", "Cutoff", "Reso"},
     {"Trigger", "Attack", "Decay", "Amount"},
     {"Rate", "Depth", "Shape", "Target"},
-    {"Level", "Cutoff", "Reso", "Env mod"},
-    {"Decay", "Accent", "Slide", "Sound"},
+    {"Level", "Sound", "Cutoff", "Reso"},
+    {"Decay", "Accent", "Slide", "Env mod"},
     {"Density", "Length", "Range", "Mutate"},
     {"Level", "Drive", "Swing", "Pattern"},
     {"K>Drone", "S>Pad", "H>Acid", "P>Clock"},
@@ -109,7 +109,11 @@ static const char *const FX_LABEL[EN_NFX] = {      /* M: mute, S: solo (the menu
     "RPT 1/2", "RPT 1/4", "RPT 1/6", "RPT 1/8", "RPT1/16", "RPT1/32", "REVERSE", "TAPESTP",
     "M:KICK", "M:HATS", "M:SNARE", "M:DRONE", "M:ACID", "M:PAD", "LOWPASS", "HIPASS",
     "GATE 16", "GATE 8", "THROW", "CRUSH", "FILL",
-    "S:KICK", "S:HATS", "S:SNARE", "S:DRONE", "S:ACID", "S:PAD"};
+    "S:KICK", "S:HATS", "S:SNARE", "S:DRONE", "S:ACID", "S:PAD", "FLANGE", "FLANGER"};
+/* GLO's FX page swaps fourteen of those keys. HYP, and GLO with the page closed, keep KEY_FX. */
+static const char *const DJ_LABEL[14] = {
+    "SWEEP", "WOW", "RING", "TRANS", "PHASER", "WAH", "RADIO", "FLANGE",
+    "PAN", "VOWEL", "FILTER", "CHORUS", "BEND", "CHOP"};
 /* the white keys, in order: the sequencer's steps; the black keys, in order */
 static const uint8_t WHITE_KEY[16] = {0, 2, 4, 6, 7, 9, 11, 12, 14, 16, 18, 19, 21, 23, 24, 26};
 static const uint8_t BLACK_KEY[11] = {1, 3, 5, 8, 10, 13, 15, 17, 20, 22, 25};
@@ -181,6 +185,8 @@ static struct {
     uint8_t fx_menu;                   /* the FX menu is on: the keys are effects */
     uint32_t fx_mask;                  /* the effects held (and locked), as last sent */
     uint32_t fx_lock;                  /* the effects locked on (lock mode: SAVE held in FX) */
+    uint16_t dj_mask;                  /* GLO crowd keys held (and locked), as last sent */
+    uint16_t dj_lock;                  /* crowd keys locked on. Kept when GLO closes, so they come back */
     uint8_t lock_mode;                 /* SAVE held in the FX menu: keys tapped lock and unlock */
     uint32_t lock_keys;                /* keys pressed in lock mode: not effects while they're held */
     uint8_t lane;                      /* the sequencer's lane (OCT- / OCT+) */
@@ -252,8 +258,12 @@ static const char *mode_name(void)
 }
 
 /* ------------------------------------------------------------ values --- */
+static int iam_kvol_get(void);                  /* machine.c: GLO white keys, 0..100 */
+static void iam_kvol_set(int v);
 static int knob_par(int k)                     /* a knob's parameter (the sequencer's: its lane's) */
 {
+    if (k == K_KEYS)
+        return -1;
     if (k == K_LVL)
         return P_LANE_LVL(ui.lane);
     if (k == K_TUNE)
@@ -264,18 +274,32 @@ static int knob_par(int k)                     /* a knob's parameter (the sequen
 }
 static int knob_get(int k)
 {
-    int p = knob_par(k);
+    int p;
+    if (k == K_KEYS)
+        return iam_kvol_get();
+    p = knob_par(k);
     return p >= 0 ? proj.par[p] : 0;
 }
 static void knob_range(int k, int *lo, int *hi)
 {
-    int p = knob_par(k);
+    int p;
+    if (k == K_KEYS) {
+        *lo = 0;
+        *hi = 100;
+        return;
+    }
+    p = knob_par(k);
     *lo = p >= 0 ? en_param_info(p)->lo : 0;
     *hi = p >= 0 ? en_param_info(p)->hi : 0;
 }
 static void knob_text(int k, char *b)
 {
-    int p = knob_par(k);
+    int p;
+    if (k == K_KEYS) {
+        itoa_u((uint32_t)iam_kvol_get(), b);
+        return;
+    }
+    p = knob_par(k);
     if (p >= 0)
         en_param_text(p, proj.par[p], b);
     else
@@ -284,7 +308,27 @@ static void knob_text(int k, char *b)
 
 static void knob_set(int k, int v)
 {
-    int lo, hi, p = knob_par(k);
+    int lo, hi, p;
+    if (k == K_KEYS) {
+        char n[8];
+        if (v < 0)
+            v = 0;
+        if (v > 100)
+            v = 100;
+        if (v == iam_kvol_get())
+            return;
+        iam_kvol_set(v);
+        if (v <= 0)
+            say("KEYS", "OFF");
+        else if (v >= 100)
+            say("KEYS", "FULL");
+        else {
+            itoa_u((uint32_t)v, n);
+            say("KEYS", n);
+        }
+        return;
+    }
+    p = knob_par(k);
     if (p < 0)
         return;
     knob_range(k, &lo, &hi);
@@ -361,17 +405,41 @@ static void set_mode(int m)
 
 static void caps(char *d, const char *s, int n);
 
+static void iam_piece_room(void);            /* machine.c: a piece stays inside four synth keys */
+static int iam_song(void);                   /* machine.c: seed 32 and up, the IAM panel */
+
+static uint8_t piece_wait, piece_flush;     /* engines fading: the piece lands when they are down */
+static char piece_flush_msg[16];
+static void glo_fx_drop(void)                /* latched effects off before the new piece. A key still held stays */
+{
+    ui.fx_lock = 0;
+    ui.dj_lock = 0;
+    ui.fx_mask = 0;
+    ui.dj_mask = 0;
+    ui.lock_mode = 0;
+    en_fx(0);
+    en_dj(0);
+}
 static void set_piece(int i)                    /* the piece playing kept as it is; piece i as it was left */
 {
+    char t[12] = "PIECE ";
     project_piece(i);
+    iam_piece_room();                        /* named keys still sounding sit on top of the piece */
+    caps(t + 6, piece_name(proj.piece), 4);
+    say(t, project_saved(proj.piece) ? "STORED" : "FACTORY");
+    if (iam_song() && en_playing) {
+        /* The four engines dip first. The new levels come up once they are down,
+         * so the old pad, bass, acid, and air are not still rendering. */
+        glo_fx_drop();
+        piece_flush = 0;
+        if (!piece_wait)
+            en_shed(1);
+        piece_wait = 1;
+        return;
+    }
     project_apply();
     en_seed(plat_ms());
     en_regrow();
-    {
-        char t[12] = "PIECE ";
-        caps(t + 6, piece_name(proj.piece), 4);
-        say(t, project_saved(proj.piece) ? "STORED" : "FACTORY");
-    }
 }
 
 /* into flash now. Writing it stops the chip a moment (it runs from the same flash), so while the music
@@ -412,11 +480,40 @@ static void piece_store(void)                   /* Global, SAVE: the piece as it
 static void piece_factory(void)                 /* Global, SAVE held: back to the factory settings */
 {
     char t[12] = "FACTORY ";
+    int n;
     project_piece_factory();
+    iam_piece_room();
+    caps(t + 8, piece_name(proj.piece), 4);
+    if (iam_song() && en_playing) {
+        glo_fx_drop();
+        for (n = 0; t[n] && n < (int)sizeof piece_flush_msg - 1; n++)
+            piece_flush_msg[n] = t[n];
+        piece_flush_msg[n] = 0;
+        piece_flush = 1;
+        if (!piece_wait)
+            en_shed(1);
+        piece_wait = 1;
+        return;
+    }
     project_apply();
     en_regrow();
-    caps(t + 8, piece_name(proj.piece), 4);
     store_now(t);
+}
+static void piece_land(void)                     /* the four are down: the piece, then they come back */
+{
+    int store;
+    if (!piece_wait || !en_shed_done)
+        return;
+    piece_wait = 0;
+    store = piece_flush;
+    piece_flush = 0;
+    project_apply();
+    if (!store)
+        en_seed(plat_ms());
+    en_regrow();
+    en_shed(0);
+    if (store)
+        store_now(piece_flush_msg);
 }
 
 /* ------------------------------------------------------------ the kit --- */
@@ -551,9 +648,30 @@ static int group_of(int v)
     return -1;
 }
 
+static int iam_song(void);                  /* machine.c: seed 32 and up, the IAM panel */
+static int iam_glo_perf(int b);              /* machine.c: IAM GLO keeps the song. 1 = leave Felucca */
+static int iam_arp_on(void);                 /* machine.c: GLO arpeggiator latched. leds() is above the include */
+static int view_knob(int i)                 /* Tempo's third knob is the white keys, on an IAM song */
+{
+    if (iam_song() && ui.view == V_TEMPO && i == 2)
+        return K_KEYS;
+    return VIEW_KNOB[ui.view][i];
+}
+static void iam_loop_toggle(void);           /* machine.c: GLO REC, the white-key loop */
+static void iam_loop_tick(void);
+static int iam_loop_button(void);            /* 1: light REC */
+static void iam_loop_halt(void);
+static void iam_loop_stop(void);             /* REC while the loop is playing */
+static int iam_loop_playing(void);           /* 1: a finished loop is running */
+static int iam_loop_recording(void);         /* 1: the take is open */
+static int iam_loop_voice(int vc);           /* 1: that voice is in the playing loop */
+static int iam_jam_voice(void);              /* machine.c: the voice the white keys play */
+
 static void button(int b)
 {
     int g;
+    if (iam_song() && iam_glo_perf(b))           /* PLAY conducts, SAVE breaks, EDIT mutates */
+        return;
     for (g = 0; g < NGROUP; g++)                 /* a page's button: its page, or the next in its group */
         if (GROUP[g].btn == b) {
             int v = ui.view;
@@ -566,7 +684,7 @@ static void button(int b)
     switch (b) {
     case B_FX:
         ui.fx_menu = (uint8_t)!ui.fx_menu;
-        say("FX", ui.fx_menu ? "HOLD A KEY" : ui.fx_lock ? "LOCKED ONES STAY ON" : "OFF");
+        say("FX", ui.fx_menu ? "HOLD A KEY" : ui.fx_lock || ui.dj_lock ? "LOCKED ONES STAY ON" : "OFF");
         break;
     case B_EDIT:
         en_next();
@@ -583,6 +701,10 @@ static void button(int b)
         }
         break;
     case B_REC:
+        if (iam_song()) {                        /* GLO: the white keys, not the freeze */
+            iam_loop_toggle();
+            break;
+        }
         say("FREEZE", en_frozen ? "OFF" : "ON");
         en_freeze(!en_frozen);                   /* the engine takes it at its next block */
         break;
@@ -697,6 +819,7 @@ static void rm_draw(void)
 static void rm_enter(void)
 {
     int e;
+    iam_loop_halt();                             /* the key loop does not follow the panel out */
     memset(&rm, 0, sizeof rm);
     rm.on = 1;
     rm.ign_b = plat_buttons();
@@ -813,6 +936,60 @@ static void rm_tick(void)
 static int runner_on(void);
 static void runner_input(uint32_t btn, uint32_t keys);
 static void runner_start(void);
+static int iam_editor_back(int b); /* machine.c: an IAM song leaves the editor on GLO or HOME */
+static int iam_song(void);         /* machine.c: seed 32 and up, the IAM panel */
+static void iam_editor_note(int key); /* machine.c: IAM editor keys, chords and effects */
+static int iam_editor_key_off(int key); /* machine.c: one GLO chord or effect, let go */
+static uint32_t iam_jam_mask(void);     /* machine.c: black-key effects held in GLO */
+static void iam_editor_lift_off(void); /* machine.c: a voice raised so a key could be heard */
+static void iam_editor_unstick(uint32_t keys); /* machine.c: a key that is up lets the line go */
+
+/* GLO's FX page. -1 keeps the Felucca effect. The order is the keys that were asked for. */
+static int glo_dj(int key)
+{
+    static const uint8_t K[14] = {
+        1, 8, 13, 15, 17, 20, 22, 25,          /* black 1, 4, 6, 7, 8, 9, 10, 11 */
+        14, 16, 18, 19, 21, 23                 /* white 9 .. 14 */
+    };
+    int i;
+    if (!iam_song())
+        return -1;
+    for (i = 0; i < 14; i++)
+        if (K[i] == (uint8_t)key)
+            return i;
+    return -1;
+}
+static void glo_lock_or(int key)
+{
+    int d = glo_dj(key);
+    if (d >= 0)
+        ui.dj_lock = (uint16_t)(ui.dj_lock | (uint16_t)(1u << d));
+    else
+        ui.fx_lock |= 1u << KEY_FX[key];
+}
+static void glo_lock_xor(int key)
+{
+    int d = glo_dj(key);
+    if (d >= 0)
+        ui.dj_lock = (uint16_t)(ui.dj_lock ^ (uint16_t)(1u << d));
+    else
+        ui.fx_lock ^= 1u << KEY_FX[key];
+}
+static int glo_lock_has(int key)
+{
+    int d = glo_dj(key);
+    if (d >= 0)
+        return (int)((ui.dj_lock >> d) & 1u);
+    return (int)((ui.fx_lock >> KEY_FX[key]) & 1u);
+}
+static void glo_lock_clear(int key)
+{
+    int d = glo_dj(key);
+    if (d >= 0)
+        ui.dj_lock = (uint16_t)(ui.dj_lock & (uint16_t)~(1u << d));
+    else
+        ui.fx_lock &= ~(1u << KEY_FX[key]);
+}
 
 static void input(void)
 {
@@ -846,7 +1023,7 @@ static void input(void)
                 ui.save_held = 1;              /* no drop while it's held */
                 for (k = 0; k < NKEYS; k++)    /* keys already held: locked */
                     if (held >> k & 1u)
-                        ui.fx_lock |= 1u << KEY_FX[k];
+                        glo_lock_or((int)k);
                 if (held) {
                     ui.lock_keys |= held;
                     ui.btn_used |= m;          /* not a breakdown */
@@ -880,6 +1057,8 @@ static void input(void)
                     if (!proj.par[HAND_PAR[vc]]) /* back on the algorithm: any of its keys let go */
                         for (k = 0; k < NKEYS; k++)
                             if (ui.key_voice[k] == vc + 1) {
+                                if (iam_song() && iam_editor_key_off((int)k))
+                                    continue;
                                 en_note(vc, 53 + k, 0);
                                 ui.key_voice[k] = 0;
                             }
@@ -906,12 +1085,14 @@ static void input(void)
             if (!(ui.btn_used & m))
                 button((int)i);
             else
-                say("FX", ui.fx_lock ? "LOCKED" : "NONE LOCKED");
+                say("FX", ui.fx_lock || ui.dj_lock ? "LOCKED" : "NONE LOCKED");
         } else if (i == B_SAVE && ui.save_global) {
             ui.save_global = 0;                /* Global: SAVE let go, the piece stored (unless held to factory) */
             if (!ui.factory_done)
                 piece_store();
         } else if (!(ui.btn_used & m) && i != B_PLAY) {
+            if (iam_editor_back((int)i))
+                return;                        /* IAM: GLO again, or HOME, is the song */
             if (i == B_SEQ && ui.view == V_SEQ)
                 set_view(V_DRUMS);             /* SEQ tapped in the sequencer: back to Drums */
             else
@@ -933,32 +1114,17 @@ static void input(void)
         uint32_t p = ch & keys & ~ui.shift_keys;                         /* locked, or unlocked */
         for (i = 0; i < NKEYS; i++)
             if (p >> i & 1u)
-                ui.fx_lock ^= 1u << KEY_FX[i];
+                glo_lock_xor((int)i);
         ui.lock_keys |= p;
         ui.btn_used |= 1u << B_SAVE;
     }
     if (ui.fx_menu && !ui.lock_mode && (ch & keys & ~ui.shift_keys)) {   /* a locked effect's key tapped: that */
         uint32_t p = ch & keys & ~ui.shift_keys;                         /* one off, the others stay locked */
         for (i = 0; i < NKEYS; i++)
-            if ((p >> i & 1u) && (ui.fx_lock >> KEY_FX[i] & 1u)) {
-                ui.fx_lock &= ~(1u << KEY_FX[i]);
+            if ((p >> i & 1u) && glo_lock_has((int)i)) {
+                glo_lock_clear((int)i);
                 ui.lock_keys |= 1u << i;       /* and not played while it's held */
             }
-    }
-    {   /* the effects: each key held while the FX menu is on, and those locked */
-        uint32_t m = 0;
-        if (!ui.fx_menu)
-            ui.lock_mode = 0;                  /* FX closed: the locks play on (FX again, a key: that one off) */
-        m = ui.fx_lock;
-        if (ui.fx_menu) {
-            for (i = 0; i < NKEYS; i++)
-                if ((keys & ~ui.shift_keys & ~ui.lock_keys) >> i & 1u)
-                    m |= 1u << KEY_FX[i];
-        }
-        if (m != ui.fx_mask) {
-            ui.fx_mask = m;
-            en_fx(m);
-        }
     }
     if (!ui.fx_menu)
         for (i = 0; i < NKEYS; i++)
@@ -968,6 +1134,10 @@ static void input(void)
                     for (s = 0; s < 16; s++)
                         if (WHITE_KEY[s] == i)
                             step_toggle(s);
+                    if (iam_song())              /* a black key: the same held effects as GLO */
+                        iam_editor_note((int)i);
+                } else if (iam_song()) {         /* chords on the white keys. Not the scale */
+                    iam_editor_note((int)i);
                 } else if (by_hand(voice_of(ui.view))) {   /* a voice off the algorithm, its page: the key plays it */
                     ui.key_voice[i] = (uint8_t)(voice_of(ui.view) + 1);
                     en_note(voice_of(ui.view), 53 + (int)i, 1);
@@ -977,9 +1147,42 @@ static void input(void)
             }
     for (i = 0; i < NKEYS; i++)                  /* let go: its note off, wherever it went */
         if (ui.key_voice[i] && !(keys >> i & 1u)) {
+            if (iam_song() && iam_editor_key_off((int)i))
+                continue;
             en_note(ui.key_voice[i] - 1, 53 + (int)i, 0);
             ui.key_voice[i] = 0;
         }
+    if (iam_song()) {
+        iam_editor_lift_off();
+        iam_editor_unstick(keys);              /* before the effect mask, so a cleared key drops out of it */
+    }
+    {   /* the effects: each key held while the FX menu is on, those locked, and GLO's black keys */
+        uint32_t m = 0;
+        uint16_t dj = 0;
+        if (!ui.fx_menu)
+            ui.lock_mode = 0;                  /* FX closed: the locks play on (FX again, a key: that one off) */
+        m = ui.fx_lock;
+        dj = ui.dj_lock;
+        if (ui.fx_menu) {
+            for (i = 0; i < NKEYS; i++)
+                if ((keys & ~ui.shift_keys & ~ui.lock_keys) >> i & 1u) {
+                    int d = glo_dj((int)i);
+                    if (d >= 0)
+                        dj = (uint16_t)(dj | (uint16_t)(1u << d));
+                    else
+                        m |= 1u << KEY_FX[i];
+                }
+        } else if (iam_song())
+            m |= iam_jam_mask();
+        if (m != ui.fx_mask) {
+            ui.fx_mask = m;
+            en_fx(m);
+        }
+        if (dj != ui.dj_mask) {
+            ui.dj_mask = dj;
+            en_dj(dj);
+        }
+    }
     if (btn || keys || ch)
         ui.act_t = plat_ms();
     midi_in();
@@ -1061,7 +1264,9 @@ static void input(void)
     if ((btn >> B_SAVE & 1u) && !ui.save_held && plat_ms() - ui.down_t[B_SAVE] >= DROP_HOLD) {
         ui.save_held = 1;                      /* held: straight to the drop, no build */
         ui.btn_used |= 1u << B_SAVE;
-        if (en_sec != EN_SEC_GROOVE) {
+        if (iam_song())
+            button(B_SAVE);                    /* the break, once. The release does not fire it again */
+        else if (en_sec != EN_SEC_GROOVE) {
             en_section(EN_CMD_DROP);
             say("DROP", "NEXT BAR");
         } else {
@@ -1070,12 +1275,13 @@ static void input(void)
     }
     for (i = 0; i < 4; i++)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
-            turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
+            turn(EN_K1 + (int)i, view_knob((int)i), e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
             ui.act_t = ui.turn_t = plat_ms();
         }
     help_tick(btn, keys);
+    iam_loop_tick();
 }
 
 /* ------------------------------------------------------------- screen --- */
@@ -1254,7 +1460,8 @@ static void draw_header(void)
                            en_playing | (uint32_t)en_sec << 2 | (uint32_t)en_sec_req << 9 | (uint32_t)msg << 5 |
                                (uint32_t)en_ext << 6 | (uint32_t)proj.par[P_MODE] << 12 | (uint32_t)project_pending() << 16 |
                                (uint32_t)(proj.edited >> proj.piece & 1u) << 17),
-                      (uint32_t)proj.par[P_TEMPO] | (uint32_t)ui.theme << 8 | (uint32_t)(ui.fx_lock != 0) << 12);
+                      (uint32_t)proj.par[P_TEMPO] | (uint32_t)ui.theme << 8 |
+                          (uint32_t)(ui.fx_lock != 0 || ui.dj_lock != 0) << 12);
     if (msg)
         h = hash(hash(h, (uint32_t)ui.msg[0][0] << 8 | ui.msg[0][1]), ui.msg_until);
     if (en_playing)
@@ -1285,7 +1492,7 @@ static void draw_header(void)
                 x -= 10;
             }
         }
-        if (ui.fx_lock && !ui.fx_menu) {          /* effects locked on, the menu closed: they play on */
+        if ((ui.fx_lock || ui.dj_lock) && !ui.fx_menu) {   /* effects locked on, the menu closed: they play on */
             x -= text_w(&FONT_XS, "FX");
             cv_text(x, 8, &FONT_XS, "FX", K_PAD);
             x -= 10;
@@ -1339,16 +1546,18 @@ static void polar(int32_t cx, int32_t cy, float r, int i, int n, int32_t *x, int
     *y = cy - (int32_t)(sy + (sy < 0.0f ? -0.5f : 0.5f));
 }
 
-static void draw_ring(void)
+/* outer is the acid loop. inner is the scale. The HYP ring passes 46 and 28, so its dots stay put. */
+static void draw_ring_at(int32_t cx, int32_t cy, float outer, float inner)
 {
     uint32_t abs_pool = pool_abs(), chord = 0;
     int i, len = en_acid_len ? en_acid_len : 16, s, g = q16(en_acid_glow);
+    int ow = (int)(outer + 0.5f);
     for (i = 0; i < EN_NPAD; i++)
         chord |= 1u << (en_chord[i] % 12u);
     for (s = 0; s < len; s++) {                 /* the acid loop */
         int32_t x, y;
         int cur = en_playing && s == en_acid_pos;
-        polar(CX, CY, 46.0f, s, len, &x, &y);
+        polar(cx, cy, outer, s, len, &x, &y);
         if (en_acid_gate >> s & 1u)
             cv_disc(x, y, (en_acid_acc >> s & 1u) ? 3 : 2, cur ? mix(K_ACID, K_ACC, g) : mix(K_ACID_T, K_ACID, 10));
         else
@@ -1357,7 +1566,7 @@ static void draw_ring(void)
     for (i = 0; i < 12; i++) {                  /* the scale: C at the top */
         int32_t x, y;
         int in = (int)(abs_pool >> i & 1u), ch = (int)(chord >> i & 1u);
-        polar(CX, CY, 28.0f, i, 12, &x, &y);
+        polar(cx, cy, inner, i, 12, &x, &y);
         if (i == proj.par[P_ROOT])
             cv_disc(x, y, 5, K_TEXT);           /* the root: ringed */
         if (ch)
@@ -1367,26 +1576,30 @@ static void draw_ring(void)
         else
             cv_disc(x, y, 1, K_LINE);
     }
-    {   /* the chord's name, in the middle */
+    {   /* the chord's name, in the middle. The big face fits the hole of a radius-46 ring at width 40. */
         char nm[16];
         int pcs[EN_NPAD + 1], k;
         pcs[0] = en_chord_root;
         for (k = 0; k < EN_NPAD; k++)
             pcs[k + 1] = en_chord[k] % 12;
         en_chord_name(pcs, EN_NPAD + 1, nm);
-        if (text_w(&FONT_B, nm) <= 40)
-            text_c(CX, CY - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
+        if (text_w(&FONT_B, nm) * 46 <= ow * 40)
+            text_c(cx, cy - 8, &FONT_B, nm, en_frozen ? K_FROST : K_TEXT);
         else
-            text_c(CX, CY - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
+            text_c(cx, cy - 6, &FONT_XS, nm, en_frozen ? K_FROST : K_TEXT);
     }
 }
+static void draw_ring(void) { draw_ring_at(CX, CY, 46.0f, 28.0f); }
 
-static void draw_meters(void)                    /* left: the five layers */
+/* Five levels, pad noise drone acid kit. x, y, bar width, gap, and bar height.
+ * The HYP screen calls this as (6, 20, 5, 4, 96): bars on a stride of 9, labels on the bar's x. */
+static void draw_meters_box(int32_t x0, int32_t y0, int32_t bw, int32_t gap, int32_t bh)
 {
     static const char *const L[5] = {"P", "N", "D", "A", "K"};
     uint16_t c[5], t[5];
     float lv[5], dm = 0.0f;
     int i;
+    int32_t room = bh > 4 ? bh - 4 : bh;
     c[0] = K_PAD, c[1] = K_DIM, c[2] = K_BASS, c[3] = K_ACID, c[4] = K_PULSE;
     t[0] = K_PAD_T, t[1] = K_LINE, t[2] = K_BASS_T, t[3] = K_ACID_T, t[4] = K_PULSE_T;
     for (i = 0; i < EN_NDRUM; i++)
@@ -1397,13 +1610,20 @@ static void draw_meters(void)                    /* left: the five layers */
     lv[3] = en_acid_level * (float)proj.par[P_ACID] * 0.01f;
     lv[4] = dm * (float)proj.par[P_PULSE] * 0.01f;
     for (i = 0; i < 5; i++) {
-        int32_t x = 6 + i * 9, h = (int32_t)(fm_clampf(lv[i], 0.0f, 1.0f) * 92.0f + 0.5f);
-        cv_rect(x, 20, 5, 96, t[i]);
+        int32_t x = x0 + i * (bw + gap);
+        int32_t h = (int32_t)(fm_clampf(lv[i], 0.0f, 1.0f) * (float)room + 0.5f);
+        int32_t lx = x;
+        cv_rect(x, y0, bw, bh, t[i]);
         if (h > 0)
-            cv_rect(x, 20 + 96 - h, 5, h, c[i]);
-        cv_text(x, 120, &FONT_XS, L[i], K_DIM);
+            cv_rect(x, y0 + bh - h, bw, h, c[i]);
+        if (bw >= 8) {                          /* a wide bar centres its letter; a thin one stays left */
+            int32_t tw = text_w(&FONT_XS, L[i]);
+            lx = x + (bw - tw) / 2;
+        }
+        cv_text(lx, y0 + bh + 4, &FONT_XS, L[i], K_DIM);
     }
 }
+static void draw_meters(void) { draw_meters_box(6, 20, 5, 4, 96); }
 
 static void draw_kit(void)                       /* right: the pattern playing, small */
 {
@@ -1475,9 +1695,19 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("TEMPO"); L("TEMPO, EVOLVE, MOTION, DRIFT"); L("+ SELECT: TEMPO"); break;
+    case B_HOME:
+        L("TEMPO");
+        L(iam_song() ? "TEMPO, EVOLVE, KEYS, DRIFT" : "TEMPO, EVOLVE, MOTION, DRIFT");
+        L("+ SELECT: TEMPO");
+        break;
     case B_ENV: L("PAD; AGAIN: ENV, LFO,"); L("THEN THE CHORDS"); L("SEL + ENV ON A VOICE'S"); L("PAGE: PLAY IT BY HAND"); break;
-    case B_ARP: L("THE ACID; AGAIN: ITS"); L("ENVELOPE, THEN THE LINE"); L("SEL + ENV: BY HAND"); L("SEL + ALGO: ITS SOUND"); break;
+    case B_ARP:
+        if (iam_song()) {
+            L("ARP: ON OR OFF"); L("HELD KEYS, ONE NOTE"); L("LOW TO HIGH, THE BEAT"); L("SELECT STILL FINDS ACID");
+        } else {
+            L("THE ACID; AGAIN: ITS"); L("ENVELOPE, THEN THE LINE"); L("SEL + ENV: BY HAND"); L("SEL + ALGO: ITS SOUND");
+        }
+        break;
     case B_LFO: L("THE DRONE; AGAIN: ITS"); L("ENVELOPE, THEN ITS LFO"); L("SEL + ENV: BY HAND"); L("SEL + ALGO: ITS SOUND"); break;
     case B_GLO: {                                /* and the audio's load, for testing on the device */
         static char cpu[24];
@@ -1495,9 +1725,21 @@ static int help_lines(int b, const char *l[HELP_LINES])
         L(cpu);
         break;
     }
-    case B_EDIT: L("THE NEXT CHORD,"); L("ON THE NEXT BAR"); break;
+    case B_EDIT:
+        if (iam_song()) {
+            L("MUTATE THE SONG"); L("HEARD NOW");
+        } else {
+            L("THE NEXT CHORD,"); L("ON THE NEXT BAR");
+        }
+        break;
     case B_SEQ: L("DRUMS; AGAIN: LINKS, KIT,"); L("THEN DRUM DRIFT"); L("HOLD: THE SEQUENCER"); break;
-    case B_REC: L("FREEZE: THE CHORD HOLDS"); L("AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
+    case B_REC:
+        if (iam_song()) {
+            L("LOOP THE WHITE KEYS"); L("THE LAST FOUR BARS"); L("AGAIN: THE LOOP PLAYS"); L("STAYS UNTIL REC");
+        } else {
+            L("FREEZE: THE CHORD HOLDS"); L("AND THE REVERB RINGS ON"); L("AGAIN: THAW");
+        }
+        break;
     case B_OCTDN: L("AN OCTAVE DOWN: THIS"); L("PAGE'S VOICE, OR THE SONG"); L("SEQUENCER: THE DRUM ABOVE"); break;
     case B_OCTUP: L("AN OCTAVE UP: THIS"); L("PAGE'S VOICE, OR THE SONG"); L("SEQUENCER: THE DRUM BELOW"); break;
     default: break;
@@ -1517,25 +1759,126 @@ static void draw_help(void)
         text_c(120, 56 + k * 20, &FONT_S, l[k], K_TEXT);
 }
 
-/* the FX menu (FX on): the 27 keys, F3 at the top left, down the columns; an effect held, lit */
+/* The name, centred. A box that cannot hold the whole word keeps the letters that fit. */
+static void fx_name(int x, int y, int w, int h, const char *s, uint16_t c)
+{
+    char b[16];
+    int n = 0;
+    int32_t limit = w - 4, tw, tx, ty;
+    if (limit < 8 || !s || !s[0])
+        return;
+    tw = text_w(&FONT_XS, s);
+    if (tw > limit) {
+        while (s[n] && n < (int)sizeof b - 1) {
+            b[n] = s[n];
+            b[n + 1] = 0;
+            if (text_w(&FONT_XS, b) > limit) {
+                b[n] = 0;
+                break;
+            }
+            n++;
+        }
+        s = b;
+        tw = text_w(&FONT_XS, s);
+    }
+    tx = (w - 4 - tw) / 2;
+    if (tx < 0)
+        tx = 0;
+    ty = y + (h - (int)FONT_XS.h) / 2;
+    if (ty < y)
+        ty = y;
+    cv_text(x + 2 + tx, ty, &FONT_XS, s, c);
+}
+/* One key. Held fills the bar on the left, the same way a lit song key does. */
+static void fx_box(int x, int y, int w, int h, int key)
+{
+    int d = glo_dj(key), on, locked;
+    const char *lab;
+    uint16_t fg;
+    if (d >= 0) {
+        on = (int)((ui.dj_mask >> d) & 1u);
+        locked = (int)((ui.dj_lock >> d) & 1u);
+        lab = DJ_LABEL[d];
+    } else {
+        on = (int)((ui.fx_mask >> KEY_FX[key]) & 1u);
+        locked = (int)((ui.fx_lock >> KEY_FX[key]) & 1u);
+        lab = FX_LABEL[KEY_FX[key]];
+    }
+    fg = on ? (locked ? K_PAD : K_ACC) : K_DIM;
+    cv_rect(x, y, w, h, K_LINE);
+    if (w > 2 && h > 2)
+        cv_rect(x + 1, y + 1, w - 2, h - 2, on ? K_PANEL : K_BG);
+    if (on && h > 2)
+        cv_rect(x + 1, y + 1, 2, h - 2, fg);
+    fx_name(x, y, w, h, lab, fg);
+}
+/* GLO: the song screen's boxes. Black keys above, five then six, a bar after
+ * the third, the eighth and the tenth. White keys below, four to a row. */
+static void draw_fx_grid(void)
+{
+    static const int top_w[5] = {52, 54, 56, 42, 33};
+    static const int bot_w[6] = {31, 42, 49, 29, 38, 47};
+    int i, x, row, y = 16, h = 20;
+    for (i = 0, x = 0; i < 5; i++) {
+        fx_box(x, y, top_w[i], h, BLACK_KEY[i]);
+        x += top_w[i];
+        if (i == 2) {
+            cv_rect(x, y, 3, h, K_TEXT);
+            x += 3;
+        }
+    }
+    y += h + 1;
+    for (i = 0, x = 0; i < 6; i++) {
+        fx_box(x, y, bot_w[i], h, BLACK_KEY[5 + i]);
+        x += bot_w[i];
+        if (i == 2 || i == 4) {          /* two bars: the row is full once the names fit */
+            cv_rect(x, y, 2, h, K_TEXT);
+            x += 2;
+        }
+    }
+    y += h + 3;
+    for (row = 0; row < 4; row++) {
+        for (i = 0, x = 0; i < 4; i++) {
+            fx_box(x, y, 60, h, WHITE_KEY[row * 4 + i]);
+            x += 60;
+        }
+        y += h + 1;
+    }
+}
+/* the FX menu (FX on). GLO uses the key grid. HYP lists the note beside the effect. */
 static void draw_fx(void)
 {
     int k;
     cv_text(4, 1, &FONT_XS, ui.lock_mode ? "LOCK: TAP KEYS" : "FX: HOLD A KEY", ui.lock_mode ? K_PAD : K_ACC);
     if (ui.lock_mode)
         cv_text(118, 1, &FONT_XS, "TAP AGAIN: OFF", K_PAD);
-    else if (ui.fx_lock)
+    else if (ui.fx_lock || ui.dj_lock)
         cv_text(118, 1, &FONT_XS, "LOCKED: SAVE+KEY", K_PAD);
+    else if (iam_song())
+        cv_text(118, 1, &FONT_XS, "CROWD KEYS", K_DIM);
     else
         cv_text(118, 1, &FONT_XS, "M: MUTE  S: SOLO", K_DIM);
+    if (iam_song()) {
+        draw_fx_grid();
+        return;
+    }
     for (k = 0; k < NKEYS; k++) {
         int32_t x = 2 + (k / 9) * 79, y = 16 + (k % 9) * 14;
-        int pc = (5 + k) % 12, oct = 3 + (5 + k) / 12, on = (int)(ui.fx_mask >> KEY_FX[k] & 1u),
-            locked = (int)(ui.fx_lock >> KEY_FX[k] & 1u);
+        int d = glo_dj(k), pc = (5 + k) % 12, oct = 3 + (5 + k) / 12, on, locked;
         int black = pc == 1 || pc == 3 || pc == 6 || pc == 8 || pc == 10;
         char t[24];
         int n = 0;
         const char *nm = EN_NOTE_NAME[pc];
+        const char *lab;
+        if (d >= 0) {
+            on = (int)((ui.dj_mask >> d) & 1u);
+            locked = (int)((ui.dj_lock >> d) & 1u);
+            lab = DJ_LABEL[d];
+        } else {
+            on = (int)(ui.fx_mask >> KEY_FX[k] & 1u);
+            locked = (int)(ui.fx_lock >> KEY_FX[k] & 1u);
+            lab = FX_LABEL[KEY_FX[k]];
+        }
         while (*nm)
             t[n++] = *nm++;
         t[n++] = (char)('0' + oct);
@@ -1543,12 +1886,118 @@ static void draw_fx(void)
         if (on)
             cv_rect(x - 1, y - 1, 77, 14, locked ? K_PAD : K_ACC);   /* locked: the primary; held: the accent */
         cv_text(x, y, &FONT_XS, t, on ? K_BG : black ? K_DIM : K_TEXT);
-        cv_text(x + 24, y, &FONT_XS, FX_LABEL[KEY_FX[k]], on ? K_BG : K_TEXT);
+        cv_text(x + 24, y, &FONT_XS, lab, on ? K_BG : K_TEXT);
     }
 }
 
 #include "runner.c"
 static int runner_on(void) { return kr.on; }
+
+/* The synth the white keys play, and its sound, for the knob row. A held effect
+ * takes the sound's place. *hand is set when that voice is off the algorithm. */
+static void iam_keys_caption(char *u, int n, uint16_t *col, int *hand)
+{
+    static const char *const WHO[3] = {"PAD", "DRONE", "ACID"};
+    static const int SND[3] = {P_PADTONE, P_DR_INST, P_AC_WAVE};
+    static const char *const *const BANK[3] = {EN_PAD_SOUND, EN_DRONE_SOUND, EN_ACID_SOUND};
+    int vc, snd, i, nfx = 0, ndj = 0, hot, first = -1, fdj = -1, j = 0;
+    char sound[16];
+    const char *line, *w;
+    vc = iam_jam_voice();
+    if (vc < 0 || vc > 2)
+        vc = EN_V_PAD;
+    snd = proj.par[SND[vc]];
+    if ((unsigned)snd >= EN_NSOUND)
+        snd = 0;
+    caps(sound, BANK[vc][snd], (int)sizeof sound);
+    for (i = 0; i < EN_NFX; i++)
+        if ((ui.fx_mask >> i) & 1u) {
+            if (first < 0)
+                first = i;
+            nfx++;
+        }
+    for (i = 0; i < 14; i++)
+        if ((ui.dj_mask >> i) & 1u) {
+            if (fdj < 0)
+                fdj = i;
+            ndj++;
+        }
+    hot = nfx + ndj;
+    if (hot == 1 && ndj == 1)
+        line = DJ_LABEL[fdj];
+    else if (hot == 1)
+        line = FX_LABEL[first];
+    else if (hot > 1) {
+        sound[0] = (char)('0' + (hot > 9 ? 9 : hot));
+        sound[1] = ' ';
+        sound[2] = 'F';
+        sound[3] = 'X';
+        sound[4] = 0;
+        line = sound;
+    } else {
+        line = sound;
+    }
+    w = WHO[vc];
+    if (n < 2) {
+        if (n > 0)
+            u[0] = 0;
+        *col = K_TEXT;
+        *hand = 0;
+        return;
+    }
+    while (*w && j < n - 1)
+        u[j++] = *w++;
+    if (j < n - 1)
+        u[j++] = ' ';
+    while (*line && j < n - 1)
+        u[j++] = *line++;
+    u[j] = 0;
+    *col = hot ? K_ACC : vc == EN_V_DRONE ? K_BASS : vc == EN_V_ACID ? K_ACID : K_PAD;
+    *hand = !hot && by_hand(vc);
+}
+
+/* GLO, on an IAM song. The four beats run across the bottom, so a take can land
+ * on the bar. The level meters sit on the left, the chord ring on the right.
+ * Bar, phrase, and step share the top line. The synth the keys play is named
+ * on the knob row, under the beats. */
+static void draw_iam_bars(void)
+{
+    uint32_t step = en_bars & 15u, phrase = (en_bars / 16u) & 3u;
+    int beat = (int)(step >> 2), sub = (int)(step & 3u), i, rec, looping;
+    char n[8];
+    const char *lab;
+    int32_t tw;
+    rec = iam_loop_recording();
+    looping = iam_loop_playing();
+    lab = rec ? "REC" : looping ? "LOOP" : en_playing ? "BAR" : "STOP";
+    tw = cv_text(6, 2, &FONT_XS, lab, rec ? K_ACC : looping ? K_PAD : K_DIM);
+    n[0] = (char)('1' + phrase);
+    n[1] = 0;
+    cv_text(tw + 4, 2, &FONT_XS, n, !en_playing ? K_DIM : step == 0u ? K_ACC : K_TEXT);
+    n[0] = 'S';
+    n[1] = 'T';
+    n[2] = 'E';
+    n[3] = 'P';
+    n[4] = ' ';
+    n[5] = (char)('0' + (step + 1u) / 10u);
+    n[6] = (char)('0' + (step + 1u) % 10u);
+    n[7] = 0;
+    tw = text_w(&FONT_XS, n);
+    cv_text(234 - tw, 2, &FONT_XS, n, !en_playing ? K_DIM : (step & 3u) == 0u ? K_ACC : K_TEXT);
+    draw_meters_box(8, 18, 14, 8, 68);          /* left: shorter than the HYP meters, clear of the beats */
+    draw_ring_at(176, 62, 40.0f, 40.0f * (28.0f / 46.0f));
+    for (i = 0; i < 4; i++) {
+        int32_t x = 12 + i * 58, w = (sub + 1) * 46 / 4;
+        cv_rect(x, 108, 50, 28, K_LINE);
+        cv_rect(x + 2, 110, 46, 24, K_BG);
+        if (!en_playing)
+            continue;
+        if (i < beat)
+            cv_rect(x + 2, 110, 46, 24, K_DIM);
+        else if (i == beat)
+            cv_rect(x + 2, 110, w > 46 ? 46 : w, 24, K_ACC);
+    }
+}
 
 static void draw_main(void)
 {
@@ -1559,6 +2008,7 @@ static void draw_main(void)
     h = hash(h, ui.theme);
     if (ui.fx_menu) {
         h = hash(hash(0x46584D4Eu, ui.fx_mask ^ (uint32_t)ui.theme << 28 ^ (uint32_t)ui.lock_mode << 31), ui.fx_lock);
+        h = hash(h, (uint32_t)ui.dj_mask | (uint32_t)ui.dj_lock << 16);
         if (h != ui.sig[1]) {
             ui.sig[1] = h;
             cv_begin(240, MAIN_H, K_BG);
@@ -1590,6 +2040,42 @@ static void draw_main(void)
         ui.sig[1] = h;
         cv_begin(240, MAIN_H, K_BG);
         draw_seq();
+        cv_blit(0, MAIN_Y);
+        return;
+    }
+    if (iam_song()) {
+        uint32_t bars = en_bars;
+        int vc = iam_jam_voice();
+        h = hash(2166136261u, (bars & 15u) | ((bars / 16u) & 3u) << 8 | (uint32_t)en_playing << 12 |
+                                  (uint32_t)iam_loop_recording() << 13 | (uint32_t)iam_loop_playing() << 14 |
+                                  (uint32_t)ui.theme << 16 | (uint32_t)ui.view << 20);
+        h = hash(h, (uint32_t)proj.par[P_PAD] | (uint32_t)proj.par[P_BASS] << 8 |
+                        (uint32_t)proj.par[P_ACID] << 16 | (uint32_t)vc << 24);
+        h = hash(h, (uint32_t)proj.par[P_PADTONE] | (uint32_t)proj.par[P_DR_INST] << 8 |
+                        (uint32_t)proj.par[P_AC_WAVE] << 16);
+        h = hash(h, (uint32_t)(proj.par[P_PAD_MAN] | proj.par[P_DR_MAN] << 1 | proj.par[P_AC_MAN] << 2));
+        h = hash(h, ui.fx_mask);
+        h = hash(h, ui.dj_mask);
+        h = hash(h, pool_abs());
+        h = hash(h, (uint32_t)proj.par[P_ROOT] | (uint32_t)en_chord_root << 8 | (uint32_t)en_frozen << 16);
+        for (i = 0; i < EN_NPAD; i++)
+            h = hash(h, en_chord[i]);
+        h = hash(h, en_acid_gate | (uint32_t)en_acid_acc << 16);
+        h = hash(h, en_acid_pos | (uint32_t)en_acid_len << 8 | (uint32_t)q16(en_acid_glow) << 16);
+        h = hash(h, (uint32_t)q16(en_pad_level) | (uint32_t)q16(en_bass_level) << 8 |
+                        (uint32_t)q16(en_acid_level) << 16 | (uint32_t)q16(en_noise_level) << 24);
+        {
+            uint32_t g = 0;
+            for (i = 0; i < EN_NDRUM; i++)
+                g |= (uint32_t)q16(en_drum_glow[i]) << (5u * i);
+            h = hash(h, g);
+        }
+        h = hash(h, (uint32_t)proj.par[P_NOISE] | (uint32_t)proj.par[P_PULSE] << 8);
+        if (h == ui.sig[1])
+            return;
+        ui.sig[1] = h;
+        cv_begin(240, MAIN_H, K_BG);
+        draw_iam_bars();
         cv_blit(0, MAIN_Y);
         return;
     }
@@ -1631,12 +2117,17 @@ static void draw_knobs(void)
     h = hash(h, (uint32_t)(proj.par[P_PAD_MAN] | proj.par[P_DR_MAN] << 1 | proj.par[P_AC_MAN] << 2) << 24 |
                 (uint32_t)proj.par[P_LINKS] << 8 |
                     (uint32_t)(proj.par[oct_par(ui.view)] + 8) << 12);
+    if (iam_song()) {                            /* the knob row names the synth the keys play */
+        h = hash(h, (uint32_t)proj.par[P_PAD] | (uint32_t)proj.par[P_BASS] << 8 | (uint32_t)proj.par[P_ACID] << 16);
+        h = hash(h, ui.fx_mask);
+        h = hash(h, (uint32_t)ui.dj_mask);
+    }
     if (ui.view == V_GLOBAL)
         h = hash(h, (uint32_t)proj.piece | (uint32_t)(proj.edited >> proj.piece & 1u) << 8 |
                         (uint32_t)project_saved(proj.piece) << 9);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
-        h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
+        h = hash(h, (uint32_t)knob_get(view_knob((int)i)));
     h = hash(h, (uint32_t)now_touch);
     if (h == ui.sig[2])
         return;
@@ -1654,6 +2145,8 @@ static void draw_knobs(void)
             caps(t, VIEW_NAME[ui.view], sizeof t);
         }
         xt = xd - 5 - text_w(&FONT_XS, t);
+        if (iam_song() && ui.view == V_TEMPO)
+            xt = xd + 5;                         /* no page name: the rule runs up to the dots */
         if (ui.view == V_GLOBAL) {               /* Global: the piece's state, and what SAVE does */
             char u[24];
             int32_t xs;
@@ -1675,9 +2168,11 @@ static void draw_knobs(void)
             if (xt - 9 > xs + 4)
                 cv_rect(xs + 4, 5, xt - 9 - xs - 4, 1, K_LINE);
         } else {                                 /* the voice's sound (the drums: the kit), then the rule */
-            char u[16], t[12];
+            char u[24], t[12];
             int32_t xs;
             int vc = voice_of(ui.view);
+            uint16_t lc = K_DIM;
+            int jam_hand = 0;
             if (vc >= 0) {
                 en_param_text(SOUND_PAR[vc], proj.par[SOUND_PAR[vc]], t);
                 caps(u, t, sizeof u);
@@ -1685,11 +2180,15 @@ static void draw_knobs(void)
                 int k = proj.par[P_KIT_KICK];
                 int same = proj.par[P_KIT_SNARE] == k && proj.par[P_KIT_HAT] == k && proj.par[P_KIT_PERC] == k;
                 caps(u, same ? EN_KIT_NAME[(unsigned)k < EN_NKIT ? k : 0] : "Mixed kit", sizeof u);
+            } else if (iam_song()) {
+                iam_keys_caption(u, (int)sizeof u, &lc, &jam_hand);
             } else {
                 caps(u, "HYP-1", sizeof u);
             }
-            xs = cv_text(4, -1, &FONT_XS, u, K_DIM);
+            xs = cv_text(4, -1, &FONT_XS, u, lc);
             if (by_hand(vc))                     /* the voice off the algorithm: said beside its sound */
+                xs = cv_text(xs + 5, -1, &FONT_XS, "BY HAND", K_ACC);
+            else if (jam_hand && xs + 5 + text_w(&FONT_XS, "BY HAND") < xt - 8)
                 xs = cv_text(xs + 5, -1, &FONT_XS, "BY HAND", K_ACC);
             else if (proj.par[P_LINKS])          /* the links on: said beside it */
                 xs = cv_text(xs + 5, -1, &FONT_XS, "+LINK", K_ACC);
@@ -1713,7 +2212,8 @@ static void draw_knobs(void)
             if (xt - 9 > xs + 4)
                 cv_rect(xs + 4, 5, xt - 9 - xs - 4, 1, K_LINE);
         }
-        cv_text(xt, -1, &FONT_XS, t, K_ACC);
+        if (!(iam_song() && ui.view == V_TEMPO))
+            cv_text(xt, -1, &FONT_XS, t, K_ACC);
         for (k = 0; k < NDIAL; k++) {
             int cur = k == ui.view || (ui.view == V_SEQ && k == V_DRUMS);
             int same = group_of(k) >= 0 && group_of(k) == group_of(ui.view == V_SEQ ? V_DRUMS : ui.view);
@@ -1721,7 +2221,7 @@ static void draw_knobs(void)
         }
     }
     for (i = 0; i < 4; i++) {
-        int k = VIEW_KNOB[ui.view][i], lo, hi, v, hot = now_touch && ui.touched == (int)i;
+        int k = view_knob((int)i), lo, hi, v, hot = now_touch && ui.touched == (int)i;
         int32_t x = (int32_t)i * 60, cx = x + 30;
         char t[16];
         uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_ACC : K_PAD;
@@ -1733,7 +2233,7 @@ static void draw_knobs(void)
             cv_round(x + 3, 11, 54, 57, 3, K_PANEL);
         knob_range(k, &lo, &hi);
         v = knob_get(k);
-        caps(t, KNOB_LABEL[ui.view][i], sizeof t);
+        caps(t, k == K_KEYS ? "Keys" : KNOB_LABEL[ui.view][i], sizeof t);
         text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
         if (hi - lo < 6) {                       /* a switch: its positions as pips */
             int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
@@ -1754,11 +2254,15 @@ static void leds(void)
     int g = group_of(ui.view == V_SEQ ? V_DRUMS : ui.view);
     if (g >= 0)
         b |= 1u << GROUP[g].btn;
+    if (iam_arp_on())
+        b |= 1u << B_ARP;                        /* GLO: the arpeggiator is on, on any page */
     if (en_playing)
         b |= 1u << B_PLAY;
-    if (en_frozen)
+    if (iam_loop_button())
+        b |= 1u << B_REC;                        /* recording solid, the loop blinking */
+    else if (en_frozen)
         b |= 1u << B_REC;
-    if (ui.fx_lock && !ui.fx_menu && (ui.frame / 16u) & 1u)
+    if ((ui.fx_lock || ui.dj_lock) && !ui.fx_menu && (ui.frame / 16u) & 1u)
         b |= 1u << B_FX;                         /* effects locked on, the menu closed: FX blinks */
     if (en_sec != EN_SEC_GROOVE || (en_sec_req && (ui.frame / 8u) & 1u))   /* a section; blinking: on its way */
         b |= 1u << B_SAVE;
@@ -1775,14 +2279,27 @@ static void leds(void)
                     k |= 1u << BLACK_KEY[i];
     } else if (ui.fx_menu) {                     /* FX: lit; the keys held */
         b |= 1u << B_FX;
-        for (i = 0; i < NKEYS; i++)
-            if (ui.fx_mask >> KEY_FX[i] & 1u)
+        for (i = 0; i < NKEYS; i++) {
+            int d = glo_dj((int)i);
+            if (d >= 0) {
+                if ((ui.dj_mask >> d) & 1u)
+                    k |= 1u << i;
+            } else if (ui.fx_mask >> KEY_FX[i] & 1u)
                 k |= 1u << i;
+        }
     } else if (ui.view == V_SEQ) {               /* the sequencer: the lane's hits on the white keys, the playhead */
         uint16_t bits = en_pats[seq_pat()][ui.lane];
         for (i = 0; i < 16; i++)
             if ((bits >> i & 1u) ^ (uint32_t)(en_playing && i == en_drum_pos))
                 k |= 1u << WHITE_KEY[i];
+        if (iam_song())                          /* a black key held: its effect, and only that key */
+            for (i = 0; i < NKEYS; i++)
+                if (ui.key_voice[i])
+                    k |= 1u << i;
+    } else if (iam_song()) {                     /* the key under the finger. The scale stays put */
+        for (i = 0; i < NKEYS; i++)
+            if (ui.key_voice[i])
+                k |= 1u << i;
     } else {
         for (i = 0; i < NKEYS; i++)
             if (ap >> ((5u + i) % 12u) & 1u)
@@ -1919,6 +2436,8 @@ static void splash_tick(void)                    /* the HYP-1 card's steps, fill
     plat_leds(n ? 1u << B_PLAY : 0u, k);
 }
 
+#include "machine.c"
+
 void ui_init(void)
 {
     if (rm.on)
@@ -1930,6 +2449,16 @@ void ui_init(void)
     ui.theme = (uint8_t)proj.par[P_THEME];
     th = &THEMES[ui.theme < EN_NTHEME ? ui.theme : 0];
     ui.splash = ui_splash_ms > 0u;
+    if (project_seed >= IAM_SEED_MIN) {          /* IAM-1: a song, already playing, no splash */
+        ui.splash = 0;
+        iam_boot(project_seed);
+        lcd_fill(0, 0, 240, 240, K_BG);
+        iam.dirty = 1;
+        if (!en_playing)
+            en_play(1);
+        return;
+    }
+    iam.on = 0;
     if (ui.splash) {
         draw_splash();
     } else {
@@ -1941,6 +2470,7 @@ void ui_init(void)
 
 void ui_frame(void)
 {
+    piece_land();
     if (ui.splash) {
         uint32_t held = plat_buttons() | plat_keys();
         if (plat_ms() - ui.boot_t < ui_splash_ms && !held) {
@@ -1955,6 +2485,14 @@ void ui_frame(void)
         lcd_fill(0, 0, 240, 240, K_BG);
         if (!en_playing)
             en_play(1);
+    }
+    if (project_seed >= IAM_SEED_MIN && !iam.on)
+        iam_home_watch();                        /* deep editor: hold HOME, and the song returns */
+    if (iam.on) {
+        store_tick();
+        iam_frame();
+        ui.frame++;
+        return;
     }
     if (ui.theme != (uint8_t)proj.par[P_THEME]) {    /* a new theme: everything again */
         ui.theme = (uint8_t)proj.par[P_THEME];
@@ -1984,6 +2522,14 @@ void ui_frame(void)
         }
     }
     input();
+    if (iam_song() && !iam.on)
+        iam_arp_tick();                          /* same frame as the key: one note, on the sixteenths */
+    if (iam.on) {                                /* GLO or HOME just handed the panel back */
+        store_tick();
+        iam_frame();
+        ui.frame++;
+        return;
+    }
     autosave();
     if (kr.on) {                                 /* the secret: the whole screen, twenty frames a second */
         runner_update();
@@ -2006,6 +2552,11 @@ void ui_frame(void)
 
 void ui_input_only(void)
 {
+    if (iam.on) {
+        if (iam.primed)
+            iam_keys(plat_keys(), plat_buttons()); /* between frames too: a click is an edge */
+        return;                                  /* encoders stay once a frame */
+    }
     if (rm.on)
         rm_tick();
     else

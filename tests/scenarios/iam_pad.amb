@@ -1,0 +1,88 @@
+# Auto mode moves the pad. The intro holds Voices and a 9th.
+# Four bars in, the groove brings the next sound and chord.
+seed 42
+reboot
+wait 3000
+expect iamsec 0
+expect par10 1
+expect par92 3
+expect par13 68
+expect par15 3
+expect chordroot 8
+expect chord0 56
+expect chord2 59
+expect chordiv 1037
+expect pad_level >50
+# Four bars in, the groove: Strings, a 7th, and a new degree. Still singing.
+wait 5000
+expect iamsec 1
+expect par10 2
+expect par92 2
+expect par93 1
+expect chordroot 3
+expect chord0 46
+expect chord2 63
+expect chordiv 1161
+expect pad_level >40
+expect iammask 65
+# Four bars into the groove, the next colour. Manual leaves that pad where it is.
+wait 5000
+expect iamsec 1
+expect par10 0
+expect par92 3
+expect par93 0
+expect chordroot 10
+expect chord2 71
+expect chordiv 1035
+expect pad_level >40
+expect iammask 65
+tap PLAY
+wait 80
+expect iamauto 0
+wait 6000
+expect iamsec 1
+expect par10 0
+expect par92 3
+expect chordroot 10
+# Another song still sings: the rest stays short, and the level LFO is not the one.
+seed 99
+reboot
+wait 400
+expect iam 1
+expect playing 1
+expect iamauto 1
+expect par15 <10
+expect par13 >40
+expect par19 0
+# Stabs sit at half. The sound lands on the bar. A singing sound keeps the level.
+seed 42
+reboot
+wait 80
+expect par10 1
+key w0 down
+wait 80
+spin K3 20
+wait 30
+expect par0 100
+spin K1 -1
+wait 30
+key w0 up
+wait 1600
+expect par10 0
+expect par0 100
+key w0 down
+wait 80
+spin K1 6
+wait 30
+key w0 up
+wait 1600
+expect par10 6
+expect par0 50
+key w0 down
+wait 80
+spin K1 9
+wait 30
+key w0 up
+wait 1600
+expect par10 15
+expect par0 100

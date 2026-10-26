@@ -1,0 +1,167 @@
+# Each engine has sixteen steps. Dust opens on the offbeats, a chop on the &.
+# Pad, bass and acid open full. FX can move the row. SEQ edits the tracks that are on.
+# SELECT walks those tracks. OCT shifts the selected one by an octave.
+seed 42
+reboot
+wait 40
+expect iamstyle 0
+expect iamgate0 65535
+expect iamgate1 65535
+expect iamgate2 65535
+expect iamgate3 43690
+expect tempo 173
+expect iamheld -1
+expect iamseq 0
+# Under two seconds the screen leaves, and SELECT is not the steps yet.
+key w0 down
+wait 400
+spin SELECT 1
+wait 30
+expect iamstep 0
+expect tempo 173
+expect iamgate0 65535
+key w0 up
+wait 40
+expect iamheld -1
+# Two seconds alone does not open the steps. SELECT stays tempo, and letting go leaves the row.
+key w3 down
+wait 2100
+expect hold DUST
+expect toast INTRO
+expect toast2 AUTO
+expect iamheld 3
+expect iamstep 0
+expect tempo 173
+spin SELECT 1
+wait 30
+expect iamstep 0
+expect tempo 173
+key w3 up
+wait 40
+expect iamheld -1
+expect iamgate3 43690
+# Dust is off, so it is not a row until the click lands.
+tapkey w3
+wait 1800
+expect iammask 73
+expect iamgate3 43690
+expect toast DUST
+expect toast2 ON
+tap SEQ
+expect iamseq 1
+expect iamseqn 4
+expect iamseqat 0
+expect toast SEQ
+expect toast2 PAD
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast DUST
+expect toast2
+expect tempo 173
+expect hazeoct 0
+tap OCT+
+expect hazeoct 1
+expect iamseqat 1
+expect tempo 173
+expect toast DUST
+expect toast2 +1
+tap OCT-
+expect hazeoct 0
+expect toast2 0
+tapkey w0
+expect iamgate3 43691
+expect toast DUST
+expect toast2 STEP
+expect iammask 73
+tap ARP
+wait 1800
+expect iamgate3 43690
+expect iammask 73
+expect iamseq 1
+tap SEQ
+expect iamseq 0
+tapkey w3
+wait 1800
+expect iammask 65
+expect iamgate3 43690
+# Glass shares the pad's row. The first white key takes the pad's first step out.
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+expect toast2 PAD
+tapkey w0
+expect iamgate0 65534
+expect iamgate3 43690
+expect iammask 65
+tap ARP
+wait 1800
+expect iamgate0 65535
+expect iamgate3 43690
+expect iamseq 1
+tap SEQ
+expect iamseq 0
+# Five clicks: the beat, then acid, pad, bass, and the air's row.
+tap HOME
+wait 40
+expect iamheld -1
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+expect toast MUTATE AIR
+expect iamgate0 17476
+expect iamgate1 17476
+expect iamgate2 17476
+expect iamgate3 21845
+expect tempo 173
+# A new song puts the rows back. Reggae's fourth key is the chop.
+turn PRESET 1
+wait 1800
+expect iamstyle 1
+expect iamgate0 65535
+expect iamgate1 65535
+expect iamgate2 65535
+expect iamgate3 17476
+tap SEQ
+expect iamseq 1
+expect iamseqat 0
+spin SELECT 1
+wait 30
+expect iamseqat 1
+expect toast HOOVER
+expect toast2
+expect par23 -1
+expect tempo 83
+tap OCT+
+expect par23 0
+expect iamseqat 1
+expect tempo 83
+expect toast HOOVER
+expect toast2 0
+tap OCT-
+expect par23 -1
+expect toast2 -1
+spin SELECT 1
+wait 30
+expect iamseqat 2
+expect toast CHOP
+expect toast2
+expect hazeoct 0
+tap OCT+
+expect hazeoct 1
+expect iamseqat 2
+expect toast CHOP
+expect toast2 +1
+tap OCT-
+expect hazeoct 0
+expect toast2 0
+tapkey w0
+expect iamgate3 17477
+tap HOME
+wait 40
+expect iamheld -1
+expect iamseq 0
+expect iamstyle 1
+expect iamgate3 17477

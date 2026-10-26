@@ -7,6 +7,7 @@
  * and the player's three. A flash write silences the audio a moment, so the bank is written while
  * stopped (project_flush, the UI's to call). */
 project_t proj;
+uint32_t project_seed;
 
 #define BANK_MAGIC 0x32505948u               /* "HYP2" */
 #define BANK_FORMAT 1u
@@ -149,6 +150,7 @@ void project_start(uint32_t seed)
                                     P_DETUNE, P_NZ_TONE, P_DR_CUT, P_DR_RES, P_DE_AMT, P_DL_DEPTH, P_AC_CUT, P_AC_RES,
                                     P_AC_ENV, P_AC_DEC, P_AC_DENS, P_AC_MUT, P_ECHO, P_REVERB, P_SIZE, P_DRIVE};
     uint32_t r = seed, i;
+    project_seed = seed;
     memset(&proj, 0, sizeof proj);
     bank_load();
     for (i = 0; i < NPIECES; i++) {

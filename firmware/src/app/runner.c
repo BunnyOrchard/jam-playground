@@ -100,6 +100,8 @@ static void runner_start(void)
     kr_reset();
     ui.fx_menu = 0;
     ui.help = 0;
+    ui.dj_mask = 0;
+    en_dj(0);
     lcd_fill(0, 0, 240, 240, RGB(0, 0, 0));
     kr_fx();
 }

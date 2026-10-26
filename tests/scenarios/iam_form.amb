@@ -1,0 +1,24 @@
+# The arrangement keeps moving while GLO is open. Same bars as the song screen.
+# Seed 42 opens in the intro. Four bars in, the groove.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect iam 0
+expect iamsec 0
+wait 3000
+expect iam 0
+expect iamsec 0
+expect par10 1
+expect chordroot 8
+wait 5000
+expect iamsec 1
+expect par10 2
+expect chordroot 3
+wait 5000
+expect iam 0
+expect iamsec 1
+expect par10 0
+expect par92 3
+expect chordroot 10

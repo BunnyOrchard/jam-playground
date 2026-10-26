@@ -3,14 +3,14 @@
 # Keys on a voice's pages play it (the scale stays as it is); on any other page they edit the scale.
 wait 500
 expect par10 1
-# the pad: SEL + ALGORITHM, then its Sound knob (KNOB 3)
+# the pad: SEL + ALGORITHM, then its Sound knob (KNOB 2, as on the drone and the acid)
 tap ENV
 press SEL
 turn ALGO 1
 release SEL
 expect par10 2
 expect edited 1
-turn K3 1
+turn K2 1
 expect par10 3
 wait 1500
 shot sound_pad.png
@@ -24,11 +24,10 @@ turn K2 -3
 expect par84 12
 wait 1500
 shot sound_drone.png
-# the acid: its Sound is KNOB 4 on Acid env
+# the acid: Sound is KNOB 2 on the first acid page
 tap ARP
-tap ARP
-expect view 10
-turn K4 2
+expect view 9
+turn K2 2
 expect par40 2
 # the kit: SEQ three times; one drum, then all four at once with SEL + ALGORITHM
 tap SEQ

@@ -1,0 +1,456 @@
+# IAM-1 plays itself from power-on. Seeds 0, 2 and 3 stay on the HYP-1 panel.
+seed 42
+reboot
+wait 200
+expect playing 1
+expect iam 1
+expect iamauto 1
+expect iamstyle 0
+expect iamsec 0
+expect iammask 65
+expect tempo 173
+expect par10 1
+expect par13 68
+expect par15 3
+expect par19 0
+expect par20 2
+expect par21 14
+expect par22 22
+expect parsbad 0
+expect par1 0
+expect litkeys 1281
+expect litbtn 1024
+# Hat is on, so the open hat plays with it. Snare is off, so the clap is quiet. The kick's kit is the one the song baked.
+expect par55 0
+expect par58 36
+expect par61 19
+expect par85 1
+# OCT+ is excite, and two silent drums come in. OCT- is back. The song's octave is gone.
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0x71
+expect par49 >40
+expect par52 >40
+tap OCT-
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect par49 0
+expect par52 0
+expect par9 33
+expect par10 1
+# The acid key is dark in the intro. A real click lights it and it plays.
+key w2 down
+wait 500
+key w2 up
+wait 1600
+expect iammask 69
+expect par1 48
+expect litkeys 1297
+key w2 down
+wait 500
+key w2 up
+wait 1600
+expect iammask 65
+expect par1 0
+expect litkeys 1281
+shot iam.png
+wav iam.wav
+wait 2500
+wavstop
+expect sixteenths >8
+expect pad_level >5
+expect peak_db_max -0.5
+expect peak_db_min -42
+# SAVE is the break. Two parts step out and two step in. The engine stays in the groove.
+# On this song the pad and the hat step out, and the haze and the kick step in.
+# Wood, the knock that replaced brown dust, comes in at 28.
+tap SAVE
+wait 1600
+expect iamsec 3
+expect sec 0
+expect iammask 0x18
+expect iamhop 2
+expect par0 0
+expect par58 0
+expect par4 28
+expect par49 >40
+wait 2500
+expect sec 0
+# Back returns that intro, so the knobs below still see the song they started on.
+tap ARP
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect par0 >50
+expect par49 0
+# PLAY hands the song back. It keeps playing.
+tap PLAY
+wait 80
+expect iamauto 0
+expect playing 1
+tap PLAY
+wait 80
+expect iamauto 1
+# Hold the pad: knob 1 is its sound, and letting go does not also mute it.
+key w0 down
+wait 80
+spin K1 2
+wait 30
+key w0 up
+wait 1600
+expect par10 3
+expect iammask 65
+# Knob 1 put Glass on the pad. The pad key stays lit. Glass's own key is a separate voice.
+expect litkeys 1281
+tapkey w0
+wait 1600
+expect par10 1
+expect iammask 65
+expect litkeys 1281
+# Knob 4 is the pad's cutoff, and letting go does not mute it.
+key w0 down
+wait 80
+spin K4 2
+wait 30
+key w0 up
+wait 40
+expect par9 41
+expect iammask 65
+# A dark key, level turned up, comes in from silence. Level turned down leaves it dark.
+key w2 down
+wait 80
+spin K3 -1
+wait 30
+key w2 up
+wait 40
+expect iammask 65
+expect par1 0
+key w2 down
+wait 80
+spin K3 1
+wait 30
+expect toast ACID 4%
+expect toast2 FROM SILENT
+key w2 up
+wait 40
+expect iammask 69
+expect par1 4
+expect litkeys 1297
+tapkey w2
+wait 1600
+expect iammask 65
+expect par1 0
+# A click of the pad's own sound mutes it. A finger is longer than 280 ms, and the light stays with it.
+tapkey w0
+wait 1600
+expect iammask 64
+expect par10 1
+expect litkeys 1280
+key w0 down
+wait 500
+key w0 up
+wait 1600
+expect iammask 65
+expect litkeys 1281
+# Holding, and letting go without a twist, does not mute it.
+key w0 down
+wait 1000
+key w0 up
+wait 40
+expect iammask 65
+expect litkeys 1281
+# The lowest black key is the kick. A click brings it in on the bar and leaves the kit alone.
+tapkey b0
+wait 1600
+expect iammask 81
+expect par85 1
+expect par49 >40
+expect litkeys 1283
+# The clap is its own switch. The snare stays off. The clap uses the snare's stored level.
+tapkey b2
+wait 1600
+expect iammask 81
+expect par52 0
+expect par55 >20
+expect litkeys 1315
+tapkey b2
+wait 1600
+expect iammask 81
+expect par55 0
+expect par52 0
+# The rim is its own drum. The kick's kit, the snare, and the clap stay where they were.
+tapkey b6
+wait 1600
+expect iammask 81
+expect par85 1
+expect par55 0
+expect iamdon 80
+expect litkeys 34051
+tapkey b6
+wait 1600
+expect iamdon 16
+expect litkeys 1283
+# Hold the kick and knob 1 walks the kit. The kick stays on.
+key b0 down
+wait 80
+spin K1 2
+wait 30
+key b0 up
+wait 1600
+expect par85 3
+expect iammask 81
+# Hold the clap and knob 1 walks only the clap's kit. The snare's kit stays.
+key b2 down
+wait 80
+spin K1 1
+wait 30
+key b2 up
+wait 1600
+expect par86 3
+expect iamkit2 4
+expect par52 0
+expect par55 0
+expect iammask 81
+# Knob 3 on the dark clap wakes only the clap, from silence. Letting go is not a click.
+key b2 down
+wait 80
+spin K3 1
+wait 30
+expect toast CLAP 4%
+expect toast2 FROM SILENT
+key b2 up
+wait 40
+expect par52 0
+expect par55 4
+expect iammask 81
+tapkey b2
+wait 1600
+expect par55 0
+expect par52 0
+expect iammask 81
+# The open hat is on with the hat. A click takes only the open hat out, then back.
+# The pad key stays lit even when the pad's sound has walked onto Glass.
+tapkey b4
+wait 1600
+expect par61 0
+expect par58 >0
+expect iammask 81
+expect litkeys 259
+tapkey b4
+wait 1600
+expect par61 >0
+expect iammask 81
+# The hat goes out. The open hat, already chosen, stays.
+tapkey b3
+wait 1600
+expect iammask 17
+expect par58 0
+expect par61 >0
+expect litkeys 1027
+# Hold the open hat and knob 1 walks only the open hat's kit. The hat's kit stays, and the hat stays off.
+key b4 down
+wait 80
+spin K1 1
+wait 30
+key b4 up
+wait 1600
+expect par87 1
+expect iamkit4 2
+expect par58 0
+expect iammask 17
+# Knob 2 on the clap walks only the clap's steps. The snare's lane stays.
+# Until that knob, the clap is still on the snare's beat, so the two lanes match.
+expect lane1 0x1010
+expect lane2 0x1010
+key b2 down
+wait 80
+spin K2 1
+wait 30
+key b2 up
+wait 1600
+expect lane1 0x1010
+expect lane2 0x1010
+# A white key past the engines adds that voice. Dark does not replace the pad.
+tapkey w5
+wait 1600
+expect iamlay 2
+expect iammask 17
+# A turn while FX is down is ignored. The release is not a mutate, and the old key menu stays shut.
+# The intro is four bars, so this wait arrives as the lift starts.
+press FX
+wait 40
+spin K1 3
+wait 30
+release FX
+wait 40
+expect fxon 0
+expect par67 40
+expect toast EXCITE
+expect toast2 AUTO
+expect parsbad 0
+# GLO is the deep editor. Hold HOME to come back, the song still there.
+tap GLO
+wait 80
+expect iam 0
+press HOME
+wait 1000
+release HOME
+wait 80
+expect iam 1
+expect iamstyle 0
+expect tempo 173
+expect playing 1
+# GLO again returns at once. A tap of HOME does the same. The song is untouched.
+tap GLO
+wait 80
+expect iam 0
+# A key plays. It does not edit the scale, and only the key held lights.
+expect pool 0x6AD
+expect litkeys 0
+key 0 down
+wait 40
+expect pool 0x6AD
+expect litkeys 1
+key 0 up
+wait 20
+expect litkeys 0
+key 1 down
+wait 40
+expect pool 0x6AD
+expect litkeys 2
+key 1 up
+wait 20
+expect litkeys 0
+tap GLO
+wait 80
+expect iam 1
+expect iamstyle 0
+expect tempo 173
+expect playing 1
+tap GLO
+wait 80
+expect iam 0
+tap HOME
+wait 80
+expect iam 1
+expect iamstyle 0
+expect tempo 173
+expect playing 1
+# A fresh song: white key 2 is the dorian 9th on degree 1 (not the chord already playing).
+# Black key 1 holds a 1/4 repeat. The scale is not edited.
+seed 42
+reboot
+wait 200
+tap GLO
+wait 80
+expect iam 0
+expect pool 0x6AD
+expect par92 3
+key 2 down
+wait 80
+expect padrel 0x2D
+expect held 4
+expect litkeys 4
+expect pool 0x6AD
+key 2 up
+wait 40
+expect held 0
+expect litkeys 0
+key 1 down
+wait 40
+expect fxmask 2
+expect litkeys 2
+expect pool 0x6AD
+expect held 0
+key 1 up
+wait 20
+expect fxmask 0
+expect litkeys 0
+# Already excited, OCT+ pumps. Perc joins, then the bass. Tempo, evolve and the pad filter step up.
+# One back undoes one pump. The third back is the intro again. A double tap is excite and one pump.
+seed 42
+reboot
+wait 200
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0x71
+expect tempo 173
+expect par6 35
+expect par9 51
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0xF1
+expect tempo 176
+expect par6 43
+expect par9 57
+expect par64 >40
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0xF3
+expect tempo 179
+expect par6 51
+expect par9 63
+expect par2 >40
+tap OCT-
+wait 1600
+expect iamsec 2
+expect iammask 0xF1
+expect tempo 176
+expect par6 43
+expect par9 57
+expect par2 0
+expect par64 >40
+tap OCT-
+wait 1600
+expect iamsec 2
+expect iammask 0x71
+expect tempo 173
+expect par6 35
+expect par9 51
+expect par64 0
+tap OCT-
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect tempo 173
+expect par9 33
+expect par49 0
+expect par52 0
+tap OCT+
+tap OCT+
+wait 1600
+expect iamsec 2
+expect iammask 0xF1
+expect tempo 176
+expect par9 57
+expect par64 >40
+tap OCT-
+wait 1600
+expect iamsec 2
+expect iammask 0x71
+expect tempo 173
+expect par9 51
+expect par64 0
+tap OCT-
+wait 1600
+expect iamsec 0
+expect iammask 65
+expect tempo 173
+expect par9 33
+expect par10 1
+expect par49 0
+expect par52 0
+# Seed 0 is still HYP-1's first piece, exact.
+seed 0
+reboot
+wait 200
+expect iam 0
+expect playing 1
+expect piece 0
+expect tempo 128
+expect pool 0x5AD
