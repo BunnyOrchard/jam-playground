@@ -1,12 +1,13 @@
-# IAM-1
+# Jam Playground
 
-IAM-1 is a generative music machine for the M-VAVE FM-1. Switch it on and it plays. Each boot is a
-different song: a scale, a tempo, a handful of parts, and a form that moves on its own.
+Jam Playground is a generative music machine for the M-VAVE FM-1. Switch it on and it plays, and it
+says JAM. Each boot is a different song: a scale, a tempo, a handful of parts, and a form that moves
+on its own.
 
 It is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by RedtailWorks, which is a fork of
 [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal, on the Felucca platform by Leo
-Kuroshita and Hügelton Instruments. The synth, the drums and the space are theirs. IAM-1 is the
-player on top. GPL-3.0-only, same as HYP-1. Their names stay in the tree.
+Kuroshita and Hügelton Instruments. The synth, the drums and the space are theirs. Jam Playground is
+the player on top. GPL-3.0-only, same as HYP-1. Their names stay in the tree.
 
 ## What you hear
 
@@ -98,7 +99,7 @@ each beat. Pad, bass, acid, air, hush and wind open on every step, so an untouch
 was. Hold the key and tap SEQ and the step screen edits that row. A click of FX while the key is held mutates that row. Its drone is throat singing that swells and leaves. Its acid line is a flute. On the
 break the hat is a wind chime and the perc is a singing bowl. OCT+ on Sleep does not add drums or
 open the filters. Knob 1 walks pink, wood and vinyl. Wood is a short knock on the chord,
-an octave under the pink shaker. Knob 2 wobbles it, on the eighth, heard as you turn.
+an octave under the pink shaker. Hold the key and knob 2 walks its steps, heard as you turn.
 Knob 4 is the tone, heard at once. On Dust a higher tone opens the grain and shortens the shake. On wood it opens the fifth and shortens the knock. There are twenty
 sounds for the pad, seventeen for the bass, twenty for the acid, and ten drum kits. FM piano, vibes, kalimba and harp are sampled pads. The upright is a sampled bass. Flute, tenor sax, muted trumpet and harmonica are sampled acid sounds. Dusty is a sampled kit. A new song draws those with the others. Knob 1 walks the whole list, one step a turn, and SEL with ALGORITHM wraps it. Sleep stays on its own oscillators. Each engine plays one
 sound. Each named key is a further voice on that engine's note. Four of the engines
@@ -149,10 +150,9 @@ on that drum takes its steps. A key you have already pressed stays on or off thr
   A click of a drum key turns that drum on or off. Let go without turning a knob. Holding longer, and
   letting go without a twist, leaves it so you can read it.
 - Hold a key. Knob 1 is its sound, or the kit when the key is a drum, and that one lands on the next bar.
-  Knob 2 is a wobble, heard as you turn, and it does not switch the key on. It starts dry, so the
-  song stays until the knob moves, then the sound pumps on the eighth. The same wobble is on the
-  pad, the bass, the acid, and the fourth key, and on the named key that sits with that engine.
-  On a drum it sweeps the pitch, and the next hit is the one that shows it.
+  Knob 2 walks that key's steps, heard as you turn, and it does not switch the key on. A synth walks
+  its sixteen. A named key walks the engine it plays. A drum steps that drum's pattern and leaves the
+  linked beat. The sound stays where knob 1 left it.
   While the key is held, the screen names that key, and under the name
   the sound or the kit knob 1 is on. That name moves as you turn, before the bar. The pattern is
   still drawn: a drum shows its sixteen steps, and so does a white key. On a drum, the marked
@@ -241,7 +241,7 @@ from the MASTER pot, and every power-on is a new one.
 ## Install
 
 Building a package needs Docker (the JieLi toolchain is linux/amd64) and the steps in `BUILDING.md`.
-A development package is `build/amb.fwsc`, identity `FM-1_700`. A release package is `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`. The screen and the USB name say IAMM-1.
+A development package is `build/amb.fwsc`, identity `FM-1_700`. A release package is `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`. A development build's USB name is Jam Playground FM-1, and the tips say JAM. The 1.0.0 package still says IAMM-1.
 
 With the FM-1 plugged in and in Felucca update mode (hold OCT− and OCT+ for 5 seconds):
 

@@ -1,10 +1,12 @@
-# IAMM-1
+# Jam Playground
 
-Infinite Automatic Music Machine. Unofficial firmware for the M-VAVE FM-1.
+Generative music for the M-VAVE FM-1. Unofficial firmware.
 
-Power on and it is already playing. A new boot is a new song. Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. Seventy sounds are in the machine. Knob 1 walks every one of them, including the sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit.
+Power on and it is already playing, and it says JAM. A new boot is a new song. Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. Seventy sounds are in the machine. Knob 1 walks every one of them, including the sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit.
 
-The screen and the USB name say IAMM-1. How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
+Hold a key and knob 2 walks that key's steps, heard as you turn. It does not switch the key on. With nothing held, knob 2 is still the wah. On the sequence screen, knob 2 still wobbles a synth and sweeps a drum.
+
+The corner of the tips says JAM. The USB name is Jam Playground FM-1. How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
 
 A release package is `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`. Build it with `./build.sh --release 1.0.0`. The download page, with a browser installer, is:
 
@@ -16,6 +18,6 @@ Open `download/index.html`. Chrome or Edge can write the package over USB. The s
 
 Installing firmware is at your own risk. M-VAVE's own firmware can be put back. The steps are in [docs/IAMM-1.md](docs/IAMM-1.md).
 
-IAMM-1 is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by RedtailWorks, a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal, on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita and Hügelton Instruments. GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
+Jam Playground is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by RedtailWorks, a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal, on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita and Hügelton Instruments. GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
 
-M-VAVE and FM-1 are trademarks of their owners. IAMM-1 is not affiliated with M-VAVE.
+M-VAVE and FM-1 are trademarks of their owners. Jam Playground is not affiliated with M-VAVE. The 1.0.0 package still says IAMM-1.

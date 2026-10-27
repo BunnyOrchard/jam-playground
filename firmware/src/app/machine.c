@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* IAMM-1: a generative music machine on the HYP-1 engine (itself a fork of AMB-1).
+/* Jam Playground: a generative music machine on the HYP-1 engine (itself a fork of AMB-1).
  * Included from ui.c, so the panel, the drawing and the engine are already in scope.
  *
  * Power-on (any seed from 32 up) loads a song and starts it. The first four white
@@ -20,7 +20,7 @@
  * is the known drum-and-bass piece.
  * Until FX or a step edit takes a drum the song left off, its steps stay with the
  * beat. A section does not relight a drum the draw left off. Knob 1, held, is its
- * kit. Knob 2 wobbles a synth and sweeps a drum. A click mutes a part.
+ * kit. Knob 2 walks that key's steps, heard as you turn. A click mutes a part.
  * Hold one and the knobs edit it. The screen names that key, and under the name
  * the sound or the kit knob 1 is aiming at. That line moves as the knob turns.
  * The stored level sits on the right of the name, as a percent.
@@ -59,8 +59,9 @@
  * replaces the screen.
  * Holding FX does not retarget the knobs, and a turn while it is down is ignored.
  * The title row carries a clock: sixteen steps in this bar, and which of four bars.
- * A part, its sound, its kit and its pattern, and the scene land on the next bar.
- * That is the quantize. Level, cutoff, tempo, scale, effects and PLAY stay live.
+ * A part, its sound, its kit and a queued pattern, and the scene land on the next bar.
+ * That is the quantize. A held knob 2 writes that key's steps now. Level, cutoff,
+ * tempo, scale, effects and PLAY stay live.
  * With nothing held, and with SEQ closed, knob 1 is a ring and knob 2 is
  * a wah. Both warp the song already playing. Knob 3 is a phaser, and knob
  * 4 opens every synth filter. A click of FX mutates.
@@ -155,7 +156,7 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE DRUMS", "5 OF 27", "ELEVEN BLACK KEYS", "EACH KEY, ONE DRUM", "KICK OUT TO THE CRASH", "A TAP TURNS THAT DRUM", "AND ONLY THAT DRUM"},
     {"EACH DRUM", "6 OF 27", "THE BEAT STAYS LINKED", "A SONG, AND AUTO TOO", "FX OR STEPS UNLINK IT", "A TAP TURNS ONE DRUM", "EACH KEEPS ITS OWN KIT"},
     {"THE KITS", "7 OF 27", "HYPNO, HOUSE, TECHNO", "ACID, BREAK, MINIMAL", "HARD, 808, 909, DUSTY", "HOLD THE DRUM, KNOB 1", "YOU HEAR IT NEXT BAR"},
-    {"HOLD A KEY", "8 OF 27", "KNOB 1: SOUND OR KIT", "2: WOBBLE, HEARD NOW", "A DRUM: KNOB 2 SWEEP", "DOES NOT TURN A KEY ON", "PAD COLOUR: WAITING"},
+    {"HOLD A KEY", "8 OF 27", "KNOB 1: SOUND OR KIT", "KNOB 2 WALKS STEPS", "HEARD AS YOU TURN", "DOES NOT TURN A KEY ON", "PAD COLOUR: WAITING"},
     {"LEVEL AND FILTER", "9 OF 27", "3 LEVEL. 4 THE FILTER", "A DRUM: KNOB 4 TUNES", "ONLY THE DRUM YOU HOLD", "NOT THE ONE BESIDE IT", "YOU HEAR IT AS YOU TURN"},
     {"FROM SILENT", "10 OF 27", "KNOB 3 UP WAKES LOW", "TURN MORE, GET LOUDER", "DOWN ON DARK: NO CHANGE", "KNOB 4, NO KEY HELD", "OPENS EVERY FILTER"},
     {"WAKING A PART", "11 OF 27", "SOUND OR FILTER WAKES", "AT THE SAVED LEVEL", "KNOB 3 IS THE SOFT WAY", "A DRUM'S KNOB WAKES", "ONLY THAT DRUM"},
@@ -174,7 +175,7 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"FX", "24 OF 27", "A SHORT TAP MUTATES", "A HELD KEY: JUST THAT", "NO KEY: THE WHOLE SONG", "HOLDING DOES NOT MOVE", "A KNOB. A TURN IS LOST"},
     {"MUTATE", "25 OF 27", "NO KEY WALKS THE SONG", "BEAT ACID PAD BASS AIR", "KIT, FILTER, OR ROOM", "A HELD KEY: JUST THAT", "TEMPO AND PARTS STAY"},
     {"THE CLOCK", "26 OF 27", "SIXTEEN PIPS: THIS BAR", "ONE PIP IS THE STEP", "FOUR PIPS MAKE A BEAT", "FOUR WIDER: THE PHRASE", "WHICH OF THE FOUR BARS"},
-    {"WHAT WAITS", "27 OF 27", "BAR: TAP SOUND AND KIT", "SCENE VIBE FIND OCT ENV", "NOW: WOBBLE LEVEL FILTER", "TEMPO SCALE FX PLAY", "REC HOME SEL AND GLO"},
+    {"WHAT WAITS", "27 OF 27", "BAR: TAP SOUND AND KIT", "SCENE VIBE FIND OCT ENV", "NOW: STEPS LEVEL FILTER", "TEMPO SCALE FX PLAY", "REC HOME SEL AND GLO"},
 };
 /* boot arrangement. Dnb is pad and hat, so a drop has a rhythm to bring.
  * Reggae is the one-drop band, trance is already studying, still is the chord. */
@@ -550,7 +551,7 @@ struct iam_state {
     uint8_t q_kit[4];                          /* the kit, when that bit is set */
     uint16_t q_don;                            /* a tap on clap, open hat, or one of the five, waiting for the bar */
     uint16_t q_lay;                            /* a tap on a named key, waiting for the bar. Two taps cancel */
-    int8_t q_dpat[IAM_NDRUMKEY];               /* a pattern still waiting. Hold knob 2 does not write it */
+    int8_t q_dpat[IAM_NDRUMKEY];               /* a pattern still waiting. A held knob 2 writes the live row, not this */
     int8_t q_dkit[IAM_NDRUMKEY];               /* knob 1, per black key */
     int8_t q_oct, q_pst;                       /* octave steps, and preset detents, which net out */
     int8_t q_snd[IAM_NPART], q_pat[IAM_NPART]; /* sound and pattern detents, per part */
@@ -2296,6 +2297,7 @@ static void iam_boot(uint32_t seed)
     ui.dj_mask = 0;
     ui.dj_lock = 0;
     en_find(0);
+    en_jam(); /* one word, over the song. The host build is silent */
 }
 static uint32_t iam_hop_roll(void)
 {
@@ -3976,7 +3978,7 @@ static uint16_t iam_vstep_turn(uint16_t m, int dir)
     if (at >= 0) {
         at += dir > 0 ? 1 : n - 1;
         if (at >= n)
-            at = 0;
+            at -= n; /* one step back is the previous mask, not the open row */
         return row[at];
     }
     if (dir > 0) {
@@ -4082,37 +4084,41 @@ static int iam_key_settling(uint32_t keys)
             return 1;
     return 0;
 }
-/* Knob 2 while a key is held. Heard now. It does not switch the key on.
- * One undo for the gesture. A synth wobbles on the eighth. A drum's pitch
- * sweeps, and the next hit is the one that shows it. Zero is the song. */
+/* Knob 2 while a key is held. That key's steps, now. It does not switch the
+ * key on, and it does not change the sound. One undo for the gesture.
+ * A synth walks its sixteen. A drum steps its own pattern and leaves the link. */
 static void iam_turn_shape(int e)
 {
-    int v;
+    int dir, n, i;
+    if (!e)
+        return;
+    dir = e > 0 ? 1 : -1;
+    n = e > 0 ? e : -e;
+    if (n > 8)
+        n = 8; /* one fast twist is one step of the row, not a spin through all of it */
     if (!iam.turned)
         iam_push();
     iam.turned = 1; /* letting go is the edit, not also a click */
     if (iam.held_drum >= 0) {
         int d = iam.held_drum;
-        v = (int)iam.sweep[d] + e * 16;
-        if (v < 0)
-            v = 0;
-        if (v > 100)
-            v = 100;
-        iam.sweep[d] = (uint8_t)v;
-        en_snap(d, v);
-        iam_say_amt("SWEEP", v);
+        iam.stepo = (uint16_t)(iam.stepo & ~(1u << d));
+        iam.pown = (uint16_t)(iam.pown | (1u << d)); /* this drum leaves the linked beat */
+        for (i = 0; i < n; i++) {
+            if (iam_main_drum(d)) {
+                int p = IAM_DRUM_PART[d];
+                iam.pat[p] = (uint8_t)((iam.pat[p] + dir + 32) & 7);
+            } else
+                iam.dpat[d] = (uint8_t)((iam.dpat[d] + dir + 32) & 7);
+        }
+        iam_write_drum_pats();
+        say(iam_step_who(), "PATTERN");
         return;
     }
     if (iam.held < 0 || iam.held > 3)
         return;
-    v = (int)iam.wob[iam.held] + e * 16;
-    if (v < 0)
-        v = 0;
-    if (v > 100)
-        v = 100;
-    iam.wob[iam.held] = (uint8_t)v;
-    en_wobble(iam.held, v);
-    iam_say_amt("WOBBLE", v);
+    for (i = 0; i < n; i++)
+        iam_vstep_set(iam.held, iam_vstep_turn(iam.vstep[iam.held], dir));
+    say(iam_step_who(), "PATTERN");
 }
 /* FX while a key is down. That key only, now, one way. It does not take an undo,
  * and it does not switch the key on. A drum steps its own pattern and leaves the
@@ -4449,7 +4455,7 @@ static void iam_knobs(uint32_t btn)
                 iam.q_dkit[d] = iam_sat((int)iam.q_dkit[d] + e);
                 /* the kit name is already the line under the drum */
             } else if (role == EN_K2) {
-                iam_turn_shape(e); /* a pitch sweep, heard on the next hit. It does not take the pattern */
+                iam_turn_shape(e); /* this drum's steps, now. It leaves the linked beat */
             } else if (role == EN_K3) {
                 iam_drum_level(d, e); /* this drum's level. Not the one beside it */
             } else if (iam_main_drum(d)) {
@@ -4485,7 +4491,7 @@ static void iam_knobs(uint32_t btn)
                 iam.turned = 1; /* letting go is the edit, not also a click */
                 iam.q_snd[iam.held] = iam_sat((int)iam.q_snd[iam.held] + e);
             } else if (role == EN_K2) {
-                iam_turn_shape(e); /* an eighth-note wobble. Heard now */
+                iam_turn_shape(e); /* this engine's sixteen steps, now */
             } else {
                 iam_turn_part(iam.held, role - EN_K1, e); /* level and cutoff stay live */
             }
@@ -4829,7 +4835,7 @@ static void iam_pattern_draw(int part, int drum)
     if (drum >= 0) {
         uint16_t bits;
         pending = iam.q_dpat[drum] != 0;
-        /* A queued preset shows before the bar. Knob 2 does not queue one. */
+        /* A queued preset shows before the bar. Knob 2 writes the live row. */
         if (pending)
             bits = iam_drum_steps(drum, iam_drum_pat_aim(drum));
         else
@@ -5251,7 +5257,7 @@ static void iam_draw(void)
     lcd_fill(0, 0, 240, 240, K_BG);
     if (iam.held < 0 && (iam.card & 1u)) {
         int tip = (int)(iam.card / 2u);
-        iam_line(0, 6, 48, "IAMM-1", K_ACC); /* the clock sits on the rest of this row */
+        iam_line(0, 6, 48, "JAM", K_ACC); /* the clock sits on the rest of this row. The full name does not */
         iam_clock();
         if (tip < 0 || tip >= IAM_NTIP)
             tip = 0;
@@ -6378,7 +6384,7 @@ static void iam_resume(void)
     en_fx(0);
     en_dj(0);
     ui.dj_mask = 0;                 /* the lock stays, and the next GLO frame sends it again */
-    say("IAMM-1", "THE MACHINE");
+    say("JAM", "PLAYGROUND");
     lcd_fill(0, 0, 240, 240, K_BG);
 }
 /* GLO again, or HOME, while the editor has an IAM song. HYP seeds keep both buttons. */

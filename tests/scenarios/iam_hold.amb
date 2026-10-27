@@ -23,21 +23,24 @@ wait 40
 expect hold
 expect hold2
 
-# Knob 2 wobbles the pad, heard now. It does not step the row, the pattern, or the detune.
+# Knob 2 walks the pad's steps, heard now. It does not change the sound, and it does not turn the key on.
 key w0 down
 wait 80
 spin K2 1
 wait 30
-expect toast WOBBLE 16
+expect toast PAD
+expect toast2 PATTERN
 expect toaston 1
 expect par11 30
 expect par10 1
-expect iamgate0 65535
+expect iamgate0 17476
 expect iammask 65
 expect hold PAD
 spin K2 -1
 wait 30
-expect toast WOBBLE OFF
+expect toast PAD
+expect toast2 PATTERN
+expect iamgate0 65535
 expect par11 30
 key w0 up
 wait 1400
@@ -120,48 +123,58 @@ expect par51 50
 expect lane0 256
 expect iamgate0 65535
 
-# Bass is dark. Knob 2 is its wobble, and the turn does not wake it.
+# Bass is dark. Knob 2 walks its steps, and the turn does not wake it.
 key w1 down
 wait 80
 spin K2 1
 wait 30
-expect toast WOBBLE 16
+expect toast BASS
+expect toast2 PATTERN
 expect par25 53
 expect iammask 65
+expect iamgate1 17476
 spin K2 -1
 wait 30
-expect toast WOBBLE OFF
+expect toast BASS
+expect toast2 PATTERN
+expect iamgate1 65535
 expect par25 53
 key w1 up
 wait 1500
 expect iammask 65
 
-# The fourth key. Knob 2 is the wobble. Tone and the duck stay where the song left them.
+# The fourth key. Knob 2 walks its steps. Tone and the duck stay where the song left them.
 key w3 down
 wait 80
 spin K2 1
 wait 30
-expect toast WOBBLE 16
+expect toast DUST
+expect toast2 PATTERN
 expect par22 22
 expect par21 14
+expect iamgate3 21845
 spin K2 -1
 wait 30
-expect toast WOBBLE OFF
+expect toast DUST
+expect toast2 PATTERN
+expect iamgate3 43690
 expect par22 22
 key w3 up
 wait 40
 
-# The kick. Knob 2 sweeps the pitch. The pattern and the decay stay.
+# The kick. Knob 2 steps its pattern. The decay stays, and the kick stays off.
 key b0 down
 wait 80
 spin K2 1
 wait 30
-expect toast SWEEP 16
+expect toast KICK
+expect toast2 PATTERN
 expect par51 50
-expect lane0 256
+expect lane0 1105
 spin K2 -1
 wait 30
-expect toast SWEEP OFF
+expect toast KICK
+expect toast2 PATTERN
 expect par51 50
 expect lane0 256
 key b0 up

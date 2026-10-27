@@ -1,11 +1,11 @@
-# IAMM-1
+# Jam Playground
 
-Infinite Automatic Music Machine.
-Instant music. Listen or play along.
+Generative music for the M-VAVE FM-1.
+Switch it on. It plays, and it says JAM.
 
 Five engines. Four synth keys at once. Eleven drums. Seventy sounds. One hundred and four variations.
 
-IAMM-1 is unofficial firmware for the M-VAVE FM-1. It is not affiliated with, endorsed by, or
+Jam Playground is unofficial firmware for the M-VAVE FM-1. It is not affiliated with, endorsed by, or
 supported by M-VAVE. FM-1 is their instrument. Digitakt, Octatrack, and Digitone are Elektron
 instruments. Cyma Forma RND is its own instrument. Those names are a way to describe a flavor.
 They are not in this box, and their makers have nothing to do with this firmware.
@@ -21,7 +21,7 @@ finished. One hundred and four are in the machine. It writes the one after that.
 It hits like a Digitakt, moves like an Octatrack, speaks like a Digitone, and sits in the room
 of a Cyma Forma RND. Those instruments are not in this box. This one makes the record.
 
-How to play it, key by key, is in [IAM-1.md](IAM-1.md). The screen and the USB name say IAMM-1.
+How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's USB name is Jam Playground FM-1. The tips say JAM. The 1.0.0 package still says IAMM-1.
 
 ## Specs
 
@@ -137,7 +137,7 @@ by the number.
 | Version | Identity | What it is |
 |---|---|---|
 | 1.0.0 | `FM-1_7010000` | The first release. `build/amb-1.0.0.fwsc` is 609657 bytes. The image is 271900 bytes. The screen and the USB name say IAMM-1 |
-| development | `FM-1_700` | What a plain `./build.sh` writes. The screen and the USB name say IAMM-1. The identity number does not change between development builds |
+| development | `FM-1_700` | What a plain `./build.sh` writes. The USB name is Jam Playground FM-1. The tips say JAM. The identity number does not change between development builds |
 
 1.0.0 is that first release: five engines, four synth keys at once, eleven drums,
 sixty sounds, one hundred and four variations. The seventy sounds in the spec row include
@@ -145,7 +145,7 @@ the sampled library added in the source after that package. Later versions get a
 
 ## Credits
 
-IAMM-1 is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by
+Jam Playground is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by
 [RedtailWorks](https://www.redtail.works), a fork of
 [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal, on
 [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita and Hügelton Instruments. The
