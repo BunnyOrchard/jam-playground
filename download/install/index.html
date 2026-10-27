@@ -7,7 +7,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IAMM-1 installer</title>
+<title>Jam Playground installer</title>
 <link rel="icon" type="image/png" href="../img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,9 +57,9 @@
 </head>
 <body>
 <main>
-  <header class="site"><a class="home" href="../">IAMM-1</a><nav><a href="../">IAMM-1</a><a href="../" aria-current="page">Install</a></nav></header>
+  <header class="site"><a class="home" href="../">Jam Playground</a><nav><a href="../">Jam Playground</a><a href="../" aria-current="page">Install</a></nav></header>
   <button class="lang" id="lang"></button>
-  <h1>Install IAMM-1</h1>
+  <h1>Install Jam Playground</h1>
   <div class="card">
   <p data-t="intro"></p>
   <p data-t="warn"></p>
@@ -87,7 +87,7 @@
   </ol>
   <p><button id="stockgo" disabled data-t="stockinstall"></button></p>
   <p><a href="../" style="color:inherit" data-t="manual"></a></p>
-  <p class="small">IAMM-1 is a fork of HYP-1 by RedtailWorks, a fork of AMB-1 by Charles Vestal, on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments</a>.<br>
+  <p class="small">Jam Playground is a fork of HYP-1 by RedtailWorks, a fork of AMB-1 by Charles Vestal, on Felucca by Leo Kuroshita (@kurogedelic), <a href="https://hugelton.com" target="_blank" rel="noopener" style="color:inherit">Hügelton Instruments</a>.<br>
     Fonts: Chakra Petch and Barlow Semi Condensed (SIL OFL 1.1). M-VAVE and FM-1 are trademarks of their respective owners.<br>
     <span data-t="license"></span> <a href="https://github.com/charlesvestal/fm1-amb" target="_blank" rel="noopener" style="color:inherit">github.com/charlesvestal/fm1-amb</a></p>
 </main>
@@ -342,14 +342,14 @@ const TEXT = {
     intro: "FM-1 を USB で接続してください。（Chrome か Edge で使えます）",
     warn: "書き込み中は USB を抜かないでください。",
     install: "インストール", other: "English",
-    manual: "IAMM-1 のページへ",
+    manual: "Jam Playground のページへ",
     direct: "USB ケーブルはパソコンに直接つないでください。Probe や Transporter などの機材は不要です。",
     brick: "万一 FM-1 が起動しなくなった場合は、Mac から標準ファームウェアに戻せます:",
     bricklink: "起動しない FM-1 の復旧（英語）",
     beta: "このカスタムファームウェアを使ったことで FM-1 が壊れたり不具合が起きたりしても、作者は一切の責任を負いません。自己責任でお使いください。",
     back: "公式ファームウェアに戻すには、このページ下の「純正ファームウェアに戻す」か、M-VAVE 公式のアップデーター M-UPGRADE（Downloads → PC Software → M-UPGRADE）を使います。",
     stockh: "純正ファームウェアに戻す",
-    stockwhy: "M-VAVE の FM-1 V15 を、IAMM-1（またはそのセーフモード）から同じ USB ケーブルで書き込みます。本体に保存した曲は消えることがあります。",
+    stockwhy: "M-VAVE の FM-1 V15 を、Jam Playground（またはそのセーフモード）から同じ USB ケーブルで書き込みます。本体に保存した曲は消えることがあります。",
     stock1: "M-VAVE の FM-1 V15 をダウンロード:",
     stock2: "ダウンロードしたファイルを選ぶ:",
     stock3: "FM-1 を USB で接続し、下のボタンを押す。",
@@ -376,14 +376,14 @@ const TEXT = {
     intro: "Connect the FM-1 by USB. (Works in Chrome or Edge.)",
     warn: "Do not unplug the USB cable while writing.",
     install: "Install", other: "日本語",
-    manual: "Back to IAMM-1",
+    manual: "Back to Jam Playground",
     direct: "Connect the USB cable directly to the computer. No probe or Transporter is needed.",
     brick: "If the FM-1 no longer starts, a Mac can put the stock firmware back:",
     bricklink: "recovering an FM-1 that won't start",
     beta: "The author accepts no responsibility if your FM-1 is damaged or misbehaves because of this custom firmware. Use it at your own risk.",
     back: "To go back to the official firmware, use \"Back to the stock firmware\" below, or M-VAVE's own updater, M-UPGRADE (Downloads → PC Software → M-UPGRADE).",
     stockh: "Back to the stock firmware",
-    stockwhy: "This writes M-VAVE's own FM-1 V15 back, from IAMM-1 (or its safe mode) over the same USB cable. Songs saved on the unit may be lost.",
+    stockwhy: "This writes M-VAVE's own FM-1 V15 back, from Jam Playground (or its safe mode) over the same USB cable. Songs saved on the unit may be lost.",
     stock1: "Download M-VAVE's FM-1 V15:",
     stock2: "Choose the file you downloaded:",
     stock3: "Connect the FM-1 by USB and press the button below.",
@@ -422,7 +422,7 @@ const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textCont
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "1.0.0", "product": "FM-1_7010000", "pkg": "../firmware/iamm-1.0.0.fwsc"};
+const meta = {"version": "1.1.0", "product": "FM-1_7010100", "pkg": "../firmware/jam-1.1.0.fwsc"};
 
 let writing = false;
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
@@ -435,7 +435,7 @@ window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault
     const pkg = new Uint8Array(await r.arrayBuffer());
     if (productOf(pkg) !== meta.product) { sayK("badpkg"); return; }
     image = logicalImage(pkg);
-    say(`IAMM-1 ${meta.version}`);
+    say(`Jam Playground ${meta.version}`);
     $("go").disabled = false;
   } catch (e) { sayK("loadfail", e.message); }
 })();

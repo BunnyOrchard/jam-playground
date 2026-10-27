@@ -78,8 +78,8 @@ expect par4 28
 expect par49 >40
 wait 2500
 expect sec 0
-# Back returns that intro, so the knobs below still see the song they started on.
-tap ARP
+# OCT- returns that intro, so the knobs below still see the song they started on.
+tap OCT-
 wait 1600
 expect iamsec 0
 expect iammask 65

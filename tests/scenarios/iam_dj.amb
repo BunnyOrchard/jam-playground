@@ -1,176 +1,107 @@
-# GLO's effects page. Fourteen keys are crowd effects. The second black key
-# stays the eighth gate, and the first white key stays the half-note repeat.
-# With the page closed, the first black key is still the jam repeat.
+# Song-screen ARP is the DJ. The first bar of a phrase stays dry. The next can
+# hold one ride for two bars. The last bar punctuates, then lets go.
+# Seed 0xA5C3, turned on during bar 0: the ride is the transient, then the
+# sixteenth gate. GLO's ARP is still the arpeggiator. The sequence screen's
+# ARP is still back. OCT- is back on the song screen.
 seed 42
 reboot
 wait 40
-tap GLO
-wait 80
-expect iam 0
-tap FX
-wait 40
-expect fxon 1
+expect iamdj 0
+expect iamarp 0
+expect litbtn 1024
+tap ARP
+expect toast DJ
+expect toast2 ON
+expect iamdj 1
+expect iamarp 0
+expect litbtn 1280
+expect iamdjfx 0
+expect iamdjbit 0
+expect iamdjkn 0
+expect fxmask 0
 expect djmask 0
-expect fxmask 0
-
-key b0 down
-wait 40
-expect djmask 1
-expect fxmask 0
-expect litkeys 2
-key b0 up
-wait 40
-expect djmask 0
-expect fxmask 0
-
-key b3 down
-wait 40
-expect djmask 2
-expect fxmask 0
-key b3 up
-wait 40
-expect djmask 0
-
-key b5 down
-wait 40
-expect djmask 4
-expect fxmask 0
-key b5 up
-wait 40
-expect djmask 0
-
-key b6 down
-wait 40
+tap ARP
+expect toast DJ
+expect toast2 OFF
+expect iamdj 0
+expect litbtn 1024
+expect iamdjfx 0
+tap ARP
+expect iamdj 1
+expect toast2 ON
+# Bar 1, and the bar after it: one crowd move, the transient. The knobs stay put.
+barwait
+expect iamdj 1
+expect iamdjbit 4
 expect djmask 8
+expect iamdjfx 0
+expect iamdjkn 0
 expect fxmask 0
-key b6 up
-wait 40
+expect iamdly 0
+expect iamhel 0
+barwait
+expect iamdjbit 4
+expect djmask 8
+expect iamdjfx 0
+expect fxmask 0
+# The last bar of the four: the sixteenth gate, and nothing else.
+barwait
+expect iamdjfx 17
+expect fxmask 65536
+expect iamdjbit 0
 expect djmask 0
+expect iamdjkn 0
+# The first bar of the next four is dry. The DJ stays on.
+barwait
+expect iamdj 1
+expect iamdjfx 0
+expect iamdjbit 0
+expect iamdjkn 0
+expect fxmask 0
+expect djmask 0
+# Letting go is immediate.
+tap ARP
+expect toast DJ
+expect toast2 OFF
+expect iamdj 0
+expect iamdjfx 0
+expect fxmask 0
+expect djmask 0
+expect litbtn 1024
 
-key b7 down
+# The sequence screen keeps ARP as back. The DJ stays on.
+seed 42
+reboot
 wait 40
-expect djmask 16
-expect fxmask 0
-key b7 up
-wait 40
-expect djmask 0
+tap ARP
+expect iamdj 1
+tap SEQ
+expect iamseq 1
+tap ARP
+expect toast BAR: BACK
+expect iamdj 1
+expect iamarp 0
+expect iamseq 1
 
-key b8 down
+# GLO keeps the arpeggiator. Coming back leaves the DJ on and the move down.
+seed 42
+reboot
 wait 40
-expect djmask 32
-expect fxmask 0
-key b8 up
-wait 40
-expect djmask 0
-
-key b9 down
-wait 40
-expect djmask 64
-expect fxmask 0
-key b9 up
-wait 40
-expect djmask 0
-
-key b10 down
-wait 40
-expect djmask 128
-expect fxmask 0
-key b10 up
-wait 40
-expect djmask 0
-
-key w8 down
-wait 40
-expect djmask 256
-expect fxmask 0
-key w8 up
-wait 40
-expect djmask 0
-
-key w9 down
-wait 40
-expect djmask 512
-expect fxmask 0
-key w9 up
-wait 40
-expect djmask 0
-
-key w10 down
-wait 40
-expect djmask 1024
-expect fxmask 0
-key w10 up
-wait 40
-expect djmask 0
-
-key w11 down
-wait 40
-expect djmask 2048
-expect fxmask 0
-key w11 up
-wait 40
-expect djmask 0
-
-key w12 down
-wait 40
-expect djmask 4096
-expect fxmask 0
-key w12 up
-wait 40
-expect djmask 0
-
-key w13 down
-wait 40
-expect djmask 8192
-expect fxmask 0
-key w13 up
-wait 40
-expect djmask 0
-
-key b1 down
-wait 40
-expect fxmask 131072
-expect djmask 0
-key b1 up
-wait 40
-expect fxmask 0
-expect djmask 0
-
-key w0 down
-wait 40
-expect fxmask 1
-expect djmask 0
-key w0 up
-wait 40
-expect fxmask 0
-expect djmask 0
-
-tap FX
-wait 40
-expect fxon 0
-key b0 down
-wait 40
-expect fxmask >0
-expect djmask 0
-key b0 up
-wait 40
-expect fxmask 0
-
-tap FX
-wait 40
-expect fxon 1
-key b0 down
-wait 40
-press SAVE
-wait 40
-key b0 up
-wait 40
-release SAVE
-wait 40
-expect djmask 1
-expect fxmask 0
-tap FX
-wait 40
-expect fxon 0
-expect djmask 1
-expect fxmask 0
+tap ARP
+expect iamdj 1
+tap GLO
+expect iam 0
+tap ARP
+expect iamarp 1
+expect iamdj 1
+expect toast ARP
+expect toast2 ON
+tap GLO
+expect iam 1
+expect iamarp 0
+expect iamdj 1
+expect iamdjfx 0
+expect iamdjbit 0
+expect iamdjkn 0
+expect toast JAM
+expect toast2 PLAYGROUND

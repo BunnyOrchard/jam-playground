@@ -23,7 +23,7 @@ expect par92 3
 expect iamsec 0
 expect litbtn 1024
 expect peak_db_max -0.5
-tap ARP
+tap OCT-
 wait 1600
 expect iammask 65
 expect par10 1
@@ -39,7 +39,7 @@ expect par20 2
 expect par10 1
 expect par4 0
 expect iamsec 0
-tap ARP
+tap OCT-
 wait 1600
 expect iammask 65
 

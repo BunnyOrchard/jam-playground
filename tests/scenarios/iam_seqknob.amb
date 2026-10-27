@@ -1,4 +1,5 @@
 # SEQ owns ALGORITHM and knobs 1, 2 and 4. The scale, the ring, the wah and the other filters wait.
+# Knob 2 casts a new rhythm. ALGORITHM does too, and still walks the sound.
 # Seed 42 is pad and hat. The pad opens on Voices. The hat's pattern is slot 2.
 seed 42
 reboot
@@ -18,14 +19,15 @@ expect iamseq 1
 expect iamseqat 0
 expect seqsub VOICES
 
-# ALGORITHM mutates the pad. The scale stays dorian. The hat's row stays.
+# ALGORITHM mutates the pad. The scale stays dorian. The sixteen are a new
+# cast, twelve hits, not the old fixed row. The hat's row stays.
 spin ALGO 1
 wait 30
 expect toast MUTATE
 expect toast2
 expect par72 1
 expect par10 2
-expect iamgate0 17476
+expect iamgate0 60095
 expect lane0 256
 expect lane3 21845
 expect iamseqat 0
@@ -48,19 +50,21 @@ expect seqsub GLASS
 expect par85 1
 expect par72 1
 
-# Knob 2 wobbles the pad. The wah stays shut, and the hat does not sweep.
+# Knob 2 writes a new rhythm. Seven hits, then three. The wah stays shut.
 spin K2 1
 wait 30
-expect toast WOBBLE 16
-expect toast2
-expect iamwob0 16
+expect toast STEPS
+expect toast2 7
+expect iamwob0 0
 expect iamsweep3 0
 expect iamhel 0
-expect iamgate0 17476
+expect iamgate0 11914
 expect par10 3
 spin K2 -1
 wait 30
-expect toast WOBBLE OFF
+expect toast STEPS
+expect toast2 3
+expect iamgate0 416
 expect iamwob0 0
 expect iamhel 0
 
@@ -74,7 +78,8 @@ expect par21 14
 expect par10 3
 expect par72 1
 
-# The hat. A turn of ALGORITHM steps its pattern, and a turn back puts it where it was.
+# The hat. ALGORITHM casts a new row, four hits, and the other way is another
+# cast, eleven hits. It does not walk back to the preset.
 spin SELECT 1
 wait 30
 expect iamseqat 1
@@ -82,26 +87,27 @@ expect toast HAT
 spin ALGO 1
 wait 30
 expect toast MUTATE
-expect lane3 8738
+expect lane3 16496
 expect lane0 256
 expect par72 1
 expect par10 3
-expect iamgate0 17476
+expect iamgate0 416
 spin ALGO -1
 wait 30
 expect toast MUTATE
-expect lane3 21845
+expect lane3 55228
 expect lane0 256
 expect par9 37
 
-# Knob 2 sweeps the hat. The pad stays dry, and the wah stays shut.
+# Knob 2 writes the hat again. One hit is allowed. The sweep stays off.
 spin K2 1
 wait 30
-expect toast SWEEP 16
-expect iamsweep3 16
+expect toast STEPS
+expect toast2 1
+expect iamsweep3 0
 expect iamwob0 0
 expect iamhel 0
-expect lane3 21845
+expect lane3 64
 
 # Knob 4 tunes the hat up to the top, then one step back. The pad filter stays.
 spin K4 40

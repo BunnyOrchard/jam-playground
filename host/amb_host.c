@@ -28,6 +28,8 @@
  *                                iamdly / iamhel: the song ring and the song wah
  *                                isol: 1 while SEQ's SEL is holding one row alone
  *                                toaston: 1 while a toast still covers that line
+ *                                playhead: 1 while the line above a held key's steps
+ *                                is brightest on this sixteenth. 0 when that line is gone
  *                                handnote: the last note a hand played, after the voice folded it
  *   reboot                       re-run boot (power off and on)
  *   seed N                       the seed the next boot uses (0: the first piece, exact)
@@ -415,6 +417,34 @@ static int key_of(const char *s)
     return atoi(s);
 }
 
+static int pix_luma(int x, int y)
+{
+    uint16_t p;
+    if (x < 0 || y < 0 || x >= 240 || y >= 240)
+        return 0;
+    p = fb[y * 240 + x];
+    p = (uint16_t)((p >> 8) | (p << 8));
+    return ((p >> 11) & 31) + ((p >> 5) & 63) + (p & 31);
+}
+/* 1 when the hairline above a held key's steps is brightest on this sixteenth. */
+static int playhead_on(void)
+{
+    int i, best = 0, best_l = -1, worst = 9999, nbest = 0;
+    uint32_t step = en_bars & 15u;
+    for (i = 0; i < 16; i++) {
+        int x = 6 + i * 13 + (i >> 2) * 4 + 4;
+        int l = pix_luma(x, 55) + pix_luma(x, 56);
+        if (l < worst)
+            worst = l;
+        if (l > best_l) {
+            best_l = l;
+            best = i;
+            nbest = 1;
+        } else if (l == best_l)
+            nbest++;
+    }
+    return nbest == 1 && best == (int)step && best_l > worst + 8;
+}
 static int expect(const char *what, const char *val)
 {
     int got;
@@ -557,6 +587,8 @@ static int expect(const char *what, const char *val)
         got = (int)iam.vstep[atoi(what + 7) % 4];
     else if (!strcmp(what, "iamstep"))        /* the marked step, 0 is step 1 */
         got = iam.step_i;
+    else if (!strncmp(what, "stepv", 5))      /* stepvN: that drum's written steps */
+        got = (int)iam.stepv[atoi(what + 5) % IAM_NDRUMKEY];
     else if (!strcmp(what, "iamseq"))         /* the sequence screen is up */
         got = iam.seq_on;
     else if (!strcmp(what, "iamseqat"))       /* which live track the white keys edit */
@@ -579,6 +611,14 @@ static int expect(const char *what, const char *val)
         got = iam.kvol;
     else if (!strcmp(what, "iamarp"))         /* GLO arpeggiator latch */
         got = iam.arp;
+    else if (!strcmp(what, "iamdj"))          /* song screen: the auto DJ */
+        got = iam.dj;
+    else if (!strcmp(what, "iamdjfx"))        /* FX_* + 1 while that move is up */
+        got = iam.dj_fx;
+    else if (!strcmp(what, "iamdjbit"))       /* crowd bit + 1 while that move is up */
+        got = iam.dj_bit;
+    else if (!strcmp(what, "iamdjkn"))        /* 1 ring, 2 wah, 3 phaser */
+        got = iam.dj_kn;
     else if (!strcmp(what, "iamlay"))         /* named keys on: bit 0 Glass ... bit 11 Soft */
         got = (int)iam.lay;
     else if (!strcmp(what, "iamsec"))         /* IAM_INTRO .. IAM_GLIDE */
@@ -611,6 +651,8 @@ static int expect(const char *what, const char *val)
         got = iam.seq_isol;
     else if (!strcmp(what, "toaston")) /* 1 while the toast still covers the action line */
         got = plat_ms() < ui.msg_until;
+    else if (!strcmp(what, "playhead")) /* the line above a held key's steps, on this sixteenth */
+        got = playhead_on();
     else if (!strcmp(what, "seqsub")) { /* the sound or kit SEQ knob 1 is aiming at */
         struct iam_seq_tr t[15];
         int n = iam_seq_clamp(t);

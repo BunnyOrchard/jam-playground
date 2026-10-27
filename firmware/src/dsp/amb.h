@@ -191,7 +191,7 @@ void en_clock(int msg);
 
 /* the render (audio ISR): n stereo frames, 24-bit in int32; gain Q12 (the MASTER pot) */
 void en_render(int32_t *out_lr, uint32_t n, uint32_t gain_q12);
-void en_jam(void);                             /* one boot word over the song. The host build stays silent */
+void en_jam(void);                             /* three quiet notes at boot. The host build stays silent */
 
 /* MIDI out, from the render: the app sends it (USB); status, data 1, data 2 */
 void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2);

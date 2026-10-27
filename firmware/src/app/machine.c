@@ -25,7 +25,9 @@
  * the sound or the kit knob 1 is aiming at. That line moves as the knob turns.
  * The stored level sits on the right of the name, as a percent.
  * The pattern is drawn while the key is held: a drum's steps, and a white
- * key's steps. Each engine also has sixteen steps. Dust opens on the offbeats,
+ * key's steps. A line above them is this bar. The sixteenth that is playing
+ * is bright, and its beat stays lit. Each engine also has sixteen steps.
+ * Dust opens on the offbeats,
  * a chop on the & of the beat, and the rest
  * open on every step until one is taken out. While a drum is held, OCT- turns
  * the marked step and OCT+ moves to the next. The mark starts on step 1.
@@ -34,7 +36,8 @@
  * track, and SEL again brings the song back. ALGORITHM mutates that
  * track, one step a detent, and the scale waits. Knob 1 is its sound
  * or its kit, and the title names the one it is aiming at. Knob 2
- * wobbles a synth and sweeps a drum. Knob 4 is that track's filter
+ * writes that track's steps again: any count from one hit to twelve,
+ * placed at random, not the short preset list. Knob 4 is that track's filter
  * or tune. Knob 3 is its level. The white keys are that track's
  * sixteen steps: lit where it plays, and a press turns the step.
  * SEQ, GLO, or HOME leaves that screen, and a solo leaves with it. HOME
@@ -82,6 +85,13 @@
  * its wobble, sweep, filter, or tune. Knob 3 is its level, not the phaser.
  * A drum still held, with that screen closed, keeps OCT on its steps.
  * SEL with that screen closed still walks the tips, and a held key still solos.
+ * ARP, while the sequence screen is closed, is the DJ. It is on or off.
+ * On, it plays one effect at a time, landed on the bar: the ring, the wah,
+ * the phaser, a crowd key, or a performance effect. A phrase may hold one
+ * through its middle for two bars, and the last bar punctuates. The first
+ * bar of the four stays dry. It does not mute, and it does not solo.
+ * On the sequence screen ARP is back, and the DJ stays on. In GLO, ARP
+ * is the arpeggiator.
  * GLO opens the editor under the song. The arrangement keeps its bars there:
  * the sections, the pad's note, and the chord still move. White keys play the
  * scale on the part the track has forward, and the sixteen keys keep climbing
@@ -165,10 +175,10 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE BREAK", "14 OF 27", "SAVE IS THE BREAK", "TWO LOUD PARTS STEP OUT", "TWO QUIET ONES STEP IN", "ONE NEW PAD NOTE", "CUE THROW STUTTER REV"},
     {"EXCITE", "15 OF 27", "EDIT IS EXCITE", "THE FILTERS OPEN", "A NEW PAD SOUND", "AND A NEW CHORD", "NO DRUMS. NEXT BAR"},
     {"OCT PLUS", "16 OF 27", "OCT+ IS EXCITE", "TWO QUIET DRUMS JOIN", "AGAIN: A TRACK, FASTER", "STEPS, AND IT MUTATES", "EACH ONE, NEXT BAR"},
-    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "ALGO MUTATES THAT ONE", "1 SOUND  2 AND 4 FX", "3 LEVEL  OCT SHIFTS", "SEL SOLO  WHITE STEPS"},
+    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "ALGO MUTATES THAT ONE", "1 SOUND 2 STEPS 4 CUT", "3 LEVEL  OCT SHIFTS", "SEL SOLO  WHITE STEPS"},
     {"A NEW SONG", "18 OF 27", "ENV IS A NEW SONG", "CUE, THROW, STUTTER", "OR REVERSE, AT RANDOM", "PRESETS CROSSES TOO", "BOTH ON THE NEXT BAR"},
     {"THE VIBES", "19 OF 27", "DNB, REGGAE, TRANCE", "STILL, DISCO, FUNK", "ELECTRO, HOUSE, HIPHOP", "GARAGE, DUBSTEP, WAVE", "THEN SLEEP, THEN DNB"},
-    {"MORE BUTTONS", "20 OF 27", "LFO: LETS FIND OUT", "AN EFFECT, THEN A PLACE", "REC: HELD, OR MOVING", "HOME: NEXT CHORD, NOW", "HOLD PAD: AUTO WAITS"},
+    {"MORE BUTTONS", "20 OF 27", "LFO: LETS FIND OUT", "AN EFFECT, THEN A PLACE", "REC: HELD, OR MOVING", "HOME: NEXT CHORD, NOW", "ARP: THE DJ, ON OR OFF"},
     {"GLO", "21 OF 27", "SONG PLAYS UNDERNEATH", "KEYS FOLLOW THE TRACK", "ARP ON: ONE NOTE EACH", "KNOB 2 SOUND, 3 KEYS", "GLO OR HOME RETURNS"},
     {"INSIDE GLO", "22 OF 27", "BLACK KEYS HOLD EFFECTS", "REPEAT REV GATE THROW", "FLANGER FLANGE 8TH FILT", "HOLD SEQ: DRUM STEPS", "LOOP STAYS UNTIL REC"},
     {"TEMPO AND SCALE", "23 OF 27", "1 RING  2 WAH", "3 PHASER  4 FILTERS", "SELECT TEMPO, ALGO SCALE", "FX CLICK IS MUTATE", "A HELD KEY OWNS 1 TO 4"},
@@ -513,6 +523,10 @@ struct iam_state {
     uint8_t mos;   /* free knob 3: phaser, 0 off .. 100. Not saved */
     uint8_t kvol;  /* GLO white keys, 0 silent .. 100 the voice. Boots at 90. Not saved */
     uint8_t arp;   /* GLO: held white keys arpeggiate. Not saved, not an undo */
+    uint8_t dj;    /* song screen: the DJ. On, one effect at a time. Not saved, not the arp */
+    uint8_t dj_fx; /* FX_* + 1 while that move is up, else 0 */
+    uint8_t dj_bit; /* crowd bit + 1, else 0 */
+    uint8_t dj_kn; /* 1 the ring, 2 the wah, 3 the phaser, else 0 */
     uint8_t fx_twist; /* a knob moved while FX was down. The turn is ignored, and the release is not a mutate */
     uint8_t dpat[IAM_NDRUMKEY]; /* pattern index, one sequence per black key */
     uint8_t dkit[IAM_NDRUMKEY];
@@ -1985,6 +1999,7 @@ static void iam_cast(uint32_t seed, int picked)
     if (s != 12)
         iam_cast_ensure();
 }
+static void iam_dj_drop(void); /* a new song is dry. The DJ, if it was on, picks again next bar */
 static void iam_bake(uint32_t seed, int style)
 {
     /* Style 0's row is the seed-42 song: 170, dorian, a 9th, swing 8, echo 40. */
@@ -2097,6 +2112,7 @@ static void iam_bake(uint32_t seed, int style)
     en_shimmer(0);
     en_ring(0); /* a new song is dry. The ring and the wah fade if they were open */
     en_wah(0);
+    iam_dj_drop(); /* the move that was up lets go. The mode stays, and the next bar picks */
     en_find(0); /* and it is not still searching */
     for (i = 0; i < EN_XDRUM; i++) {
         iam.xtune[i] = 0;
@@ -2297,7 +2313,7 @@ static void iam_boot(uint32_t seed)
     ui.dj_mask = 0;
     ui.dj_lock = 0;
     en_find(0);
-    en_jam(); /* one word, over the song. The host build is silent */
+    en_jam(); /* three quiet notes, over the song. The host build is silent */
 }
 static uint32_t iam_hop_roll(void)
 {
@@ -3051,6 +3067,206 @@ static void iam_dip_restore(void)
     iam.follow = 0;
     iam_apply();
 }
+/* The song-screen DJ. One move at a time, on the bar, from the effects a hand
+ * already has: the ring, the wah and the phaser, GLO's crowd keys, and the
+ * performance grid. The first bar of each four is dry. The middle may hold
+ * one ride for two bars. The last bar punctuates, then lets go. Mutes and
+ * solos stay with the player: they would fight the arrangement. The roll is
+ * this player's, not the song's, so a move does not change what comes next.
+ * Sixteen and four, so a roll can mask. Sleep stays on the soft set. */
+enum { DJM_FX = 1, DJM_CROWD = 2, DJM_KNOB = 3 };
+struct dj_mv {
+    uint8_t kind, arg, amt, bars;
+};
+static const struct dj_mv DJ_RIDE[16] = {
+    {DJM_CROWD, 10, 0, 2}, {DJM_CROWD, 0, 0, 2}, {DJM_CROWD, 5, 0, 2}, {DJM_CROWD, 4, 0, 2},
+    {DJM_CROWD, 11, 0, 2}, {DJM_CROWD, 7, 0, 2}, {DJM_CROWD, 8, 0, 2}, {DJM_CROWD, 9, 0, 2},
+    {DJM_FX, FX_FLANGER, 0, 2}, {DJM_FX, FX_LP, 0, 2}, {DJM_FX, FX_HP, 0, 2},
+    {DJM_KNOB, 2, 64, 2}, {DJM_KNOB, 1, 46, 2}, {DJM_KNOB, 3, 52, 2},
+    {DJM_CROWD, 2, 0, 2}, {DJM_CROWD, 3, 0, 2},
+};
+static const struct dj_mv DJ_TURN[16] = {
+    {DJM_FX, FX_FILL, 0, 1}, {DJM_FX, FX_THROW, 0, 1}, {DJM_FX, FX_RPT8, 0, 1}, {DJM_FX, FX_RPT16, 0, 1},
+    {DJM_FX, FX_RPT4, 0, 1}, {DJM_FX, FX_REV, 0, 1}, {DJM_FX, FX_FLANGE, 0, 1}, {DJM_FX, FX_GATE8, 0, 1},
+    {DJM_FX, FX_GATE16, 0, 1}, {DJM_FX, FX_HP, 0, 1}, {DJM_FX, FX_CRUSH, 0, 1}, {DJM_FX, FX_STOP, 0, 1},
+    {DJM_CROWD, 1, 0, 1}, {DJM_CROWD, 13, 0, 1}, {DJM_CROWD, 12, 0, 1}, {DJM_CROWD, 6, 0, 1},
+};
+static const struct dj_mv DJ_SOFT_RIDE[4] = {
+    {DJM_CROWD, 11, 0, 2}, {DJM_CROWD, 9, 0, 2}, {DJM_CROWD, 10, 0, 2}, {DJM_KNOB, 3, 40, 2},
+};
+static const struct dj_mv DJ_SOFT_TURN[4] = {
+    {DJM_FX, FX_FLANGER, 0, 1}, {DJM_CROWD, 9, 0, 1}, {DJM_FX, FX_LP, 0, 1}, {DJM_KNOB, 1, 36, 1},
+};
+static uint32_t dj_rng, dj_stamp;
+static uint8_t dj_kind, dj_arg, dj_left;
+static void iam_dj_engine(uint32_t fx, unsigned crowd)
+{
+    ui.fx_mask = fx;
+    ui.dj_mask = (uint16_t)crowd;
+    en_fx(fx);
+    en_dj(crowd);
+}
+static void iam_dj_restore_knob(void)
+{
+    if (iam.dj_kn == 1)
+        en_ring(iam.dly);
+    else if (iam.dj_kn == 2)
+        en_wah(iam.hel);
+    else if (iam.dj_kn == 3)
+        en_phase(iam.mos);
+    iam.dj_kn = 0;
+}
+static void iam_dj_show(int kind, int arg)
+{
+    iam.dj_fx = 0;
+    iam.dj_bit = 0;
+    iam.dj_kn = 0;
+    if (kind == DJM_FX)
+        iam.dj_fx = (uint8_t)(arg + 1);
+    else if (kind == DJM_CROWD)
+        iam.dj_bit = (uint8_t)(arg + 1);
+    else if (kind == DJM_KNOB)
+        iam.dj_kn = (uint8_t)arg;
+}
+static void iam_dj_drop(void)
+{
+    if (!dj_kind && !iam.dj_fx && !iam.dj_bit && !iam.dj_kn)
+        return;
+    iam_dj_restore_knob();
+    iam_dj_engine(0, 0);
+    iam.dj_fx = 0;
+    iam.dj_bit = 0;
+    dj_kind = 0;
+    dj_left = 0;
+    dj_arg = 0;
+    iam.dirty = 1;
+}
+static void iam_dj_start(const struct dj_mv *m)
+{
+    if (iam.dj_kn && !(m->kind == DJM_KNOB && m->arg == iam.dj_kn))
+        iam_dj_restore_knob();
+    dj_kind = m->kind;
+    dj_arg = m->arg;
+    dj_left = m->bars;
+    if (m->kind == DJM_FX)
+        iam_dj_engine(1u << m->arg, 0);
+    else if (m->kind == DJM_CROWD)
+        iam_dj_engine(0, 1u << m->arg);
+    else {
+        iam_dj_engine(0, 0);
+        dj_stamp = iam.knob_t;
+        if (m->arg == 1)
+            en_ring(m->amt);
+        else if (m->arg == 2) {
+            en_echo(0); /* the tape stays the one the song baked */
+            en_wah(m->amt);
+        } else
+            en_phase(m->amt);
+    }
+    iam_dj_show(m->kind, m->arg);
+    iam.dirty = 1;
+}
+static uint32_t iam_dj_roll(void)
+{
+    dj_rng ^= dj_rng << 13;
+    dj_rng ^= dj_rng >> 17;
+    dj_rng ^= dj_rng << 5;
+    return dj_rng;
+}
+static void iam_dj_bar(void)
+{
+    uint32_t pos, r;
+    const struct dj_mv *table;
+    int n, soft;
+    if (!iam.dj || !iam.on)
+        return; /* GLO's keys own the masks. The phrase catches up on the way back */
+    if (dj_kind == DJM_KNOB && iam.knob_t != dj_stamp) {
+        iam_dj_restore_knob(); /* the hand took that knob. This bar stays with them */
+        dj_kind = 0;
+        dj_left = 0;
+        dj_arg = 0;
+        iam.dj_fx = 0;
+        iam.dj_bit = 0;
+        iam.dirty = 1;
+        return;
+    }
+    if (dj_left > 1) {
+        dj_left--; /* the same ride. Posting it again would restart a tape stop */
+        return;
+    }
+    if (dj_left || dj_kind)
+        iam_dj_drop();
+    pos = iam.bar_seen & 3u;
+    soft = iam.style == 12;
+    if (pos == 1) {
+        r = iam_dj_roll();
+        if ((r & 3u) == 0)
+            return; /* this phrase's middle stays dry */
+        table = soft ? DJ_SOFT_RIDE : DJ_RIDE;
+        n = soft ? 4 : 16;
+        iam_dj_start(&table[(r >> 2) & (unsigned)(n - 1)]);
+    } else if (pos == 3) {
+        r = iam_dj_roll();
+        table = soft ? DJ_SOFT_TURN : DJ_TURN;
+        n = soft ? 4 : 16;
+        iam_dj_start(&table[r & (unsigned)(n - 1)]);
+    }
+}
+static void iam_dj_toggle(void)
+{
+    if (iam.dj) {
+        iam.dj = 0;
+        iam_dj_drop();
+        say("DJ", "OFF");
+        iam.dirty = 1;
+        return;
+    }
+    iam.dj = 1;
+    dj_rng = 0xA5C3u; /* the same first move every time it is turned on */
+    dj_kind = 0;
+    dj_left = 0;
+    dj_arg = 0;
+    say("DJ", "ON");
+    iam.dirty = 1;
+}
+static const char *iam_dj_name(void)
+{
+    static const char *const CROWD[14] = {
+        "SWEEP", "WOW", "RING", "TRANS", "PHASER", "WAH", "RADIO", "FLANGE",
+        "PAN", "VOWEL", "FILTER", "CHORUS", "BEND", "CHOP"};
+    if (iam.dj_kn == 1)
+        return "RING";
+    if (iam.dj_kn == 2)
+        return "WAH";
+    if (iam.dj_kn == 3)
+        return "PHASER";
+    if (iam.dj_bit) {
+        int b = (int)iam.dj_bit - 1;
+        if (b >= 0 && b < 14)
+            return CROWD[b];
+    }
+    if (iam.dj_fx) {
+        switch (iam.dj_fx - 1) {
+        case FX_RPT2: return "RPT 1/2";
+        case FX_RPT4: return "RPT 1/4";
+        case FX_RPT8: return "RPT 1/8";
+        case FX_RPT16: return "RPT 1/16";
+        case FX_REV: return "REVERSE";
+        case FX_STOP: return "TAPE STOP";
+        case FX_LP: return "LOWPASS";
+        case FX_HP: return "HIPASS";
+        case FX_GATE16: return "GATE 16";
+        case FX_GATE8: return "GATE 8";
+        case FX_THROW: return "THROW";
+        case FX_CRUSH: return "CRUSH";
+        case FX_FILL: return "FILL";
+        case FX_FLANGE: return "JET";
+        case FX_FLANGER: return "FLANGER";
+        default: break;
+        }
+    }
+    return "ON";
+}
 static void iam_bars(void)
 {
     uint32_t bar;
@@ -3058,12 +3274,14 @@ static void iam_bars(void)
     if (!en_playing) {
         if (iam_q_pending())
             iam_fire(); /* a stopped transport has no bar to wait for */
+        iam_dj_drop(); /* a tape stop does not hang on a stopped song */
         return;
     }
     bar = en_bars / 16u;
     if (bar == iam.bar_seen)
         return;
     iam.bar_seen = bar;
+    iam_dj_bar();
     /* count a hold down before a landing sets a fresh one, so the new eight are whole */
     if (iam.pad_own)
         iam.pad_own--;
@@ -3670,11 +3888,14 @@ static void iam_press(int b)
         } else
             iam_seq_open();
     } else if (b == B_ARP) {
-        iam_find_cancel();
-        iam.q_scene = IAM_Q_BACK;
-        iam.q_pst = 0;
-        iam.q_pump = 0;
-        iam_due("BACK");
+        if (iam.seq_on) { /* OCT shifts the track. ARP is the way back, and the DJ stays */
+            iam_find_cancel();
+            iam.q_scene = IAM_Q_BACK;
+            iam.q_pst = 0;
+            iam.q_pump = 0;
+            iam_due("BACK");
+        } else
+            iam_dj_toggle();
     } else if (b == B_ENV) {
         iam_find_cancel();
         iam.q_scene = IAM_Q_CHANGE;
@@ -3752,6 +3973,7 @@ static void iam_press(int b)
         iam_seq_shut();
         iam_step_drop(); /* the step screen does not follow the editor back */
         iam_q_clear(); /* a queued bar does not fire underneath the editor */
+        iam_dj_drop(); /* the editor's keys own the effects. The mode stays */
         for (role = 0; role < NE; role++)
             (void)plat_enc(role); /* the deep editor must not inherit a pile of detents */
         iam.on = 0;
@@ -4222,46 +4444,100 @@ static void iam_seq_level(int step)
 }
 /* The sound or the kit the selected row is aiming at, in capitals, before the bar. */
 static const char *iam_seq_sub(const struct iam_seq_tr *t);
-/* ALGORITHM on the sequence screen. One step of that row, each detent.
- * A drum's pattern steps back when the encoder does. The pad, the bass,
- * the acid and the air take the other mutate, and that is not the undo.
- * The scale waits. Nothing here calls the song's rng, and nothing switches a row on. */
+/* A private roll. The song's rng stays on the arrangement. */
+static uint32_t step_rng;
+static uint32_t iam_step_roll(void)
+{
+    uint32_t x = step_rng;
+    if (!x)
+        x = 0xC3A5u;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    step_rng = x;
+    return x;
+}
+/* One new rhythm. The hit count is anywhere from one to twelve, and the
+ * hits land on random sixteenths. A row that came back the same is nudged. */
+static uint16_t iam_step_cast(uint16_t avoid)
+{
+    uint8_t slot[16];
+    int i, n;
+    uint16_t m = 0;
+    for (i = 0; i < 16; i++)
+        slot[i] = (uint8_t)i;
+    n = 1 + (int)(iam_step_roll() % 12u);
+    for (i = 0; i < n; i++) {
+        int j = i + (int)(iam_step_roll() % (uint32_t)(16 - i));
+        uint8_t s = slot[i];
+        slot[i] = slot[j];
+        slot[j] = s;
+        m |= (uint16_t)(1u << slot[i]);
+    }
+    if (m == avoid) {
+        m ^= (uint16_t)(1u << (iam_step_roll() & 15u));
+        if (!m)
+            m = 0x0001u;
+    }
+    return m;
+}
+static uint16_t iam_seq_live(const struct iam_seq_tr *t)
+{
+    if (t->drum >= 0 && t->drum < IAM_NDRUMKEY)
+        return iam_steps_live(t->drum, iam_drum_pat_aim(t->drum));
+    if (t->part >= 0 && t->part < 4)
+        return iam.vstep[t->part];
+    return 0;
+}
+/* The written row replaces the preset. Clap, rim, bell and crash are no longer
+ * capped at one or two hits, and the link lets this drum go. */
+static uint16_t iam_seq_cast_drum(int d, uint16_t avoid)
+{
+    uint16_t m = iam_step_cast(avoid);
+    iam.stepo = (uint16_t)(iam.stepo | (1u << d));
+    iam.pown = (uint16_t)(iam.pown | (1u << d));
+    iam.stepv[d] = m;
+    iam_write_drum_pats();
+    return m;
+}
+static void iam_seq_say_steps(uint16_t m)
+{
+    char b[8];
+    itoa_u((uint32_t)iam_popcount(m), b);
+    say("STEPS", b);
+}
+/* ALGORITHM on the sequence screen. The rhythm is a new cast, either way.
+ * Turning back is another cast, not the undo. The pad, the bass, the acid
+ * and the air still take their other mutate. The scale waits. Nothing here
+ * calls the song's rng, and nothing switches a row on. */
 static void iam_seq_mutate_one(const struct iam_seq_tr *t, int dir)
 {
     int d = t->drum;
     if (d >= 0 && d < IAM_NDRUMKEY) {
-        int step = dir < 0 ? -1 : 1;
-        iam.stepo = (uint16_t)(iam.stepo & ~(1u << d));
-        iam.pown = (uint16_t)(iam.pown | (1u << d)); /* this row leaves the linked beat */
-        if (iam_main_drum(d)) {
-            int p = IAM_DRUM_PART[d];
-            iam.pat[p] = (uint8_t)((iam.pat[p] + step + 8) & 7);
-        } else
-            iam.dpat[d] = (uint8_t)((iam.dpat[d] + step + 8) & 7);
-        iam_write_drum_pats();
+        iam_seq_cast_drum(d, iam_seq_live(t));
         say("MUTATE", 0);
         return;
     }
     if (t->part < 0 || t->part > 3)
         return;
     if (t->part == 0) {
-        iam_pad_colour_go(1, 0); /* the colour walks forward. The sixteen follow the encoder */
-        iam_vstep_set(0, iam_vstep_turn(iam.vstep[0], dir));
+        iam_pad_colour_go(1, 0); /* the colour walks forward. The sixteen are a new cast */
+        iam_vstep_set(0, iam_step_cast(iam.vstep[0]));
     } else if (t->part == 1) {
         int add = dir < 0 ? 5 : 3;
         int v = (proj.par[P_DR_INST] + add + en_bank_n(1) * 4) % en_bank_n(1);
         iam_set(P_DR_INST, v);
-        iam_vstep_set(1, iam_vstep_turn(iam.vstep[1], dir));
+        iam_vstep_set(1, iam_step_cast(iam.vstep[1]));
     } else if (t->part == 2) {
         int add = dir < 0 ? 1 : 3;
         iam.pat[2] = (uint8_t)((iam.pat[2] + add) & 7);
         iam_write_drums();
-        iam_vstep_set(2, iam_vstep_turn(iam.vstep[2], dir));
+        iam_vstep_set(2, iam_step_cast(iam.vstep[2]));
     } else {
         int add = dir < 0 ? 3 : 1;
         iam.pat[3] = (uint8_t)((iam.pat[3] + add) & 7);
         iam_write_drums();
-        iam_vstep_set(3, iam_vstep_turn(iam.vstep[3], dir));
+        iam_vstep_set(3, iam_step_cast(iam.vstep[3]));
     }
     say("MUTATE", 0);
 }
@@ -4303,12 +4579,13 @@ static void iam_seq_sound(int step)
         return;
     say(iam_seq_sub(&t[iam.seq_at]), 0);
 }
-/* Knob 2. Heard now, on this row only. A synth wobbles. A drum's pitch sweeps.
- * The wah stays shut, and a dark row stays dark. */
+/* Knob 2. A new rhythm on this row, heard now. The count of hits is part of
+ * the cast. The wah stays shut, and a dark row stays dark. One undo. */
 static void iam_seq_shape(int e)
 {
     struct iam_seq_tr t[15];
-    int n, v, d, part;
+    int n, i, steps, d, part;
+    uint16_t m = 0;
     if (!e)
         return;
     n = iam_seq_clamp(t);
@@ -4317,29 +4594,21 @@ static void iam_seq_shape(int e)
     if (!iam.turned)
         iam_push();
     iam.turned = 1;
+    steps = e < 0 ? -e : e;
+    if (steps > 8)
+        steps = 8; /* a fast spin still moves. It does not burn the whole roll */
     d = t[iam.seq_at].drum;
-    if (d >= 0 && d < IAM_NDRUMKEY) {
-        v = (int)iam.sweep[d] + e * 16;
-        if (v < 0)
-            v = 0;
-        if (v > 100)
-            v = 100;
-        iam.sweep[d] = (uint8_t)v;
-        en_snap(d, v);
-        iam_say_amt("SWEEP", v);
-        return;
-    }
     part = t[iam.seq_at].part;
-    if (part < 0 || part > 3)
-        return;
-    v = (int)iam.wob[part] + e * 16;
-    if (v < 0)
-        v = 0;
-    if (v > 100)
-        v = 100;
-    iam.wob[part] = (uint8_t)v;
-    en_wobble(part, v);
-    iam_say_amt("WOBBLE", v);
+    for (i = 0; i < steps; i++) {
+        if (d >= 0 && d < IAM_NDRUMKEY)
+            m = iam_seq_cast_drum(d, i ? m : iam_seq_live(&t[iam.seq_at]));
+        else if (part >= 0 && part <= 3) {
+            m = iam_step_cast(i ? m : iam.vstep[part]);
+            iam_vstep_set(part, m);
+        }
+    }
+    if (m)
+        iam_seq_say_steps(m);
 }
 static void iam_seq_say_num(const char *what, int v)
 {
@@ -4441,7 +4710,7 @@ static void iam_knobs(uint32_t btn)
             continue;
         }
         if (role == EN_K2 && iam.seq_on) {
-            iam_seq_shape(e); /* wobble or sweep. The wah waits */
+            iam_seq_shape(e); /* this row's steps, a new count each turn. The wah waits */
             continue;
         }
         if (role == EN_K4 && iam.seq_on) {
@@ -4589,6 +4858,8 @@ static void iam_leds(uint32_t btn)
     int i;
     if (iam.auto_on)
         b |= 1u << B_PLAY;
+    if (iam.dj && !iam.seq_on)
+        b |= 1u << B_ARP; /* lit while the DJ is on. On the sequence screen this button is back */
     if (iam_loop_button())
         b |= 1u << B_REC; /* a loop from GLO: REC blinks until it is pressed */
     if ((btn >> B_FX) & 1)
@@ -4707,6 +4978,10 @@ static uint32_t iam_picture(void)
     s = iam_mix(s, iam.stepo);
     s = iam_mix(s, iam.step_i); /* the mark moves while the same key stays down */
     s = iam_mix(s, iam.auto_on);
+    s = iam_mix(s, iam.dj);
+    s = iam_mix(s, iam.dj_fx);
+    s = iam_mix(s, iam.dj_bit);
+    s = iam_mix(s, iam.dj_kn);
     s = iam_mix(s, iam.sec);
     s = iam_mix(s, iam.style);
     s = iam_mix(s, (uint32_t)proj.par[P_TEMPO]);
@@ -4754,7 +5029,21 @@ static uint32_t iam_picture(void)
 }
 /* Sixteen steps, grouped as four beats, then four bars of the phrase.
  * Pips only: putting the step into the picture would clear the whole panel. */
-/* The strip under the status is the bar while nothing is held, and the pattern while a key is. */
+/* The strip under the status is the bar while nothing is held, and the pattern while a key is.
+ * The line sits on the last row of the status and the pixel under it: the action
+ * glyphs end at 54, and the steps start at 58, so the two do not meet. */
+static void iam_play_line(uint32_t step)
+{
+    uint32_t beat = step >> 2;
+    int b, i;
+    for (b = 0; b < 4; b++) {
+        int x0 = 6 + b * 52 + b * 4; /* four steps, then the gap the cells already leave */
+        uint16_t c = (uint32_t)b == beat ? K_DIM : K_LINE;
+        lcd_fill((uint32_t)x0, 55, 49, 2, c);
+    }
+    i = (int)step;
+    lcd_fill((uint32_t)(6 + i * 13 + (i >> 2) * 4), 55, 10, 2, K_TEXT);
+}
 static int iam_strip_held(void)
 {
     return iam.held_drum >= 0 || (iam.held >= 0 && iam.held < 4);
@@ -4785,8 +5074,9 @@ static void iam_clock(void)
         cv_blit(196, 1);
     }
     if (!tip && iam_strip_held()) {
+        iam_play_line(step); /* above the steps. The cells stay where they were drawn */
         iam.step_seen = (uint8_t)step;
-        return; /* the sixteen steps of the key under the finger own this row */
+        return;
     }
     for (i = 0; i < 16; i++) {
         uint16_t c = (uint32_t)i == step ? K_ACC : ((uint32_t)i >> 2) == beat ? K_DIM : K_LINE;
@@ -5110,6 +5400,10 @@ static void iam_status(int toast)
         iam_put(act, 28, iam_hold_sub());
     else if (en_frozen)
         iam_put(act, 28, "FREEZE");
+    else if (iam.dj) {
+        iam_put(act, 28, "DJ ");
+        iam_put(act, 28, iam_dj_name());
+    }
     if (act[0])
         cv_text(4, 40, &FONT_XS, act, (toast || iam.q_find) ? K_ACC : K_TEXT);
     cv_blit(0, 0);
@@ -5148,10 +5442,10 @@ static void iam_seq_title(const char *name)
         const char *sub = iam_seq_sub(&t[iam.seq_at]);
         const char *m = ui.msg[0];
         int effect = plat_ms() < ui.msg_until && m[0] &&
-                     ((m[0] == 'W' && m[1] == 'O') || (m[0] == 'S' && m[1] == 'W') || (m[0] == 'C' && m[1] == 'U') ||
-                      (m[0] == 'T' && m[1] == 'U') || (m[0] == 'M' && m[1] == 'U'));
+                     ((m[0] == 'W' && m[1] == 'O') || (m[0] == 'S' && m[1] == 'W') || (m[0] == 'S' && m[1] == 'T') ||
+                      (m[0] == 'C' && m[1] == 'U') || (m[0] == 'T' && m[1] == 'U') || (m[0] == 'M' && m[1] == 'U'));
         line[0] = 0;
-        /* Wobble, sweep, cutoff, tune, mutate. A landed sound keeps its name on this row. */
+        /* Wobble, sweep, steps, cutoff, tune, mutate. A landed sound keeps its name on this row. */
         if (effect) {
             iam_put(line, (int)sizeof line, m);
             if (ui.msg[1][0]) {

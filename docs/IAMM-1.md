@@ -1,7 +1,7 @@
 # Jam Playground
 
 Generative music for the M-VAVE FM-1.
-Switch it on. It plays, and it says JAM.
+Switch it on. It plays, and three quiet notes rise with it.
 
 Five engines. Four synth keys at once. Eleven drums. Seventy sounds. One hundred and four variations.
 
@@ -21,7 +21,7 @@ finished. One hundred and four are in the machine. It writes the one after that.
 It hits like a Digitakt, moves like an Octatrack, speaks like a Digitone, and sits in the room
 of a Cyma Forma RND. Those instruments are not in this box. This one makes the record.
 
-How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's USB name is Jam Playground FM-1. The tips say JAM. The 1.0.0 package still says IAMM-1.
+How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's USB name is Jam Playground FM-1, and so is 1.1.0. The tips say JAM. The 1.0.0 package still says IAMM-1.
 
 ## Specs
 
@@ -57,12 +57,13 @@ A development build is `build/amb.fwsc`, identity `FM-1_700`. A numbered release
 file. Build it with:
 
 ```
-./build.sh --release 1.0.0
-python3 tools/fm1_install.py build/amb-1.0.0.fwsc
+./build.sh --release 1.1.0
+python3 tools/fm1_install.py build/amb-1.1.0.fwsc
 ```
 
-That package's identity is `FM-1_7010000`. The FM-1 reports that identity after the install. The
-same command installs a later version over an earlier one.
+That package's identity is `FM-1_7010100`. The FM-1 reports that identity after the install. The
+same command installs a later version over an earlier one. 1.0.0 is still `build/amb-1.0.0.fwsc`,
+identity `FM-1_7010000`.
 
 If the write stops part way, the unit stays in update mode. Plug it in again and run the same
 command. It finishes the write. Exit 0 means it is done. Exit 3 means the unit was not found.
@@ -136,12 +137,13 @@ by the number.
 
 | Version | Identity | What it is |
 |---|---|---|
+| 1.1.0 | `FM-1_7010100` | Jam Playground. `build/amb-1.1.0.fwsc` is 609657 bytes. The image is 463896 bytes. The screen and the USB name say Jam Playground. Three quiet notes at boot |
 | 1.0.0 | `FM-1_7010000` | The first release. `build/amb-1.0.0.fwsc` is 609657 bytes. The image is 271900 bytes. The screen and the USB name say IAMM-1 |
 | development | `FM-1_700` | What a plain `./build.sh` writes. The USB name is Jam Playground FM-1. The tips say JAM. The identity number does not change between development builds |
 
-1.0.0 is that first release: five engines, four synth keys at once, eleven drums,
-sixty sounds, one hundred and four variations. The seventy sounds in the spec row include
-the sampled library added in the source after that package. Later versions get a row in this table when they exist.
+1.1.0 is the Jam Playground release: five engines, four synth keys at once, eleven drums,
+seventy sounds. On the song screen, ARP is the DJ. Knob 2 on the sequence screen writes a new
+rhythm, from one hit to twelve. 1.0.0 is the earlier package, and its screen still says IAMM-1.
 
 ## Credits
 

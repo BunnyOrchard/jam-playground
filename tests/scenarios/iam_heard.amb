@@ -35,7 +35,7 @@ expect par1 48
 tap SAVE
 wait 1600
 expect iamsec 3
-tap ARP
+tap OCT-
 wait 1600
 expect iamsec 0
 expect iammask 4

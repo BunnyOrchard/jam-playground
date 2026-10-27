@@ -247,3 +247,23 @@ expect holdlvl 66
 expect iamlvl0 66
 key w0 up
 wait 40
+
+# A line above the steps tracks the bar. It follows the sixteenth after the
+# picture has stopped changing, and it goes when the key does.
+key w0 down
+wait 80
+barwait
+wait 400
+expect playhead 1
+expect hold PAD
+key w0 up
+wait 40
+expect playhead 0
+key b0 down
+wait 80
+wait 300
+expect playhead 1
+expect hold KICK
+key b0 up
+wait 40
+expect playhead 0

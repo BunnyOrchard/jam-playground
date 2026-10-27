@@ -18,7 +18,7 @@ wait 4000
 expect iamstyle 2
 expect iamsec 1
 expect iamhop 3
-tap ARP
+tap OCT-
 wait 4000
 expect iamstyle 1
 expect iamsec 1

@@ -1,7 +1,7 @@
 # Jam Playground
 
-Jam Playground is a generative music machine for the M-VAVE FM-1. Switch it on and it plays, and it
-says JAM. Each boot is a different song: a scale, a tempo, a handful of parts, and a form that moves
+Jam Playground is a generative music machine for the M-VAVE FM-1. Switch it on and it plays, and three
+quiet notes rise with it. Each boot is a different song: a scale, a tempo, a handful of parts, and a form that moves
 on its own.
 
 It is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by RedtailWorks, which is a fork of
@@ -162,7 +162,7 @@ on that drum takes its steps. A key you have already pressed stays on or off thr
   SEL solos that track, and SEL again brings the rest of the song back. ALGORITHM mutates
   that track, one step a turn, and the scale waits until the screen closes. Knob 1 rotates
   its sound, or its kit when the row is a drum. The title names the one it is aiming at, and
-  that sound lands on the next bar. Knob 2 wobbles a synth and sweeps a drum, heard as you
+  that sound lands on the next bar. Knob 2 writes that track's steps again, anywhere from one hit to twelve, heard as you
   turn, and only on that track. Knob 4 is that track's filter, or that drum's tune. Knob 3
   is its level. The title shows the stored level. The white keys are that track's steps, lit where it plays.
   A press turns the step. SEQ, GLO, or HOME leaves, and a solo leaves with it. HOME leaves the chord where it is.
@@ -216,14 +216,14 @@ The other buttons, while the machine has the screen:
 | SEL | Tips. One tap, one page, twenty-seven of them. Any other button returns to the song. Held with a part key, that part solos. While the sequence screen is up, SEL solos the selected track, and SEL again brings the song back. |
 | SAVE | Break. Two sounding parts step out and two quiet parts step in. The way in is a cue, a throw, a stutter, or a reverse. |
 | EDIT | Excite. The filters open. |
-| SEQ | Every track that is on. SELECT moves through them. OCT− and OCT+ shift the selected track by an octave. SEL solos that track. ALGORITHM mutates that track, and the scale waits. Knob 1 is its sound or its kit. Knob 2 wobbles a synth and sweeps a drum. Knob 4 is that track's filter or tune. Knob 3 is its level. The title shows the level and the sound. White keys show that track's steps and turn them. SEQ, GLO, or HOME leaves, and a solo leaves with it. The form still drops a part for one bar on its own. |
-| ARP | Back. Up to four moves can be undone, and the music comes back with them. |
+| SEQ | Every track that is on. SELECT moves through them. OCT− and OCT+ shift the selected track by an octave. SEL solos that track. ALGORITHM mutates that track, and the scale waits. Knob 1 is its sound or its kit. Knob 2 writes that track's steps again, anywhere from one hit to twelve. Knob 4 is that track's filter or tune. Knob 3 is its level. The title shows the level and the sound. White keys show that track's steps and turn them. SEQ, GLO, or HOME leaves, and a solo leaves with it. The form still drops a part for one bar on its own. |
+| ARP | The DJ, on or off. While it is on, it plays one effect at a time: the ring, the wah, the phaser, a crowd effect, or a performance effect. A phrase can carry a two-bar ride through its middle, and the last bar punctuates. The first bar of the four stays dry. It does not mute or solo. OCT− is still back. While the sequence screen is up, ARP is back, and the DJ keeps going. In GLO this button is still the arpeggiator. |
 | ENV | A new song, on the next bar. The crossing is a cue loop, a delay throw, a stutter, or a reverse, and each press picks one. |
 | LFO | Lets Find Out. The last beat is thrown across the song at once, darkened and tossed from side to side, and the song stays loud. Sleep adds a blur instead of a beat. On the next bar this song moves, to a new chord, a new part brought up, a busier beat, or the air brought forward. Sleep steps into the next room. Back returns the song. |
 | REC | Freeze the generators. In GLO this button records the white keys instead: the last four bars, then a loop. That loop keeps playing after you leave GLO, until REC is pressed again. |
 | HOME | The next chord. While the sequence screen is up, HOME leaves it and the chord stays. |
 | OCT+ | Excite, the first time. The filters open, the chord moves, and two quiet drums come in: kick and snare first, then the hat and the perc. Press it again while that lift is on, and it keeps going. Each press brings one more part, adds drum steps, lifts the tempo, and mutates the line. Each one lands on the next bar, and OCT− walks them back one at a time. While a drum key is held and the sequence screen is closed, OCT+ moves to the next step of that drum. While the sequence screen is up, OCT+ shifts the selected track up an octave. |
-| OCT− | Back. The same as ARP. While a drum key is held and the sequence screen is closed, OCT− turns the marked step on or off. The mark starts on step 1 each time you take the key. While the sequence screen is up, OCT− shifts the selected track down an octave. A hold without SEQ lets go. |
+| OCT− | Back. Up to four moves can be undone, and the music comes back with them. While a drum key is held and the sequence screen is closed, OCT− turns the marked step on or off. The mark starts on step 1 each time you take the key. While the sequence screen is up, OCT− shifts the selected track down an octave. A hold without SEQ lets go. |
 | GLO | The editor underneath. The song keeps going, and its sections keep moving on their bars. The pad still takes a new note, and later a new colour, on the same bars as on the song screen. The white keys play the scale on the part the track has forward. The sixteen keys keep climbing to the end of the keyboard. A low octave does not fold the top half back onto the bottom. When the pad leads, or you are on a pad page, a key is that degree's chord and the pad stays at its level. When the drone or the acid is louder, or you are on that voice's page, the key is one note on that voice, so its filter and its LFO move the note with the track. A voice that is sitting out is raised while the key is down, then put back. ENV is the pad and LFO the drone. SELECT still reaches the acid. ARP turns an arpeggiator on or off: while it is on, the white keys held down play one note at a time, low to high, on the sixteenths, on the voice that page already plays, and a chord key walks the notes of its chord. Knob 2 on each of those pages is Sound, sixteen oscillators for that voice, and SEL held with ALGORITHM steps the same list. The key keeps the song's level, filter, envelope, and space. The white keys sit a tenth under that level. Knob 3 on Tempo is Keys, from silent up to the voice, and a turn stays through a new song. PRESETS loads one of the ten pieces, and a piece is a whole song, so the keyboard does not become that piece. When four synth keys are already on, the oldest named key goes off until that piece fits inside four. The four beats run across the bottom, so a take can land on the bar. The bar of the four and the step sit on one line across the top. The level meters sit on the left: pad, noise, drone, acid, and the kit. The chord ring sits on the right and shows the scale, the notes that are on, and the acid line around it. Under the beats, the row names the synth the white keys play, pad, drone or acid, and its sound. On the tempo page that row does not also name the page. REC reads REC, and a loop reads LOOP. While an effect is held, that effect's name takes the place of the sound. FX opens the effects page. The black keys that were the sixteenth gate, the crusher, and the solos become a sweep, a wow, a ring, a transient, a phaser, a wah, a radio, and a flange, and the white keys that were the mutes become pan, a vowel, a filter, a chorus, a bend, and a chop. Each one warps the music already playing. The repeats, reverse, tape stop, the eighth gate, the throw, the fill, and the two filters stay. EDIT mutates the song. The keys then follow whichever voice the piece has forward. The FX page draws those effects in the same groups as the song-screen keys: black keys five, then six, then the white keys in four rows of four. Each box is the effect name. A key holds its effect only while it is down, and nothing here edits the scale. OCT− and OCT+ inside this screen are still the octave. You open on Tempo: the four knobs are tempo, evolve, keys, and drift. SELECT moves the page, and the knobs become that page's four values. HOME held with SELECT is the tempo. REC records the white keys and keeps the last four bars. Press it again and those bars loop, in place of what was there, not stacked on top. Press it once more and the loop stops. Leave GLO and the loop keeps playing until REC is pressed again. A black key is still only an effect while it is down. GLO again, or HOME, returns the song screen. A piece you dialled is what keeps playing until the next song. |
 
 ## Try it here
@@ -241,12 +241,12 @@ from the MASTER pot, and every power-on is a new one.
 ## Install
 
 Building a package needs Docker (the JieLi toolchain is linux/amd64) and the steps in `BUILDING.md`.
-A development package is `build/amb.fwsc`, identity `FM-1_700`. A release package is `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`. A development build's USB name is Jam Playground FM-1, and the tips say JAM. The 1.0.0 package still says IAMM-1.
+A development package is `build/amb.fwsc`, identity `FM-1_700`. The release package is `build/amb-1.1.0.fwsc`, identity `FM-1_7010100`. The USB name is Jam Playground FM-1, and the tips say JAM. The 1.0.0 package still says IAMM-1.
 
 With the FM-1 plugged in and in Felucca update mode (hold OCT− and OCT+ for 5 seconds):
 
 ```
-python3 tools/fm1_install.py build/amb-1.0.0.fwsc
+python3 tools/fm1_install.py build/amb-1.1.0.fwsc
 ```
 
 Installing replaces whatever firmware is on the unit. To put M-VAVE's firmware back, use the

@@ -6860,95 +6860,51 @@ static void shed_tick(uint32_t n)
     en_shed_done = (uint8_t)(shed && shed_g <= 0.0f);
 }
 
-/* One boot word, "JAAAMMM". A narrow pulse, a wide pitch wobble, two formants
- * that open on the vowel and close on the hum, and a noise burst for the J.
- * It mixes on top of the song and then stops. The host build does not hear it,
+/* Three quiet sines at boot, one after another: G, C, E. A gap between them.
+ * Nothing else, and the song is left alone. The host build does not hear it,
  * so a seed's peak stays the song. Not in ram_text: flash-busy code only. */
 #ifndef EN_HOST
+static const float JAM_HZ[3] = {392.00f, 523.25f, 659.25f};
+static const float JAM_ON[3] = {0.00f, 0.32f, 0.64f};
+static const float JAM_OFF[3] = {0.20f, 0.52f, 0.96f};
 static struct {
-    uint32_t left, t, nz, coef;
-    float ph, vib, wob;
-    float a1, a2, b1, b2;
-    float c1, r1, c2, r2;
+    uint32_t left, t;
+    float ph;
+    int8_t note;
 } jam;
 
+static float jam_sample(void) __attribute__((noinline));
 static float jam_sample(void)
 {
-    float sec, u, semis, f, exc, x, y1, y2, y, amp, ring;
+    float sec, y;
+    int i;
     if (!jam.left)
         return 0.0f;
     sec = (float)jam.t * (1.0f / EN_SR);
-    if (jam.coef == 0) {
-        float f1, f2, rad1, rad2;
-        u = sec > 0.62f ? (sec - 0.62f) * (1.0f / 0.38f) : 0.0f;
-        if (u > 1.0f)
-            u = 1.0f;
-        f1 = 760.0f + (280.0f - 760.0f) * u;
-        f2 = 1250.0f + (900.0f - 1250.0f) * u;
-        rad1 = 0.975f - 0.03f * u;
-        rad2 = 0.965f - 0.05f * u;
-        jam.r1 = rad1 * rad1;
-        jam.r2 = rad2 * rad2;
-        jam.c1 = 2.0f * rad1 * fm_cosf(FM_TWO_PI * f1 * (1.0f / EN_SR));
-        jam.c2 = 2.0f * rad2 * fm_cosf(FM_TWO_PI * f2 * (1.0f / EN_SR));
-        jam.coef = 64;
+    y = 0.0f;
+    for (i = 0; i < 3; i++) {
+        if (sec >= JAM_ON[i] && sec < JAM_OFF[i]) {
+            float u = sec - JAM_ON[i];
+            float tail = JAM_OFF[i] - sec;
+            float env = 1.0f;
+            if (jam.note != (int8_t)i) {
+                jam.ph = 0.0f;
+                jam.note = (int8_t)i;
+            }
+            if (u < 0.012f)
+                env = u * (1.0f / 0.012f);
+            if (tail < 0.028f)
+                env *= tail * (1.0f / 0.028f);
+            jam.ph += JAM_HZ[i] * (1.0f / EN_SR);
+            if (jam.ph >= 1.0f)
+                jam.ph -= 1.0f;
+            y = fm_sin_turns(jam.ph) * env * 0.05f;
+            break;
+        }
     }
-    jam.coef--;
-    jam.vib += 7.2f * (1.0f / EN_SR);
-    if (jam.vib >= 1.0f)
-        jam.vib -= 1.0f;
-    jam.wob += 1.35f * (1.0f / EN_SR);
-    if (jam.wob >= 1.0f)
-        jam.wob -= 1.0f;
-    semis = 4.2f * fm_sinf(FM_TWO_PI * jam.vib) + 1.5f * fm_sinf(FM_TWO_PI * jam.wob);
-    if (sec < 0.07f)
-        semis += 9.0f * (1.0f - sec * (1.0f / 0.07f));
-    f = 112.0f * fm_exp2f(semis * (1.0f / 12.0f));
-    jam.ph += f * (1.0f / EN_SR);
-    if (jam.ph >= 1.0f)
-        jam.ph -= 1.0f;
-    exc = jam.ph < 0.12f ? 0.9f : -0.18f;
-    x = exc;
-    if (sec < 0.08f) {
-        float e = 1.0f - sec * (1.0f / 0.08f);
-        float noise;
-        jam.nz = jam.nz * 1664525u + 1013904223u;
-        noise = (float)(int32_t)(jam.nz & 0x7FFFFFFFu) * (1.0f / 2147483648.0f) - 0.5f;
-        x += noise * e * e * 1.4f;
-    }
-    y1 = x + jam.c1 * jam.a1 - jam.r1 * jam.a2;
-    y2 = x + jam.c2 * jam.b1 - jam.r2 * jam.b2;
-    if (y1 > 8.0f)
-        y1 = 8.0f;
-    else if (y1 < -8.0f)
-        y1 = -8.0f;
-    if (y2 > 8.0f)
-        y2 = 8.0f;
-    else if (y2 < -8.0f)
-        y2 = -8.0f;
-    jam.a2 = jam.a1;
-    jam.a1 = y1;
-    jam.b2 = jam.b1;
-    jam.b1 = y2;
-    u = sec > 0.62f ? (sec - 0.62f) * (1.0f / 0.38f) : 0.0f;
-    if (u > 1.0f)
-        u = 1.0f;
-    y = (y1 * (0.62f + 0.25f * u) + y2 * (0.55f * (1.0f - u))) * 0.045f;
-    y = fm_tanhf(y * 2.2f);
-    amp = 1.0f;
-    if (sec < 0.025f)
-        amp = sec * (1.0f / 0.025f);
-    if (sec > 1.28f)
-        amp = (1.55f - sec) * (1.0f / 0.27f);
-    if (amp < 0.0f)
-        amp = 0.0f;
-    ring = 0.55f + 0.45f * fm_sinf(FM_TWO_PI * jam.vib * 2.0f); /* twice the wobble, and it wraps clean */
-    y *= 0.34f * amp * (1.0f - 0.45f * u) * ring;
     jam.t++;
-    if (--jam.left == 0) {
-        jam.a1 = jam.a2 = jam.b1 = jam.b2 = 0.0f;
+    if (--jam.left == 0)
         jam.ph = 0.0f;
-    }
     return y;
 }
 #endif
@@ -6956,13 +6912,11 @@ static float jam_sample(void)
 void en_jam(void)
 {
 #ifndef EN_HOST
-    jam.left = 0; /* the render must not start on a half-written word */
+    jam.left = 0; /* the render must not start on a half-written note */
     jam.t = 0;
-    jam.nz = 1u;
-    jam.coef = 0;
-    jam.ph = jam.vib = jam.wob = 0.0f;
-    jam.a1 = jam.a2 = jam.b1 = jam.b2 = 0.0f;
-    jam.left = (uint32_t)(1.55f * EN_SR);
+    jam.ph = 0.0f;
+    jam.note = -1;
+    jam.left = (uint32_t)(1.05f * EN_SR);
 #endif
 }
 
@@ -7090,7 +7044,7 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
             r = (mixr[j] + (0.75f * er + 0.15f * xr + 1.3f * wr) * dk[j]) * 0.36f;
         }
 #ifndef EN_HOST
-        if (jam.left) { /* the boot word sits on the master, then it is gone */
+        if (jam.left) { /* three quiet notes on the song, then nothing */
             float v = jam_sample();
             l += v;
             r += v;
