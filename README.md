@@ -1,16 +1,50 @@
 # Jam Playground
 
-Generative music for the M-VAVE FM-1. Unofficial firmware.
+Generative music groovebox for the M-VAVE FM-1. Unofficial firmware fork. 
 
-Power on and it is already playing, and three quiet notes rise over the song. A new boot is a new song. Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. Seventy sounds are in the machine. Knob 1 walks every one of them, including the sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit.
+Power on and it is already playing. A new boot is a new song. Jam Playground automatically creates and plays tunes, changes the sounds, mutates the pattern and allows continually changing soundscapes.
+We can change every element and jam along at anytime. <Play> stops/starts automatic song mode.
+Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. 
+Sounds include sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and many more.
+Changes generally land at the start of the next bar.
 
-Hold a key and knob 2 leans that part's notes up or down the scale, the same way knob 2 does on the sequence screen. The rhythm stays, and it does not switch the key on. ALGORITHM mutates that key's track, and the scale waits. With nothing held, knob 2 is still the wah and ALGORITHM is still the scale. On the sequence screen, knob 2 leans each hit of the selected track, knob 3 is that track's level, and the white keys turn that track's steps on and off.
+Controls in default mode:
+Select: Tempo
+Presets: Change Vibe
+Algorithm: Change Scale
+Knob1: Ring FX
+Knob2: Wah FX
+Knob3: Phaser FX
+Knob4: 4 Filters FX
+Oct+: Pump
+Oct-: Back
 
-The crash steps over Hypno, House, Acid, Hard, and 808. Those cymbals are not sounds. The other drums in those kits stay.
+FX: Mutate Song
+Select: Tips
+Env: New Song
+LFO: Lets Find Out (makes a couple of changes such as mutate or change instrument/drum)
+Edit: Excite
+Glo: Once you got a good beat going, go here to play keys / rec or do FX. 
+      Black Keys: FX
+      White Keys: Keyboard
+      Rec: Records Keyboard play for the last 16 bars - Rec again plays it back on Loop
+      FX: FX page where white and black keys can be used.
+      Arp: Arpeggiator
+      On the GLO effects page the four knobs are Repeat, Move, Tone, and Crowd. Each one starts dry.
+Home: Return to default mode.
+Save: Break
+ARP: Cycles through different FX automatically.
+Seq: Shows all the tracks and Steps. In this mode:
+      SELECT knob: cycles between the current tracks.
+      ALGORITHM mutates that key's track.
+      knob 1 changes that keys sound
+      knob 2 changes the individual notes' scale.
+      knob 3: Change Volume of selected Key/track.
+      knob 4: FX/Cutoff for the selected track.
+      White Keys show the selected tracks steps - Edit the steps by pressing the white keys.
+In default mode, hold a key and the above 6 instructions will do the same thing. 
 
-ARP is a DJ. On, it plays one effect at a time, on the phrase, and leaves the first bar of each four dry. OCT− is back. In GLO, ARP is still the arpeggiator. On the GLO effects page the four knobs are Repeat, Move, Tone, and Crowd. Each one starts dry.
-
-The corner of the tips says JAM. The USB name is Jam Playground FM-1. How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
+How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
 
 The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7010200`. Build it with `./build.sh --release 1.2.0`. The download page, with a browser installer, is:
 
