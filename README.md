@@ -54,9 +54,13 @@ Glo: Once you got a good beat going, go here to play keys / rec or do FX.
       On the GLO effects page the four knobs are Repeat, Move, Tone, and Crowd. Each one starts dry.
       
 Home: Return to default mode.
+
 Save: Break
+
 ARP: Cycles through different FX automatically.
+
 Seq: Shows all the tracks and Steps. In this mode:
+
       SELECT knob: cycles between the current tracks.
       ALGORITHM mutates that key's track.
       knob 1 changes that keys sound
@@ -64,6 +68,7 @@ Seq: Shows all the tracks and Steps. In this mode:
       knob 3: Change Volume of selected Key/track.
       knob 4: FX/Cutoff for the selected track.
       White Keys show the selected tracks steps - Edit the steps by pressing the white keys.
+      
 In default mode, hold a key and the above 6 instructions will do the same thing. 
 
 How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
