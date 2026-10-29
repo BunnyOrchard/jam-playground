@@ -20,7 +20,9 @@
  * is the known drum-and-bass piece.
  * Until FX or a step edit takes a drum the song left off, its steps stay with the
  * beat. A section does not relight a drum the draw left off. Knob 1, held, is its
- * kit. Knob 2 walks that key's steps, heard as you turn. A click mutes a part.
+ * kit. Knob 2 leans that key's notes with the same phrase as SEQ knob 2, heard
+ * as you turn. ALGORITHM mutates that key's track. The scale waits. Neither
+ * switches the key on. A click mutes a part.
  * Hold one and the knobs edit it. The screen names that key, and under the name
  * the sound or the kit knob 1 is aiming at. That line moves as the knob turns.
  * The stored level sits on the right of the name, as a percent.
@@ -35,10 +37,10 @@
  * OCT- and OCT+ shift the selected track by an octave. SEL solos that
  * track, and SEL again brings the song back. ALGORITHM mutates that
  * track, one step a detent, and the scale waits. Knob 1 is its sound
- * or its kit, and the title names the one it is aiming at. Knob 2
- * writes that track's steps again: any count from one hit to twelve,
- * placed at random, not the short preset list. Knob 4 is that track's filter
- * or tune. Knob 3 is its level. The white keys are that track's
+ * or its kit, and the title names the one it is aiming at. Knob 1 is the
+ * sound. Knob 2 leans each hit of that track up or down the scale. The rhythm
+ * stays. Knob 3 is its level. Knob 4 is that track's filter
+ * or tune. The white keys are that track's
  * sixteen steps: lit where it plays, and a press turns the step.
  * SEQ, GLO, or HOME leaves that screen, and a solo leaves with it. HOME
  * leaves the chord where it is.
@@ -68,7 +70,8 @@
  * With nothing held, and with SEQ closed, knob 1 is a ring and knob 2 is
  * a wah. Both warp the song already playing. Knob 3 is a phaser, and knob
  * 4 opens every synth filter. A click of FX mutates.
- * A held key still owns all four.
+ * A held key still owns all four. ALGORITHM, while that key is held, mutates
+ * its track. The scale waits, and the key does not switch on.
  * ENV is a new song on the next bar. The way across is a cue, a throw, a
  * stutter, or a reverse, and each press picks one. The PRESETS dial uses
  * that same crossing into the vibe it lands on.
@@ -107,6 +110,7 @@
  * open a tenth under the voice. On Tempo, knob 3 is that level: 0 is silent
  * and 100 is as loud as the voice. The part's own level stays. Black keys hold effects while they
  * are down. The FX page draws them in the song screen's groups, the effect name only.
+ * The four knobs on that page play one effect from it. The left end of each is dry.
  * Nothing there edits the scale. REC there records the white keys and, on the
  * next press, loops the last four bars. It does not stack. One more press
  * lets the loop go. Leaving GLO keeps a finished loop until REC is pressed
@@ -165,8 +169,8 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE SOUNDS", "4 OF 27", "FIFTH TURNS OLDEST OFF", "SAMPLES ARE IN KNOB 1", "GLASS DARK DUB, STABS", "SUB REESE, HOOVER FM", "PLUCK TRANCE BLEEP SOFT"},
     {"THE DRUMS", "5 OF 27", "ELEVEN BLACK KEYS", "EACH KEY, ONE DRUM", "KICK OUT TO THE CRASH", "A TAP TURNS THAT DRUM", "AND ONLY THAT DRUM"},
     {"EACH DRUM", "6 OF 27", "THE BEAT STAYS LINKED", "A SONG, AND AUTO TOO", "FX OR STEPS UNLINK IT", "A TAP TURNS ONE DRUM", "EACH KEEPS ITS OWN KIT"},
-    {"THE KITS", "7 OF 27", "HYPNO, HOUSE, TECHNO", "ACID, BREAK, MINIMAL", "HARD, 808, 909, DUSTY", "HOLD THE DRUM, KNOB 1", "YOU HEAR IT NEXT BAR"},
-    {"HOLD A KEY", "8 OF 27", "KNOB 1: SOUND OR KIT", "KNOB 2 WALKS STEPS", "HEARD AS YOU TURN", "DOES NOT TURN A KEY ON", "PAD COLOUR: WAITING"},
+    {"THE KITS", "7 OF 27", "HYPNO, HOUSE, TECHNO", "ACID, BREAK, MINIMAL", "HARD, 808, 909, DUSTY", "CRASH SKIPS HYPNO", "HOUSE, ACID, HARD, 808"},
+    {"HOLD A KEY", "8 OF 27", "KNOB 1: SOUND OR KIT", "KNOB 2 LEANS THE NOTES", "UP OR DOWN THE SCALE", "DOES NOT TURN A KEY ON", "ALGO MUTATES THAT KEY"},
     {"LEVEL AND FILTER", "9 OF 27", "3 LEVEL. 4 THE FILTER", "A DRUM: KNOB 4 TUNES", "ONLY THE DRUM YOU HOLD", "NOT THE ONE BESIDE IT", "YOU HEAR IT AS YOU TURN"},
     {"FROM SILENT", "10 OF 27", "KNOB 3 UP WAKES LOW", "TURN MORE, GET LOUDER", "DOWN ON DARK: NO CHANGE", "KNOB 4, NO KEY HELD", "OPENS EVERY FILTER"},
     {"WAKING A PART", "11 OF 27", "SOUND OR FILTER WAKES", "AT THE SAVED LEVEL", "KNOB 3 IS THE SOFT WAY", "A DRUM'S KNOB WAKES", "ONLY THAT DRUM"},
@@ -175,13 +179,13 @@ static const char *const IAM_TIP[IAM_NTIP][IAM_TIP_LINES] = {
     {"THE BREAK", "14 OF 27", "SAVE IS THE BREAK", "TWO LOUD PARTS STEP OUT", "TWO QUIET ONES STEP IN", "ONE NEW PAD NOTE", "CUE THROW STUTTER REV"},
     {"EXCITE", "15 OF 27", "EDIT IS EXCITE", "THE FILTERS OPEN", "A NEW PAD SOUND", "AND A NEW CHORD", "NO DRUMS. NEXT BAR"},
     {"OCT PLUS", "16 OF 27", "OCT+ IS EXCITE", "TWO QUIET DRUMS JOIN", "AGAIN: A TRACK, FASTER", "STEPS, AND IT MUTATES", "EACH ONE, NEXT BAR"},
-    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "ALGO MUTATES THAT ONE", "1 SOUND 2 STEPS 4 CUT", "3 LEVEL  OCT SHIFTS", "SEL SOLO  WHITE STEPS"},
+    {"THE STEPS", "17 OF 27", "SELECT PICKS THE TRACK", "ALGO MUTATES THAT ONE", "1 SOUND  2 MELODY", "3 LEVEL  4 CUT  OCT", "SEL SOLO  WHITE STEPS"},
     {"A NEW SONG", "18 OF 27", "ENV IS A NEW SONG", "CUE, THROW, STUTTER", "OR REVERSE, AT RANDOM", "PRESETS CROSSES TOO", "BOTH ON THE NEXT BAR"},
     {"THE VIBES", "19 OF 27", "DNB, REGGAE, TRANCE", "STILL, DISCO, FUNK", "ELECTRO, HOUSE, HIPHOP", "GARAGE, DUBSTEP, WAVE", "THEN SLEEP, THEN DNB"},
     {"MORE BUTTONS", "20 OF 27", "LFO: LETS FIND OUT", "AN EFFECT, THEN A PLACE", "REC: HELD, OR MOVING", "HOME: NEXT CHORD, NOW", "ARP: THE DJ, ON OR OFF"},
     {"GLO", "21 OF 27", "SONG PLAYS UNDERNEATH", "KEYS FOLLOW THE TRACK", "ARP ON: ONE NOTE EACH", "KNOB 2 SOUND, 3 KEYS", "GLO OR HOME RETURNS"},
     {"INSIDE GLO", "22 OF 27", "BLACK KEYS HOLD EFFECTS", "REPEAT REV GATE THROW", "FLANGER FLANGE 8TH FILT", "HOLD SEQ: DRUM STEPS", "LOOP STAYS UNTIL REC"},
-    {"TEMPO AND SCALE", "23 OF 27", "1 RING  2 WAH", "3 PHASER  4 FILTERS", "SELECT TEMPO, ALGO SCALE", "FX CLICK IS MUTATE", "A HELD KEY OWNS 1 TO 4"},
+    {"TEMPO AND SCALE", "23 OF 27", "1 RING  2 WAH", "3 PHASER  4 FILTERS", "SELECT TEMPO, ALGO SCALE", "FX CLICK IS MUTATE", "HELD: ALGO MUTATES IT"},
     {"FX", "24 OF 27", "A SHORT TAP MUTATES", "A HELD KEY: JUST THAT", "NO KEY: THE WHOLE SONG", "HOLDING DOES NOT MOVE", "A KNOB. A TURN IS LOST"},
     {"MUTATE", "25 OF 27", "NO KEY WALKS THE SONG", "BEAT ACID PAD BASS AIR", "KIT, FILTER, OR ROOM", "A HELD KEY: JUST THAT", "TEMPO AND PARTS STAY"},
     {"THE CLOCK", "26 OF 27", "SIXTEEN PIPS: THIS BAR", "ONE PIP IS THE STEP", "FOUR PIPS MAKE A BEAT", "FOUR WIDER: THE PHRASE", "WHICH OF THE FOUR BARS"},
@@ -490,6 +494,8 @@ struct iam_snap {
     uint8_t xdec[EN_XDRUM]; /* rim, tom, cowbell, shaker, crash. 50 is the length they had */
     uint8_t wob[4];        /* held knob 2 on pad, bass, acid, air. 0 is the song */
     uint8_t sweep[IAM_NDRUMKEY]; /* held knob 2 on a drum. 0 is the hit it already had */
+    int8_t mel[4];               /* SEQ knob 2 on pad, bass, acid, fourth. 0 is the written note */
+    int8_t dmel[IAM_NDRUMKEY];   /* the same phrase, one depth per drum */
 };
 struct iam_state {
     uint8_t on, auto_on, style, sec, form, mask, solo, dirty;
@@ -536,6 +542,8 @@ struct iam_state {
     uint8_t xdec[EN_XDRUM]; /* rim, tom, cowbell, shaker, crash. 50 is the length they had */
     uint8_t wob[4];        /* held knob 2 on pad, bass, acid, air. 0 is the song. Not saved */
     uint8_t sweep[IAM_NDRUMKEY]; /* held knob 2 on a drum. 0 is the hit. Not saved */
+    int8_t mel[4];               /* SEQ knob 2, and hold knob 2. How far this row leans. 0 is the song. Not saved */
+    int8_t dmel[IAM_NDRUMKEY];   /* the same, per drum. Not saved */
     uint8_t card; /* 0: the song. odd: a tip, index card / 2 */
     uint8_t painted;
     uint8_t sel_arm; /* SEL went down alone, and SEQ is closed: the release opens the next tip */
@@ -800,7 +808,39 @@ static void iam_link_family(void)
     if (!(iam.pown & (1u << 10)))
         iam.dpat[10] = iam.dpat[0]; /* crash with the kick */
 }
-/* The pattern and the kit the knob is aiming at. They wrap the same way the bar applies them. */
+/* The pattern and the kit the knob is aiming at. They wrap the same way the bar applies them.
+ * The crash has no Hypno, House, Acid, Hard, or 808. A stored one of those stands in as the
+ * next kit that has a crash, and a turn steps over them, so one detent still lands on one. */
+static int iam_crash_ok(int kit)
+{
+    return kit != 0 && kit != 1 && kit != 3 && kit != 6 && kit != 7;
+}
+static int iam_kit_walk(int drum, int cur, int delta)
+{
+    int step, n, i, guard;
+    if (cur < 0)
+        cur = 0;
+    cur %= EN_NKIT;
+    if (drum == 10) {
+        for (guard = 0; guard < EN_NKIT && !iam_crash_ok(cur); guard++)
+            cur = (cur + 1) % EN_NKIT;
+    }
+    if (delta < 0) {
+        step = -1;
+        n = -delta;
+    } else {
+        step = 1;
+        n = delta;
+    }
+    for (i = 0; i < n; i++) {
+        cur = (cur + step + EN_NKIT) % EN_NKIT;
+        if (drum == 10) {
+            for (guard = 0; guard < EN_NKIT && !iam_crash_ok(cur); guard++)
+                cur = (cur + step + EN_NKIT) % EN_NKIT;
+        }
+    }
+    return cur;
+}
 static int iam_drum_pat_aim(int drum)
 {
     int base = iam_main_drum(drum) ? iam.pat[IAM_DRUM_PART[drum]] : iam.dpat[drum];
@@ -809,7 +849,7 @@ static int iam_drum_pat_aim(int drum)
 static int iam_drum_kit_aim(int drum)
 {
     int cur = iam_main_drum(drum) ? proj.par[IAM_SND[IAM_DRUM_PART[drum]]] : iam.dkit[drum];
-    return (cur + (int)iam.q_dkit[drum] + EN_NKIT * 8) % EN_NKIT;
+    return iam_kit_walk(drum, cur, iam.q_dkit[drum]);
 }
 static void iam_isol_aim(int *part, int *drum);
 static void iam_xpublish(void)
@@ -827,7 +867,7 @@ static void iam_xpublish(void)
         uint16_t st = iam_steps_live(d, iam.dpat[d]);
         if (on && !st && !(iam.stepo & (1u << d)))
             st = iam_drum_floor(d); /* a blank row does not come on silent */
-        en_xdrum(i, on, iam.dkit[d], st, on ? iam.dlvl[d] : 0, iam.xtune[i], iam.xdec[i]);
+        en_xdrum(i, on, iam_kit_walk(d, iam.dkit[d], 0), st, on ? iam.dlvl[d] : 0, iam.xtune[i], iam.xdec[i]);
     }
 }
 /* Lanes already published. An on drum whose row is empty takes the floor.
@@ -1111,6 +1151,10 @@ static void iam_apply(void)
     iam_drums_hear(); /* a drum that just came on still has the steps it will play */
     for (i = 0; i < 4; i++)
         en_vstep(i, iam.vstep[i]);
+    for (i = 0; i < 4; i++)
+        en_melody(i, iam.mel[i]);
+    for (i = 0; i < IAM_NDRUMKEY; i++)
+        en_melody(4 + i, iam.dmel[i]);
     iam_layers_send();
     iam.dirty = 1;
 }
@@ -1628,6 +1672,10 @@ static void iam_push(void)
         s->wob[p] = iam.wob[p];
     for (p = 0; p < IAM_NDRUMKEY; p++)
         s->sweep[p] = iam.sweep[p];
+    for (p = 0; p < 4; p++)
+        s->mel[p] = iam.mel[p];
+    for (p = 0; p < IAM_NDRUMKEY; p++)
+        s->dmel[p] = iam.dmel[p];
     for (p = 0; p < IAM_NPART; p++) {
         s->pat[p] = iam.pat[p];
         s->lvl[p] = iam.lvl[p];
@@ -1692,6 +1740,10 @@ static void iam_pop(void)
         iam.sweep[p] = s->sweep[p];
         en_snap(p, s->sweep[p]);
     }
+    for (p = 0; p < 4; p++)
+        iam.mel[p] = s->mel[p];
+    for (p = 0; p < IAM_NDRUMKEY; p++)
+        iam.dmel[p] = s->dmel[p];
     en_haze(IAM_AIR[iam.style]); /* the fourth key's part follows the song behind this one */
     en_haze_oct(iam.haze_oct);
     en_sleep(iam.style == 12);
@@ -1834,7 +1886,7 @@ static void iam_cast_side(int d, int lvl)
 {
     iam.don = (uint16_t)(iam.don | (1u << d));
     iam.dpat[d] = (uint8_t)iam_cast_roll(IAM_NPAT);
-    iam.dkit[d] = (uint8_t)iam_cast_roll(EN_NKIT); /* Dusty is in the draw with the synth kits */
+    iam.dkit[d] = (uint8_t)iam_kit_walk(d, iam_cast_roll(EN_NKIT), 0); /* Dusty is in the draw. Not a missing crash */
     iam.dlvl[d] = (uint8_t)lvl;
     iam.pown = (uint16_t)(iam.pown | (1u << d)); /* its own pattern, not the drum beside it */
     iam.sown = (uint16_t)(iam.sown | (1u << d)); /* a later section leaves this key */
@@ -1972,7 +2024,7 @@ static void iam_cast(uint32_t seed, int picked)
             iam_set(IAM_SND[4 + i], iam_cast_roll(EN_NKIT));
         }
         for (i = 0; i < 7; i++)
-            iam.dkit[side[i]] = (uint8_t)iam_cast_roll(EN_NKIT);
+            iam.dkit[side[i]] = (uint8_t)iam_kit_walk(side[i], iam_cast_roll(EN_NKIT), 0);
         ndrum = s == 3 ? iam_cast_roll(5) : 3 + iam_cast_roll(5);
         iam_cast_pick(drum, 11, ndrum);
         iam.mask = (uint8_t)(iam.mask & 0x0Fu);
@@ -2099,6 +2151,10 @@ static void iam_bake(uint32_t seed, int style)
     iam.stepo = 0; /* a new song links the presets again */
     for (i = 0; i < 4; i++)
         iam.vstep[i] = iam_vstep_home(i); /* dust and chop keep their rhythm. The rest stay open */
+    for (i = 0; i < 4; i++)
+        iam.mel[i] = 0; /* a new song is the notes it wrote. The phrase waits for the knob */
+    for (i = 0; i < IAM_NDRUMKEY; i++)
+        iam.dmel[i] = 0;
     iam.sown = 0;
     iam.follow = 0;
     iam.mut = 0;
@@ -2313,7 +2369,7 @@ static void iam_boot(uint32_t seed)
     ui.dj_mask = 0;
     ui.dj_lock = 0;
     en_find(0);
-    en_jam(); /* three quiet notes, over the song. The host build is silent */
+    en_jam(); /* three notes at half the earlier level. The host build is silent */
 }
 static uint32_t iam_hop_roll(void)
 {
@@ -2953,7 +3009,7 @@ static int iam_fire(void)
     for (d = 0; d < IAM_NDRUMKEY; d++) {
         if (qdkit[d]) {
             int cur = iam_main_drum(d) ? proj.par[IAM_SND[IAM_DRUM_PART[d]]] : iam.dkit[d];
-            int nk = (cur + qdkit[d] + EN_NKIT * 8) % EN_NKIT;
+            int nk = iam_kit_walk(d, cur, qdkit[d]);
             if (iam_main_drum(d))
                 iam_set(IAM_SND[IAM_DRUM_PART[d]], nk);
             else
@@ -4306,41 +4362,34 @@ static int iam_key_settling(uint32_t keys)
             return 1;
     return 0;
 }
-/* Knob 2 while a key is held. That key's steps, now. It does not switch the
- * key on, and it does not change the sound. One undo for the gesture.
- * A synth walks its sixteen. A drum steps its own pattern and leaves the link. */
+/* Knob 2 while a key is held. The same phrase as SEQ knob 2, on this key's
+ * notes. The rhythm stays. It does not switch the key on. One undo. Steps
+ * turn on and off from the sequence screen's white keys. */
+static void iam_mel_set(int which, int depth);
+static void iam_seq_say_mel(int v);
 static void iam_turn_shape(int e)
 {
-    int dir, n, i;
+    int dir, n, i, which, depth;
     if (!e)
         return;
     dir = e > 0 ? 1 : -1;
     n = e > 0 ? e : -e;
     if (n > 8)
-        n = 8; /* one fast twist is one step of the row, not a spin through all of it */
+        n = 8; /* one fast twist is a few degrees, not a spin off the phrase */
     if (!iam.turned)
         iam_push();
     iam.turned = 1; /* letting go is the edit, not also a click */
-    if (iam.held_drum >= 0) {
-        int d = iam.held_drum;
-        iam.stepo = (uint16_t)(iam.stepo & ~(1u << d));
-        iam.pown = (uint16_t)(iam.pown | (1u << d)); /* this drum leaves the linked beat */
-        for (i = 0; i < n; i++) {
-            if (iam_main_drum(d)) {
-                int p = IAM_DRUM_PART[d];
-                iam.pat[p] = (uint8_t)((iam.pat[p] + dir + 32) & 7);
-            } else
-                iam.dpat[d] = (uint8_t)((iam.dpat[d] + dir + 32) & 7);
-        }
-        iam_write_drum_pats();
-        say(iam_step_who(), "PATTERN");
+    if (iam.held_drum >= 0 && iam.held_drum < IAM_NDRUMKEY)
+        which = 4 + iam.held_drum;
+    else if (iam.held >= 0 && iam.held < 4)
+        which = iam.held;
+    else
         return;
-    }
-    if (iam.held < 0 || iam.held > 3)
-        return;
+    depth = which < 4 ? (int)iam.mel[which] : (int)iam.dmel[which - 4];
     for (i = 0; i < n; i++)
-        iam_vstep_set(iam.held, iam_vstep_turn(iam.vstep[iam.held], dir));
-    say(iam_step_who(), "PATTERN");
+        depth += dir;
+    iam_mel_set(which, depth);
+    iam_seq_say_mel(which < 4 ? (int)iam.mel[which] : (int)iam.dmel[which - 4]);
 }
 /* FX while a key is down. That key only, now, one way. It does not take an undo,
  * and it does not switch the key on. A drum steps its own pattern and leaves the
@@ -4500,12 +4549,6 @@ static uint16_t iam_seq_cast_drum(int d, uint16_t avoid)
     iam_write_drum_pats();
     return m;
 }
-static void iam_seq_say_steps(uint16_t m)
-{
-    char b[8];
-    itoa_u((uint32_t)iam_popcount(m), b);
-    say("STEPS", b);
-}
 /* ALGORITHM on the sequence screen. The rhythm is a new cast, either way.
  * Turning back is another cast, not the undo. The pad, the bass, the acid
  * and the air still take their other mutate. The scale waits. Nothing here
@@ -4557,6 +4600,31 @@ static void iam_seq_mutate(int e)
     for (i = 0; i < steps; i++)
         iam_seq_mutate_one(&t[iam.seq_at], dir);
 }
+/* ALGORITHM while a key is held, on the song screen. The same mutate as the
+ * sequence screen, on this key. A named key uses the engine it plays. The
+ * scale waits. The other way is another mutate, not the undo. The key stays. */
+static void iam_held_mutate(int e)
+{
+    struct iam_seq_tr t;
+    int i, n, dir;
+    if (!e)
+        return;
+    if (iam.held_drum >= 0 && iam.held_drum < IAM_NDRUMKEY) {
+        t.drum = (int8_t)iam.held_drum;
+        t.part = -1;
+    } else if (iam.held >= 0 && iam.held < 4) {
+        t.drum = -1;
+        t.part = (int8_t)iam.held;
+    } else
+        return;
+    dir = e < 0 ? -1 : 1;
+    n = e < 0 ? -e : e;
+    if (n > 8)
+        n = 8; /* a fast spin still moves. It does not walk the whole song */
+    iam.turned = 1; /* letting go is the edit, not also a click */
+    for (i = 0; i < n; i++)
+        iam_seq_mutate_one(&t, dir);
+}
 /* Knob 1. The same queue a held key uses, so the name moves now and the bar lands it.
  * It does not wake a row, and it does not touch the ring. */
 static void iam_seq_sound(int step)
@@ -4579,13 +4647,38 @@ static void iam_seq_sound(int step)
         return;
     say(iam_seq_sub(&t[iam.seq_at]), 0);
 }
-/* Knob 2. A new rhythm on this row, heard now. The count of hits is part of
- * the cast. The wah stays shut, and a dark row stays dark. One undo. */
+/* Knob 2. The hits stay. Each one leans up or down the scale, a small phrase,
+ * heard now. Further the same way opens it. The other way flattens it, and
+ * past the written note it leans the other way. The wah stays shut. One undo. */
+static void iam_mel_set(int which, int depth)
+{
+    if (depth > 3)
+        depth = 3; /* past here every step is already as far as the phrase leans */
+    if (depth < -3)
+        depth = -3;
+    if (which >= 0 && which < 4)
+        iam.mel[which] = (int8_t)depth;
+    else if (which >= 4 && which < 4 + IAM_NDRUMKEY)
+        iam.dmel[which - 4] = (int8_t)depth;
+    else
+        return;
+    en_melody(which, depth);
+}
+static void iam_seq_say_mel(int v)
+{
+    char b[8];
+    int n = v < 0 ? -v : v;
+    if (v < 0) {
+        b[0] = '-';
+        itoa_u((uint32_t)n, b + 1);
+    } else
+        itoa_u((uint32_t)n, b);
+    say("MELODY", b);
+}
 static void iam_seq_shape(int e)
 {
     struct iam_seq_tr t[15];
-    int n, i, steps, d, part;
-    uint16_t m = 0;
+    int n, i, steps, dir, which, depth;
     if (!e)
         return;
     n = iam_seq_clamp(t);
@@ -4596,19 +4689,19 @@ static void iam_seq_shape(int e)
     iam.turned = 1;
     steps = e < 0 ? -e : e;
     if (steps > 8)
-        steps = 8; /* a fast spin still moves. It does not burn the whole roll */
-    d = t[iam.seq_at].drum;
-    part = t[iam.seq_at].part;
-    for (i = 0; i < steps; i++) {
-        if (d >= 0 && d < IAM_NDRUMKEY)
-            m = iam_seq_cast_drum(d, i ? m : iam_seq_live(&t[iam.seq_at]));
-        else if (part >= 0 && part <= 3) {
-            m = iam_step_cast(i ? m : iam.vstep[part]);
-            iam_vstep_set(part, m);
-        }
-    }
-    if (m)
-        iam_seq_say_steps(m);
+        steps = 8; /* a fast spin still moves. It does not walk off the phrase */
+    dir = e < 0 ? -1 : 1;
+    if (t[iam.seq_at].drum >= 0 && t[iam.seq_at].drum < IAM_NDRUMKEY)
+        which = 4 + t[iam.seq_at].drum;
+    else if (t[iam.seq_at].part >= 0 && t[iam.seq_at].part <= 3)
+        which = t[iam.seq_at].part;
+    else
+        return;
+    depth = which < 4 ? (int)iam.mel[which] : (int)iam.dmel[which - 4];
+    for (i = 0; i < steps; i++)
+        depth += dir;
+    iam_mel_set(which, depth);
+    iam_seq_say_mel(which < 4 ? (int)iam.mel[which] : (int)iam.dmel[which - 4]);
 }
 static void iam_seq_say_num(const char *what, int v)
 {
@@ -4710,11 +4803,15 @@ static void iam_knobs(uint32_t btn)
             continue;
         }
         if (role == EN_K2 && iam.seq_on) {
-            iam_seq_shape(e); /* this row's steps, a new count each turn. The wah waits */
+            iam_seq_shape(e); /* this row's notes, up or down the scale. The wah waits */
             continue;
         }
         if (role == EN_K4 && iam.seq_on) {
             iam_seq_cut(e); /* this row's filter or tune. The other filters wait */
+            continue;
+        }
+        if (role == EN_ALGO && (iam.held_drum >= 0 || (iam.held >= 0 && iam.held < 4))) {
+            iam_held_mutate(e); /* this key's track. The scale waits until the key is up */
             continue;
         }
         if (iam.held_drum >= 0 && role >= EN_K1 && role <= EN_K4) {
@@ -4724,7 +4821,7 @@ static void iam_knobs(uint32_t btn)
                 iam.q_dkit[d] = iam_sat((int)iam.q_dkit[d] + e);
                 /* the kit name is already the line under the drum */
             } else if (role == EN_K2) {
-                iam_turn_shape(e); /* this drum's steps, now. It leaves the linked beat */
+                iam_turn_shape(e); /* this drum's notes, the same phrase as the sequence screen */
             } else if (role == EN_K3) {
                 iam_drum_level(d, e); /* this drum's level. Not the one beside it */
             } else if (iam_main_drum(d)) {
@@ -4760,7 +4857,7 @@ static void iam_knobs(uint32_t btn)
                 iam.turned = 1; /* letting go is the edit, not also a click */
                 iam.q_snd[iam.held] = iam_sat((int)iam.q_snd[iam.held] + e);
             } else if (role == EN_K2) {
-                iam_turn_shape(e); /* this engine's sixteen steps, now */
+                iam_turn_shape(e); /* this engine's notes, the same phrase as the sequence screen */
             } else {
                 iam_turn_part(iam.held, role - EN_K1, e); /* level and cutoff stay live */
             }

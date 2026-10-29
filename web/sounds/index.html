@@ -67,7 +67,7 @@ const hints = {
   bass: "Seventeen bass sounds. Upright is sampled. One note, C3, so a sub still has a pitch a small speaker might reach.",
   acid: "Twenty acid sounds. Flute, tenor sax, muted trumpet and harmonica are sampled. The note plays again so a pluck does not die before you can hear it.",
   air: "Air's colours. The knob walks Pink, Wood and Vinyl. The other five are in the engine and are not on the knob.",
-  drums: "Ten kits. Dusty is sampled. Each voice is at the same level, one hit on each beat. Clap, the open hat, rim, tom, cowbell, shaker and crash follow that kit.",
+  drums: "Ten kits. Dusty is sampled. Each voice is at the same level, one hit on each beat. Clap, the open hat, rim, tom, cowbell and shaker follow that kit. Hypno, House, Acid, Hard and 808 have no crash.",
   keys: "The twelve named keys. They sit on a pad, a bass or an acid. Glass, Dub and Stabs are turned down in the engine. A quiet sine sits under the pad keys so Glass and Dark have a breath to follow."
 };
 const titles = [
@@ -234,7 +234,10 @@ function build(cat) {
     drums.append(h);
     const note = ki === cat.kits.length - 1 && kit === "Dusty" ? sampled : "";
     cat.lanes.forEach((lane, li) => drums.append(row("lane", ki, li, lane, note)));
-    cat.extra.forEach((lane, li) => drums.append(row("xdrum", ki, li, lane, note)));
+    cat.extra.forEach((lane, li) => {
+      if (lane === "Crash" && (kit === "Hypno" || kit === "House" || kit === "Acid" || kit === "Hard" || kit === "808")) return;
+      drums.append(row("xdrum", ki, li, lane, note));
+    });
   });
   const keys = section("keys", "Named keys", hints.keys);
   cat.keys.forEach((k, i) => keys.append(row("key", i, 0, k.name, k.engine)));

@@ -1,4 +1,4 @@
-# Crash's eight presets are a single hit. On the sequence screen, knob 2 can write many.
+# Crash stays on the hit it had. Knob 2 leans that hit up the scale, then back.
 seed 42
 reboot
 wait 40
@@ -9,10 +9,18 @@ expect iamseq 1
 spin SELECT 3
 wait 30
 expect toast CRASH
+expect stepv10 0
 spin K2 1
 wait 30
-expect toast STEPS
-expect toast2 12
-expect stepv10 60095
+expect toast MELODY
+expect toast2 1
+expect iamdmel10 1
+expect stepv10 0
 expect iamhel 0
 expect iamwob0 0
+spin K2 -1
+wait 30
+expect toast MELODY
+expect toast2 0
+expect iamdmel10 0
+expect stepv10 0

@@ -14,6 +14,8 @@
  *                  back to its factory settings and out of the store
  *   KNOB 1-4       the page's four values (in the sequencer: the lane's level, tune, decay; the pattern)
  *   FX             the effects menu, on and off: while it is on, each key is an effect while held.
+ *                  On an IAM song the four knobs play one effect from that page: the repeats, the
+ *                  tape tricks, the filters and the gate, and the crowd. Dry is the left end.
  *                  SAVE held is lock mode: each key tapped locks its effect on (or, locked, off again),
  *                  one at a time or together; keys held as SAVE goes down lock too. A locked effect's
  *                  key tapped (no SAVE) turns that one off; closing FX lets them all go. SAVE tapped
@@ -183,6 +185,7 @@ static struct {
     uint8_t save_held;                 /* SAVE held long enough: the drop was asked for this hold */
     uint8_t seq_held;                  /* SEQ held long enough: the sequencer opened this hold */
     uint8_t fx_menu;                   /* the FX menu is on: the keys are effects */
+    uint8_t fxk[4];                    /* GLO FX page: each knob's effect. 0 is dry, else the index + 1 */
     uint32_t fx_mask;                  /* the effects held (and locked), as last sent */
     uint32_t fx_lock;                  /* the effects locked on (lock mode: SAVE held in FX) */
     uint16_t dj_mask;                  /* GLO crowd keys held (and locked), as last sent */
@@ -417,6 +420,7 @@ static void glo_fx_drop(void)                /* latched effects off before the n
     ui.fx_mask = 0;
     ui.dj_mask = 0;
     ui.lock_mode = 0;
+    ui.fxk[0] = ui.fxk[1] = ui.fxk[2] = ui.fxk[3] = 0;
     en_fx(0);
     en_dj(0);
 }
@@ -991,6 +995,88 @@ static void glo_lock_clear(int key)
         ui.fx_lock &= ~(1u << KEY_FX[key]);
 }
 
+/* The four knobs under GLO's FX page. Each plays one family from that grid.
+ * 0 is dry. A turn steps one effect per detent and stops at the ends. */
+static const uint8_t FXK_ID[4][14] = {
+    {FX_RPT2, FX_RPT4, FX_RPT6, FX_RPT8, FX_RPT16, FX_RPT32},
+    {FX_REV, FX_STOP, FX_THROW, FX_FILL},
+    {FX_LP, FX_HP, FX_GATE8},
+    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+};
+static const uint8_t FXK_N[4] = {6, 4, 3, 14};
+static const uint8_t FXK_DJ[4] = {0, 0, 0, 1};
+static const char *const FXK_NAME[4] = {"REPEAT", "MOVE", "TONE", "CROWD"};
+static const char *const FXK_SHORT[3][6] = {
+    {"1/2", "1/4", "1/6", "1/8", "1/16", "1/32"},
+    {"REV", "STOP", "THROW", "FILL"},
+    {"LOW", "HIGH", "GATE"},
+};
+
+static void fx_live(void) /* locks, keys held on the FX page, and the four knobs */
+{
+    uint32_t m, i;
+    uint16_t dj;
+    if (!ui.fx_menu) {
+        ui.fxk[0] = ui.fxk[1] = ui.fxk[2] = ui.fxk[3] = 0;
+        ui.lock_mode = 0;                  /* FX closed: the locks play on (FX again, a key: that one off) */
+    }
+    m = ui.fx_lock;
+    dj = ui.dj_lock;
+    if (ui.fx_menu) {
+        for (i = 0; i < NKEYS; i++)
+            if ((ui.keys & ~ui.shift_keys & ~ui.lock_keys) >> i & 1u) {
+                int d = glo_dj((int)i);
+                if (d >= 0)
+                    dj = (uint16_t)(dj | (uint16_t)(1u << d));
+                else
+                    m |= 1u << KEY_FX[i];
+            }
+        if (iam_song())
+            for (i = 0; i < 4; i++) {
+                int s = ui.fxk[i];
+                if (s <= 0 || s > FXK_N[i])
+                    continue;
+                if (FXK_DJ[i])
+                    dj = (uint16_t)(dj | (uint16_t)(1u << FXK_ID[i][s - 1]));
+                else
+                    m |= 1u << FXK_ID[i][s - 1];
+            }
+    } else if (iam_song())
+        m |= iam_jam_mask();
+    if (m != ui.fx_mask) {
+        ui.fx_mask = m;
+        en_fx(m);
+    }
+    if (dj != ui.dj_mask) {
+        ui.dj_mask = dj;
+        en_dj(dj);
+    }
+}
+
+static void fx_knob_turn(int i, int32_t e)
+{
+    int n, s;
+    const char *b;
+    if (i < 0 || i > 3 || !e)
+        return;
+    n = FXK_N[i];
+    s = (int)ui.fxk[i] + (int)e;
+    if (s < 0)
+        s = 0;
+    if (s > n)
+        s = n;
+    if (s == (int)ui.fxk[i])
+        return;
+    ui.fxk[i] = (uint8_t)s;
+    if (s == 0)
+        b = "OFF";
+    else if (FXK_DJ[i])
+        b = DJ_LABEL[FXK_ID[i][s - 1]];
+    else
+        b = FX_LABEL[FXK_ID[i][s - 1]];
+    say(FXK_NAME[i], b);
+}
+
 static void input(void)
 {
     uint32_t btn = plat_buttons(), keys = plat_keys(), ch, i;
@@ -1156,33 +1242,7 @@ static void input(void)
         iam_editor_lift_off();
         iam_editor_unstick(keys);              /* before the effect mask, so a cleared key drops out of it */
     }
-    {   /* the effects: each key held while the FX menu is on, those locked, and GLO's black keys */
-        uint32_t m = 0;
-        uint16_t dj = 0;
-        if (!ui.fx_menu)
-            ui.lock_mode = 0;                  /* FX closed: the locks play on (FX again, a key: that one off) */
-        m = ui.fx_lock;
-        dj = ui.dj_lock;
-        if (ui.fx_menu) {
-            for (i = 0; i < NKEYS; i++)
-                if ((keys & ~ui.shift_keys & ~ui.lock_keys) >> i & 1u) {
-                    int d = glo_dj((int)i);
-                    if (d >= 0)
-                        dj = (uint16_t)(dj | (uint16_t)(1u << d));
-                    else
-                        m |= 1u << KEY_FX[i];
-                }
-        } else if (iam_song())
-            m |= iam_jam_mask();
-        if (m != ui.fx_mask) {
-            ui.fx_mask = m;
-            en_fx(m);
-        }
-        if (dj != ui.dj_mask) {
-            ui.dj_mask = dj;
-            en_dj(dj);
-        }
-    }
+    fx_live(); /* keys and locks. A knob turn below sends again, so the effect starts on that turn */
     if (btn || keys || ch)
         ui.act_t = plat_ms();
     midi_in();
@@ -1273,13 +1333,23 @@ static void input(void)
             button(B_SAVE);
         }
     }
-    for (i = 0; i < 4; i++)
-        if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
-            turn(EN_K1 + (int)i, view_knob((int)i), e);
-            ui.touched = (int8_t)i;
-            ui.touch_until = plat_ms() + 1200u;
-            ui.act_t = ui.turn_t = plat_ms();
-        }
+    {
+        int fxplay = ui.fx_menu && iam_song(), moved = 0;
+        for (i = 0; i < 4; i++)
+            if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
+                if (fxplay) {
+                    fx_knob_turn((int)i, e);
+                    moved = 1;
+                } else {
+                    turn(EN_K1 + (int)i, view_knob((int)i), e);
+                }
+                ui.touched = (int8_t)i;
+                ui.touch_until = plat_ms() + 1200u;
+                ui.act_t = ui.turn_t = plat_ms();
+            }
+        if (moved)
+            fx_live();
+    }
     help_tick(btn, keys);
     iam_loop_tick();
 }
@@ -2105,9 +2175,49 @@ static void draw_main(void)
     cv_blit(0, MAIN_Y);
 }
 
+/* One knob on GLO's FX page: the family, where it sits in that family, and the effect playing. */
+static void draw_fx_knob(int i, int hot)
+{
+    int n = FXK_N[i], s = ui.fxk[i], j;
+    int32_t x = (int32_t)i * 60, cx = x + 30;
+    char t[16];
+    uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_ACC : K_PAD;
+    const felucca_font_t *f;
+    int32_t yv;
+    if (s < 0 || s > n)
+        s = 0;
+    if (i)
+        cv_rect(x, 16, 1, 46, K_LINE);
+    if (hot)
+        cv_round(x + 3, 11, 54, 57, 3, K_PANEL);
+    caps(t, FXK_NAME[i], sizeof t);
+    text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
+    if (n < 6) {                                 /* a short list: one pip a step, the first is dry */
+        int pos = n + 1, pw = pos > 4 ? 6 : 9, gap = 3, w0 = pos * (pw + gap) - gap;
+        for (j = 0; j < pos; j++)
+            cv_rect(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, j == s ? fill : K_LINE);
+    } else {
+        arc(cx, 37, 12, n > 0 ? (float)s / (float)n : 0.0f, K_LINE, fill, bg, 0);
+    }
+    if (s <= 0)
+        caps(t, "OFF", sizeof t);
+    else if (FXK_DJ[i])
+        caps(t, DJ_LABEL[FXK_ID[i][s - 1]], sizeof t);
+    else
+        caps(t, FXK_SHORT[i][s - 1], sizeof t);
+    f = &FONT_B;
+    yv = 50;
+    if (text_w(f, t) > 52) {
+        f = &FONT_XS;
+        yv = 51;
+    }
+    text_c(cx, yv, f, t, hot ? K_ACC : K_TEXT);
+}
+
 /* the knob strip (X0X's): a rule with the page's name and a dot a page at its right end; under it a
  * cell a knob: its name, a ring (or pips, for a switch of a few positions), the value. The knob being
- * turned is drawn on a tint. Only redrawn when what it shows changes. */
+ * turned is drawn on a tint. Only redrawn when what it shows changes. GLO's FX page uses the four
+ * cells for the effects on that page. */
 static void draw_knobs(void)
 {
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)ui.touched << 8 | (uint32_t)ui.lane << 16 | (uint32_t)ui.theme << 24), i;
@@ -2125,6 +2235,8 @@ static void draw_knobs(void)
     if (ui.view == V_GLOBAL)
         h = hash(h, (uint32_t)proj.piece | (uint32_t)(proj.edited >> proj.piece & 1u) << 8 |
                         (uint32_t)project_saved(proj.piece) << 9);
+    h = hash(h, ui.fx_menu | (uint32_t)ui.fxk[0] << 8 | (uint32_t)ui.fxk[1] << 16);
+    h = hash(h, (uint32_t)ui.fxk[2] | (uint32_t)ui.fxk[3] << 8);
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(view_knob((int)i)));
@@ -2144,10 +2256,16 @@ static void draw_knobs(void)
         } else {
             caps(t, VIEW_NAME[ui.view], sizeof t);
         }
+        if (ui.fx_menu && iam_song())
+            caps(t, "FX", sizeof t);
         xt = xd - 5 - text_w(&FONT_XS, t);
-        if (iam_song() && ui.view == V_TEMPO)
+        if (iam_song() && ui.view == V_TEMPO && !(ui.fx_menu && iam_song()))
             xt = xd + 5;                         /* no page name: the rule runs up to the dots */
-        if (ui.view == V_GLOBAL) {               /* Global: the piece's state, and what SAVE does */
+        if (ui.fx_menu && iam_song()) {          /* the knobs under the grid play an effect */
+            int32_t xs = cv_text(4, -1, &FONT_XS, "TURN: PLAY", K_ACC);
+            if (xt - 9 > xs + 4)
+                cv_rect(xs + 4, 5, xt - 9 - xs - 4, 1, K_LINE);
+        } else if (ui.view == V_GLOBAL) {        /* Global: the piece's state, and what SAVE does */
             char u[24];
             int32_t xs;
             caps(u, piece_name(proj.piece), 4);
@@ -2220,30 +2338,35 @@ static void draw_knobs(void)
             cv_rect(xd + k * 5, 3, 3, 4, cur ? K_ACC : same ? K_DIM : K_LINE);
         }
     }
-    for (i = 0; i < 4; i++) {
-        int k = view_knob((int)i), lo, hi, v, hot = now_touch && ui.touched == (int)i;
-        int32_t x = (int32_t)i * 60, cx = x + 30;
-        char t[16];
-        uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_ACC : K_PAD;
-        if (k == K_NONE)
-            continue;
-        if (i)
-            cv_rect(x, 16, 1, 46, K_LINE);
-        if (hot)
-            cv_round(x + 3, 11, 54, 57, 3, K_PANEL);
-        knob_range(k, &lo, &hi);
-        v = knob_get(k);
-        caps(t, k == K_KEYS ? "Keys" : KNOB_LABEL[ui.view][i], sizeof t);
-        text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
-        if (hi - lo < 6) {                       /* a switch: its positions as pips */
-            int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
-            for (j = 0; j < n; j++)
-                cv_rect(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, j == v - lo ? fill : K_LINE);
-        } else {
-            arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
+    if (ui.fx_menu && iam_song()) {
+        for (i = 0; i < 4; i++)
+            draw_fx_knob((int)i, now_touch && ui.touched == (int)i);
+    } else {
+        for (i = 0; i < 4; i++) {
+            int k = view_knob((int)i), lo, hi, v, hot = now_touch && ui.touched == (int)i;
+            int32_t x = (int32_t)i * 60, cx = x + 30;
+            char t[16];
+            uint16_t bg = hot ? K_PANEL : K_BG, fill = hot ? K_ACC : K_PAD;
+            if (k == K_NONE)
+                continue;
+            if (i)
+                cv_rect(x, 16, 1, 46, K_LINE);
+            if (hot)
+                cv_round(x + 3, 11, 54, 57, 3, K_PANEL);
+            knob_range(k, &lo, &hi);
+            v = knob_get(k);
+            caps(t, k == K_KEYS ? "Keys" : KNOB_LABEL[ui.view][i], sizeof t);
+            text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
+            if (hi - lo < 6) {                       /* a switch: its positions as pips */
+                int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
+                for (j = 0; j < n; j++)
+                    cv_rect(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, j == v - lo ? fill : K_LINE);
+            } else {
+                arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
+            }
+            knob_text(k, t);
+            text_c(cx, 50, &FONT_B, t, hot ? K_ACC : K_TEXT);
         }
-        knob_text(k, t);
-        text_c(cx, 50, &FONT_B, t, hot ? K_ACC : K_TEXT);
     }
     cv_blit(0, KNB_Y);
 }

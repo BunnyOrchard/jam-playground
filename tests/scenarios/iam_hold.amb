@@ -23,23 +23,25 @@ wait 40
 expect hold
 expect hold2
 
-# Knob 2 walks the pad's steps, heard now. It does not change the sound, and it does not turn the key on.
+# Knob 2 leans this key's notes, heard now. The rhythm stays, and it does not turn the key on.
 key w0 down
 wait 80
 spin K2 1
 wait 30
-expect toast PAD
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 1
 expect toaston 1
+expect iammel0 1
 expect par11 30
 expect par10 1
-expect iamgate0 17476
+expect iamgate0 65535
 expect iammask 65
 expect hold PAD
 spin K2 -1
 wait 30
-expect toast PAD
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 0
+expect iammel0 0
 expect iamgate0 65535
 expect par11 30
 key w0 up
@@ -123,59 +125,64 @@ expect par51 50
 expect lane0 256
 expect iamgate0 65535
 
-# Bass is dark. Knob 2 walks its steps, and the turn does not wake it.
+# Bass is dark. Knob 2 leans its notes, and the turn does not wake it.
 key w1 down
 wait 80
 spin K2 1
 wait 30
-expect toast BASS
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 1
+expect iammel1 1
 expect par25 53
 expect iammask 65
-expect iamgate1 17476
+expect iamgate1 65535
 spin K2 -1
 wait 30
-expect toast BASS
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 0
+expect iammel1 0
 expect iamgate1 65535
 expect par25 53
 key w1 up
 wait 1500
 expect iammask 65
 
-# The fourth key. Knob 2 walks its steps. Tone and the duck stay where the song left them.
+# The fourth key. Knob 2 leans its notes. Tone and the duck stay where the song left them.
 key w3 down
 wait 80
 spin K2 1
 wait 30
-expect toast DUST
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 1
+expect iammel3 1
 expect par22 22
 expect par21 14
-expect iamgate3 21845
+expect iamgate3 43690
 spin K2 -1
 wait 30
-expect toast DUST
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 0
+expect iammel3 0
 expect iamgate3 43690
 expect par22 22
 key w3 up
 wait 40
 
-# The kick. Knob 2 steps its pattern. The decay stays, and the kick stays off.
+# The kick. Knob 2 leans its notes. The pattern stays, and the kick stays off.
 key b0 down
 wait 80
 spin K2 1
 wait 30
-expect toast KICK
-expect toast2 PATTERN
+expect toast MELODY
+expect toast2 1
+expect iamdmel0 1
 expect par51 50
-expect lane0 1105
+expect lane0 256
 spin K2 -1
 wait 30
-expect toast KICK
-expect toast2 PATTERN
-expect par51 50
+expect toast MELODY
+expect toast2 0
+expect iamdmel0 0
 expect lane0 256
 key b0 up
 wait 40
@@ -267,3 +274,77 @@ expect hold KICK
 key b0 up
 wait 40
 expect playhead 0
+
+# Seed 42 stores the kick's House kit on the crash. That cymbal is gone, so the
+# crash stands in as Techno, and one detent steps over every kit that has none.
+key b10 down
+wait 80
+expect hold CRASH
+expect hold2 TECHNO
+spin K1 1
+wait 30
+expect hold2 BREAK
+spin K1 1
+wait 30
+expect hold2 MINIMAL
+spin K1 1
+wait 30
+expect hold2 909
+spin K1 1
+wait 30
+expect hold2 DUSTY
+spin K1 1
+wait 30
+expect hold2 TECHNO
+spin K1 -1
+wait 30
+expect hold2 DUSTY
+key b10 up
+wait 40
+
+# Holding a key, ALGORITHM mutates that key's track. The scale stays. The key stays.
+seed 42
+reboot
+wait 40
+expect par72 1
+expect par10 1
+expect iamgate0 65535
+expect lane0 256
+expect iammask 65
+key w0 down
+wait 80
+spin ALGO 1
+wait 30
+expect toast MUTATE
+expect toast2
+expect hold PAD
+expect par72 1
+expect par10 2
+expect iamgate0 60095
+expect iamgate1 65535
+expect iamgate3 43690
+expect lane3 21845
+expect iammask 65
+key w0 up
+wait 40
+expect iammask 65
+expect par10 2
+key b0 down
+wait 80
+spin ALGO 1
+wait 30
+expect toast MUTATE
+expect lane0 11914
+expect par72 1
+expect par10 2
+expect iamgate0 60095
+expect iammask 65
+spin ALGO -1
+wait 30
+expect toast MUTATE
+expect lane0 416
+expect iammask 65
+key b0 up
+wait 40
+expect iammask 65
+expect lane0 416

@@ -25,6 +25,7 @@
  *                                xtuneN: rim, tom, bell, shake, crash, in semitones
  *                                seqsub: the sound or kit the sequence screen is aiming at
  *                                iamwobN / iamsweepN: that row's wobble or pitch sweep
+ *                                iammelN / iamdmelN: knob 2's phrase, how far that row leans off its note
  *                                iamdly / iamhel: the song ring and the song wah
  *                                isol: 1 while SEQ's SEL is holding one row alone
  *                                toaston: 1 while a toast still covers that line
@@ -595,6 +596,10 @@ static int expect(const char *what, const char *val)
         got = iam.seq_at;
     else if (!strncmp(what, "iamwob", 6))     /* iamwobN: that engine's eighth-note wobble, 0..100 */
         got = iam.wob[atoi(what + 6) % 4];
+    else if (!strncmp(what, "iamdmel", 7))    /* iamdmelN: knob 2's phrase on that drum, scale steps */
+        got = iam.dmel[atoi(what + 7) % IAM_NDRUMKEY];
+    else if (!strncmp(what, "iammel", 6))     /* iammelN: SEQ knob 2 on that engine. 0 is the written note */
+        got = iam.mel[atoi(what + 6) % 4];
     else if (!strncmp(what, "iamsweep", 8))   /* iamsweepN: that drum's pitch sweep, 0..100 */
         got = iam.sweep[atoi(what + 8) % IAM_NDRUMKEY];
     else if (!strcmp(what, "iamhel"))         /* the song wah. SEQ knob 2 must leave this shut */

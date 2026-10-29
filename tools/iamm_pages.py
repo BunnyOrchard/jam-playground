@@ -6,7 +6,7 @@
   install/index.html      the web installer (Chrome or Edge, Web MIDI)
   firmware/jam-X.Y.Z.fwsc the package that page writes
 
-  python3 tools/iamm_pages.py build/amb-1.1.0.fwsc 1.1.0 download
+  python3 tools/iamm_pages.py build/amb-1.2.0.fwsc 1.2.0 download
 
 The package must be a release build (./build.sh --release X.Y.Z). Its identity,
 FM-1_7XXYYZZ, is what the installer checks and what the FM-1 reports afterwards.

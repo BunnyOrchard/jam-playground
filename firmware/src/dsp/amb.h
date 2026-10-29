@@ -144,6 +144,7 @@ void en_section(int cmd);
 void en_haze(int shape);                       /* the noise's part: 0 the bed, 1 dust, 2 chop, 3 air, 4 hush, 5 wind */
 void en_haze_oct(int oct);                     /* that part, in octaves. 0 is the part as written */
 void en_vstep(int part, unsigned mask);        /* pad, bass, acid, fourth: 16 steps. Until the fourth is named, dust and chop keep their own rhythm */
+void en_melody(int which, int depth);          /* 0..3 engines, 4..14 drums. 0 is the written note. A phrase in the scale */
 void en_sleep(int on);                         /* 1: throat, flute, a singing bowl, chimes, and birds in the wind */
 void en_sleep_cue(int which);                  /* bit 0 a chime, bit 1 a bell, on the next downbeat */
 void en_pad_lock(int on);                      /* 1: the pad's four voices breathe one phrase together */
@@ -191,7 +192,7 @@ void en_clock(int msg);
 
 /* the render (audio ISR): n stereo frames, 24-bit in int32; gain Q12 (the MASTER pot) */
 void en_render(int32_t *out_lr, uint32_t n, uint32_t gain_q12);
-void en_jam(void);                             /* three quiet notes at boot. The host build stays silent */
+void en_jam(void);                             /* three notes at boot, half the earlier level. Host stays silent */
 
 /* MIDI out, from the render: the app sends it (USB); status, data 1, data 2 */
 void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2);

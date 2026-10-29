@@ -1,5 +1,5 @@
 # SEQ owns ALGORITHM and knobs 1, 2 and 4. The scale, the ring, the wah and the other filters wait.
-# Knob 2 casts a new rhythm. ALGORITHM does too, and still walks the sound.
+# Knob 2 leans the selected row up or down the scale. The hits stay. ALGORITHM still casts a rhythm.
 # Seed 42 is pad and hat. The pad opens on Voices. The hat's pattern is slot 2.
 seed 42
 reboot
@@ -50,21 +50,23 @@ expect seqsub GLASS
 expect par85 1
 expect par72 1
 
-# Knob 2 writes a new rhythm. Seven hits, then three. The wah stays shut.
+# Knob 2 leans the pad up the scale, then back to the written notes. The gate stays.
 spin K2 1
 wait 30
-expect toast STEPS
-expect toast2 7
+expect toast MELODY
+expect toast2 1
+expect iammel0 1
 expect iamwob0 0
 expect iamsweep3 0
 expect iamhel 0
-expect iamgate0 11914
+expect iamgate0 60095
 expect par10 3
 spin K2 -1
 wait 30
-expect toast STEPS
-expect toast2 3
-expect iamgate0 416
+expect toast MELODY
+expect toast2 0
+expect iammel0 0
+expect iamgate0 60095
 expect iamwob0 0
 expect iamhel 0
 
@@ -78,8 +80,9 @@ expect par21 14
 expect par10 3
 expect par72 1
 
-# The hat. ALGORITHM casts a new row, four hits, and the other way is another
-# cast, eleven hits. It does not walk back to the preset.
+# The hat. ALGORITHM casts a new row, seven hits, and the other way is another
+# cast, three hits. It does not walk back to the preset. Knob 2 no longer
+# spends a cast, so these are the next two rolls.
 spin SELECT 1
 wait 30
 expect iamseqat 1
@@ -87,27 +90,28 @@ expect toast HAT
 spin ALGO 1
 wait 30
 expect toast MUTATE
-expect lane3 16496
+expect lane3 11914
 expect lane0 256
 expect par72 1
 expect par10 3
-expect iamgate0 416
+expect iamgate0 60095
 spin ALGO -1
 wait 30
 expect toast MUTATE
-expect lane3 55228
+expect lane3 416
 expect lane0 256
 expect par9 37
 
-# Knob 2 writes the hat again. One hit is allowed. The sweep stays off.
+# Knob 2 leans the hat. The row ALGORITHM just cast stays. The sweep stays off.
 spin K2 1
 wait 30
-expect toast STEPS
+expect toast MELODY
 expect toast2 1
+expect iamdmel3 1
 expect iamsweep3 0
 expect iamwob0 0
 expect iamhel 0
-expect lane3 64
+expect lane3 416
 
 # Knob 4 tunes the hat up to the top, then one step back. The pad filter stays.
 spin K4 40

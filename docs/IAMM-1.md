@@ -21,7 +21,7 @@ finished. One hundred and four are in the machine. It writes the one after that.
 It hits like a Digitakt, moves like an Octatrack, speaks like a Digitone, and sits in the room
 of a Cyma Forma RND. Those instruments are not in this box. This one makes the record.
 
-How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's USB name is Jam Playground FM-1, and so is 1.1.0. The tips say JAM. The 1.0.0 package still says IAMM-1.
+How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's USB name is Jam Playground FM-1, and so are 1.2.0 and 1.1.0. The tips say JAM. The 1.0.0 package still says IAMM-1.
 
 ## Specs
 
@@ -32,11 +32,12 @@ How to play it, key by key, is in [IAM-1.md](IAM-1.md). A development build's US
 | Sounds | 70. Twenty pad, seventeen bass, twenty acid, three air, ten kits. FM piano, vibes, kalimba and harp, the upright bass, flute, tenor sax, muted trumpet, harmonica, and the Dusty kit are sampled. A new song draws those with the others. Knob 1 walks the whole list, one step a turn. SEL with ALGORITHM wraps it. Sleep stays on its own oscillators |
 | Variations | 104. Eight inside each of thirteen. Turn again and the next one comes in |
 
-Hold a key and knob 2 wobbles that sound, on the eighth, from dry up to a full sweep. On a drum it
-sweeps the pitch, and the next hit shows it. A click of FX while the key is held mutates that key.
-A click with nothing held mutates the song. On the sequence screen, ALGORITHM mutates the selected
-track. Knob 1 is that track's sound or kit. Knobs 2 and 4 change that track's wobble, sweep, filter,
-or tune.
+Hold a key and knob 2 leans that part's notes up or down the scale. The rhythm stays, and it does
+not switch the key on. ALGORITHM mutates that key's track, and the scale waits. A click of FX
+while the key is held mutates that key. A click with nothing held mutates the song. On the sequence
+screen, ALGORITHM mutates the selected track. Knob 1 is that track's sound or kit. Knob 2 leans
+each hit. Knob 3 is its level. Knob 4 is its filter or its tune. The white keys turn that track's
+steps on and off.
 
 ## Install
 
@@ -57,13 +58,13 @@ A development build is `build/amb.fwsc`, identity `FM-1_700`. A numbered release
 file. Build it with:
 
 ```
-./build.sh --release 1.1.0
-python3 tools/fm1_install.py build/amb-1.1.0.fwsc
+./build.sh --release 1.2.0
+python3 tools/fm1_install.py build/amb-1.2.0.fwsc
 ```
 
-That package's identity is `FM-1_7010100`. The FM-1 reports that identity after the install. The
-same command installs a later version over an earlier one. 1.0.0 is still `build/amb-1.0.0.fwsc`,
-identity `FM-1_7010000`.
+That package's identity is `FM-1_7010200`. The FM-1 reports that identity after the install. The
+same command installs a later version over an earlier one. 1.1.0 is still `build/amb-1.1.0.fwsc`,
+identity `FM-1_7010100`. 1.0.0 is still `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`.
 
 If the write stops part way, the unit stays in update mode. Plug it in again and run the same
 command. It finishes the write. Exit 0 means it is done. Exit 3 means the unit was not found.
@@ -137,9 +138,16 @@ by the number.
 
 | Version | Identity | What it is |
 |---|---|---|
+| 1.2.0 | `FM-1_7010200` | Jam Playground. `build/amb-1.2.0.fwsc` is 609657 bytes. The image is 468732 bytes. The screen and the USB name say Jam Playground. Knob 2 leans the notes. A held key's ALGORITHM mutates that key. The crash skips Hypno, House, Acid, Hard, and 808 |
 | 1.1.0 | `FM-1_7010100` | Jam Playground. `build/amb-1.1.0.fwsc` is 609657 bytes. The image is 463896 bytes. The screen and the USB name say Jam Playground. Three quiet notes at boot |
 | 1.0.0 | `FM-1_7010000` | The first release. `build/amb-1.0.0.fwsc` is 609657 bytes. The image is 271900 bytes. The screen and the USB name say IAMM-1 |
 | development | `FM-1_700` | What a plain `./build.sh` writes. The USB name is Jam Playground FM-1. The tips say JAM. The identity number does not change between development builds |
+
+1.2.0 leans each hit instead of rewriting the rhythm. On the sequence screen, knob 2 moves the
+selected track a little up or down the scale, knob 3 is its level, and the white keys turn its
+steps. Holding a key, knob 2 uses that same phrase, and ALGORITHM mutates that key. The scale
+waits. The crash has no Hypno, House, Acid, Hard, or 808. On the GLO effects page the four knobs
+are Repeat, Move, Tone, and Crowd. The boot notes are quieter, and the shaker sits lower.
 
 1.1.0 is the Jam Playground release: five engines, four synth keys at once, eleven drums,
 seventy sounds. On the song screen, ARP is the DJ. Knob 2 on the sequence screen writes a new

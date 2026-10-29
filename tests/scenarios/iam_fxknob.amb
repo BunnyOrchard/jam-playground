@@ -1,0 +1,131 @@
+# GLO's FX page. The four knobs play an effect from that page. Dry is the left end.
+# A turn does not move the page underneath. Closing the page lets the knobs go.
+seed 42
+reboot
+wait 40
+tap GLO
+wait 80
+expect iam 0
+expect tempo 173
+tap FX
+wait 40
+expect fxon 1
+expect fxmask 0
+expect djmask 0
+expect toast FX
+expect toast2 HOLD A KEY
+# repeats: 1/2, then 1/4, back to dry, and a long turn stops on 1/32
+spin K1 1
+wait 40
+expect fxmask 1
+expect djmask 0
+expect toast REPEAT
+expect toast2 RPT 1/2
+expect tempo 173
+spin K1 1
+wait 40
+expect fxmask 2
+expect toast2 RPT 1/4
+spin K1 -1
+wait 40
+expect fxmask 1
+spin K1 -1
+wait 40
+expect fxmask 0
+expect toast2 OFF
+spin K1 20
+wait 40
+expect fxmask 32
+expect toast2 RPT1/32
+spin K1 1
+wait 40
+expect fxmask 32
+spin K1 -20
+wait 40
+expect fxmask 0
+expect toast2 OFF
+# tape tricks, then the filters and the gate
+spin K2 1
+wait 40
+expect fxmask 64
+expect toast MOVE
+expect toast2 REVERSE
+spin K2 1
+wait 40
+expect fxmask 128
+expect toast2 TAPESTP
+spin K2 1
+wait 40
+expect fxmask 262144
+expect toast2 THROW
+spin K2 1
+wait 40
+expect fxmask 1048576
+expect toast2 FILL
+spin K2 1
+wait 40
+expect fxmask 1048576
+spin K2 -4
+wait 40
+expect fxmask 0
+spin K3 1
+wait 40
+expect fxmask 16384
+expect toast TONE
+expect toast2 LOWPASS
+spin K3 1
+wait 40
+expect fxmask 32768
+expect toast2 HIPASS
+spin K3 1
+wait 40
+expect fxmask 131072
+expect toast2 GATE 8
+spin K3 -3
+wait 40
+expect fxmask 0
+# crowd, then all four at once, and a key still adds its own
+spin K4 20
+wait 40
+expect djmask 8192
+expect fxmask 0
+expect toast CROWD
+expect toast2 CHOP
+spin K4 -20
+wait 40
+expect djmask 0
+expect toast2 OFF
+spin K1 1
+spin K2 1
+spin K3 1
+spin K4 1
+wait 40
+expect fxmask 16449
+expect djmask 1
+expect tempo 173
+key 2 down
+wait 40
+expect fxmask 16451
+key 2 up
+wait 40
+expect fxmask 16449
+# closing drops the knobs. Opening again starts dry. The tempo knob is itself again.
+tap FX
+wait 40
+expect fxon 0
+expect fxmask 0
+expect djmask 0
+expect tempo 173
+tap FX
+wait 40
+expect fxon 1
+expect fxmask 0
+expect djmask 0
+tap FX
+wait 40
+expect fxon 0
+spin K1 1
+wait 40
+expect tempo 174
+expect fxmask 0
+expect djmask 0
