@@ -62,7 +62,7 @@ file. Build it with:
 python3 tools/fm1_install.py build/amb-1.2.0.fwsc
 ```
 
-That package's identity is `FM-1_7010200`. The FM-1 reports that identity after the install. The
+That package's identity is `FM-1_7666200`. The number from the version rule, `FM-1_7010200`, is already taken. The FM-1 reports `FM-1_7666200` after the install. The
 same command installs a later version over an earlier one. 1.1.0 is still `build/amb-1.1.0.fwsc`,
 identity `FM-1_7010100`. 1.0.0 is still `build/amb-1.0.0.fwsc`, identity `FM-1_7010000`.
 
@@ -132,13 +132,13 @@ If that script cannot see the unit, recovery is
 
 A release is `./build.sh --release X.Y.Z`. The package is `build/amb-X.Y.Z.fwsc`. The FM-1
 reports it as `FM-1_7MMmmpp`, two digits each for the major, the minor, and the patch. So 1.0.0
-is `FM-1_7010000`, and 1.2.3 is `FM-1_7010203`. A build without `--release` stays `FM-1_700`.
+is `FM-1_7010000`, and 1.2.3 is `FM-1_7010203`. 1.2.0 does not use its rule number, because `FM-1_7010200` is already taken. It is `FM-1_7666200`. A build without `--release` stays `FM-1_700`.
 That identity is a development build. It is not a version you can tell apart from the last one
 by the number.
 
 | Version | Identity | What it is |
 |---|---|---|
-| 1.2.0 | `FM-1_7010200` | Jam Playground. `build/amb-1.2.0.fwsc` is 609657 bytes. The image is 468732 bytes. The screen and the USB name say Jam Playground. Knob 2 leans the notes. A held key's ALGORITHM mutates that key. The crash skips Hypno, House, Acid, Hard, and 808 |
+| 1.2.0 | `FM-1_7666200` | Jam Playground. `build/amb-1.2.0.fwsc` is 609657 bytes. The image is 468732 bytes. The screen and the USB name say Jam Playground. Knob 2 leans the notes. A held key's ALGORITHM mutates that key. The crash skips Hypno, House, Acid, Hard, and 808 |
 | 1.1.0 | `FM-1_7010100` | Jam Playground. `build/amb-1.1.0.fwsc` is 609657 bytes. The image is 463896 bytes. The screen and the USB name say Jam Playground. Three quiet notes at boot |
 | 1.0.0 | `FM-1_7010000` | The first release. `build/amb-1.0.0.fwsc` is 609657 bytes. The image is 271900 bytes. The screen and the USB name say IAMM-1 |
 | development | `FM-1_700` | What a plain `./build.sh` writes. The USB name is Jam Playground FM-1. The tips say JAM. The identity number does not change between development builds |

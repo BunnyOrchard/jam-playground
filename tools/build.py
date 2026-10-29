@@ -352,6 +352,9 @@ def main():
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y[.Z][-suffix], up to two digits each")
         PRODUCT = "FM-1_7%02d%02d%02d" % (int(m[1]), int(m[2]), int(m[3] or 0))
+        # 1.2.0's number from that rule, FM-1_7010200, is already taken.
+        if a.release == "1.2.0":
+            PRODUCT = "FM-1_7666200"
         VERSION = a.release.upper()
         name = f"amb-{a.release}.fwsc"
     fm1pkg_make.SDK = a.sdk

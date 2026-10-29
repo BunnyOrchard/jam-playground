@@ -73,7 +73,7 @@ In default mode, hold a key and the above 6 instructions will do the same thing.
 
 How to play it is in [docs/IAM-1.md](docs/IAM-1.md). What it is, and how to install it, is in [docs/IAMM-1.md](docs/IAMM-1.md).
 
-The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7010200`. Build it with `./build.sh --release 1.2.0`. The download page, with a browser installer, is:
+The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7666200`. Build it with `./build.sh --release 1.2.0`. The download page, with a browser installer, is:
 
 ```
 python3 tools/iamm_pages.py build/amb-1.2.0.fwsc 1.2.0 download

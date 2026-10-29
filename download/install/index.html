@@ -422,7 +422,7 @@ const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textCont
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "1.2.0", "product": "FM-1_7010200", "pkg": "../firmware/jam-1.2.0.fwsc"};
+const meta = {"version": "1.2.0", "product": "FM-1_7666200", "pkg": "../firmware/jam-1.2.0.fwsc"};
 
 let writing = false;
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });

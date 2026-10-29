@@ -243,7 +243,7 @@ from the MASTER pot, and every power-on is a new one.
 ## Install
 
 Building a package needs Docker (the JieLi toolchain is linux/amd64) and the steps in `BUILDING.md`.
-A development package is `build/amb.fwsc`, identity `FM-1_700`. The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7010200`. The USB name is Jam Playground FM-1, and the tips say JAM. 1.1.0 stays Jam Playground. The 1.0.0 package still says IAMM-1.
+A development package is `build/amb.fwsc`, identity `FM-1_700`. The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7666200`. The USB name is Jam Playground FM-1, and the tips say JAM. 1.1.0 stays Jam Playground. The 1.0.0 package still says IAMM-1.
 
 With the FM-1 plugged in and in Felucca update mode (hold OCT− and OCT+ for 5 seconds):
 
