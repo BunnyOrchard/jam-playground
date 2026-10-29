@@ -1,0 +1,16 @@
+# Signed release for the Firmware Hub. A tag vX.Y.Z builds ./build.sh --release X.Y.Z.
+# Use v1.2.0, not v1.2: 1.2.0 is identity FM-1_7666200. The host tests need this Mac, so they are not run here.
+name: release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  build:
+    uses: zvenson/fm1-build/.github/workflows/build.yml@v1
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    with:
+      build: ./build.sh --release "${GITHUB_REF_NAME#v}"
+      packages: build/*.fwsc
