@@ -2,21 +2,36 @@
 
 Generative music groovebox for the M-VAVE FM-1. Unofficial firmware fork. 
 
-Power on and it is already playing. A new boot is a new song. Jam Playground automatically creates and plays tunes, changes the sounds, mutates the pattern and allows continually changing soundscapes.
+Power on and it is already playing. A new boot is a new song. 
+
+Jam Playground automatically creates and plays tunes, changes the sounds, mutates the pattern and allows continually changing soundscapes.
+
 We can change every element and jam along at anytime. <Play> stops/starts automatic song mode.
+
 Four synth keys can sound at once. A fifth turns the oldest off. Eleven drums sit beside them. 
+
 Sounds include sampled FM piano, vibes, kalimba, harp, upright bass, flute, tenor sax, muted trumpet, harmonica, and many more.
+
 Changes generally land at the start of the next bar.
 
 Controls in default mode:
+
 Select: Tempo
+
 Presets: Change Vibe
+
 Algorithm: Change Scale
+
 Knob1: Ring FX
+
 Knob2: Wah FX
+
 Knob3: Phaser FX
+
 Knob4: 4 Filters FX
+
 Oct+: Pump
+
 Oct-: Back
 
 FX: Mutate Song
