@@ -35,17 +35,24 @@ Oct+: Pump
 Oct-: Back
 
 FX: Mutate Song
+
 Select: Tips
+
 Env: New Song
+
 LFO: Lets Find Out (makes a couple of changes such as mutate or change instrument/drum)
+
 Edit: Excite
+
 Glo: Once you got a good beat going, go here to play keys / rec or do FX. 
+
       Black Keys: FX
       White Keys: Keyboard
       Rec: Records Keyboard play for the last 16 bars - Rec again plays it back on Loop
       FX: FX page where white and black keys can be used.
       Arp: Arpeggiator
       On the GLO effects page the four knobs are Repeat, Move, Tone, and Crowd. Each one starts dry.
+      
 Home: Return to default mode.
 Save: Break
 ARP: Cycles through different FX automatically.
