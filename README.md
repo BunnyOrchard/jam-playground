@@ -52,6 +52,7 @@ The release package is `build/amb-1.2.0.fwsc`, identity `FM-1_7010200`. Build it
 python3 tools/iamm_pages.py build/amb-1.2.0.fwsc 1.2.0 download
 ```
 
+
 Open `download/index.html`. Chrome or Edge can write the package over USB. The same file installs from the command line with `python3 tools/fm1_install.py`.
 
 Installing firmware is at your own risk. M-VAVE's own firmware can be put back. The steps are in [docs/IAMM-1.md](docs/IAMM-1.md).
