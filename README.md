@@ -87,3 +87,5 @@ Installing firmware is at your own risk. M-VAVE's own firmware can be put back. 
 Jam Playground is a fork of [HYP-1](https://github.com/RustyPawz/fm1-HYP1) by RedtailWorks, a fork of [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal, on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita and Hügelton Instruments. GPL-3.0-only. See [LICENSE](LICENSE) and [LICENSING.md](LICENSING.md).
 
 M-VAVE and FM-1 are trademarks of their owners. Jam Playground is not affiliated with M-VAVE. 1.2.0 is this release. 1.1.0 stays Jam Playground. The 1.0.0 package still says IAMM-1.
+
+You can also try Jam Playground in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
